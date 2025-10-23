@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  # SQL Server 2022 Database
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: projecttracker_sqlserver
+    ports:
+      - "1433:1433"
+    environment:
+      MSSQL_SA_PASSWORD: "YourPassword123!@#"
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: "Developer"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'YourPassword123!@#' -Q 'SELECT 1' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - projecttracker_network
+
+  # Backend API (.NET 9)
+  api:
+    build:
+      context: ../backend/ProjectTracker.API
+      dockerfile: ../../docker/Dockerfile.api
+    container_name: projecttracker_api
+    ports:
+      - "5001:8080"
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=ProjectTrackerDb;User Id=sa;Password=YourPassword123!@#;TrustServerCertificate=true;"
+    networks:
+      - projecttracker_network
+    volumes:
+      - ../backend/ProjectTracker.API:/app
+
+  # Frontend Angular App
+  frontend:
+    build:
+      context: ../frontend/project-tracker
+      dockerfile: ../../docker/Dockerfile.frontend
+    container_name: projecttracker_frontend
+    ports:
+      - "4200:4200"
+    depends_on:
+      - api
+    environment:
+      API_URL: http://api:8080
+    networks:
+      - projecttracker_network
+    volumes:
+      - ../frontend/project-tracker:/app
+
+volumes:
+  sqlserver_data:
+    driver: local
+
+networks:
+  projecttracker_network:
+    driver: bridge

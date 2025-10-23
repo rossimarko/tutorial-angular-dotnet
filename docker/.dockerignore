@@ -1,0 +1,24 @@
+# Docker ignore file for .NET API
+bin/
+obj/
+.vs/
+.vscode/
+*.user
+*.suo
+*.sln.docstates
+.DS_Store
+node_modules/
+dist/
+coverage/
+.git/
+.gitignore
+
+# Temporary files
+*.tmp
+*.log
+*.swp
+*~
+
+# Entity Framework
+.efcore/
+efcore_backup.sql

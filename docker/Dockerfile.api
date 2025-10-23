@@ -1,0 +1,26 @@
+# Build stage
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+WORKDIR /src
+
+# Copy project files
+COPY . .
+
+# Restore and build
+RUN dotnet restore
+RUN dotnet build -c Release -o /app/build
+
+# Publish stage
+FROM mcr.microsoft.com/dotnet/aspnet:9.0
+WORKDIR /app
+
+# Copy built application
+COPY --from=build /app/build .
+
+# Install Entity Framework tools
+RUN dotnet tool install --global dotnet-ef
+
+# Expose port
+EXPOSE 8080
+
+# Run the application
+ENTRYPOINT ["dotnet", "ProjectTracker.API.dll"]
