@@ -1,0 +1,78 @@
+# Auto detect text files and normalize line endings to LF (Unix/Linux style)
+* text=auto
+
+# Source code
+*.cs text eol=crlf
+*.ts text eol=lf
+*.js text eol=lf
+*.html text eol=lf
+*.css text eol=lf
+*.scss text eol=lf
+*.json text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+*.xml text eol=lf
+
+# Markdown
+*.md text eol=lf
+*.markdown text eol=lf
+
+# Shell scripts
+*.sh text eol=lf
+*.bash text eol=lf
+*.ps1 text eol=crlf
+*.psm1 text eol=crlf
+*.psd1 text eol=crlf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.exe text binary
+*.dll text binary
+
+# Docker
+Dockerfile text eol=lf
+docker-compose.yml text eol=lf
+.dockerignore text eol=lf
+
+# Git
+.gitignore text eol=lf
+.gitattributes text eol=lf
+.editorconfig text eol=lf
+
+# Project files
+*.sln text eol=crlf
+*.csproj text eol=crlf
+*.fsproj text eol=crlf
+*.vbproj text eol=crlf
+*.proj text eol=crlf
+.angular-cli.json text eol=lf
+angular.json text eol=lf
+tsconfig.json text eol=lf
+package.json text eol=lf
+
+# Documentation
+README.md text eol=lf
+LICENSE text eol=lf
+CONTRIBUTING.md text eol=lf
+CHANGELOG.md text eol=lf
+
+# Binary files
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.mov binary
+*.mp4 binary
+*.mp3 binary
+*.gz binary
+*.zip binary
+*.7z binary
+*.ttf binary
+*.otf binary
+*.fon binary
+
+# Font files
+*.woff binary
+*.woff2 binary
+*.eot binary
+*.sfnt binary

@@ -1,0 +1,421 @@
+# Project-wide .gitignore
+# Comprehensive ignore patterns for Angular 20 + .NET 9 full-stack application
+
+# ============================================================================
+# BACKEND - .NET / ASP.NET Core
+# ============================================================================
+
+# Build results
+bin/
+obj/
+dist/
+build/
+*.dll
+*.pdb
+*.exe
+*.so
+*.dylib
+
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Visual Studio cache/options
+.vs/
+.vscode/
+*.code-workspace
+
+# Visual Studio Code specific
+.vscode/settings.json
+.vscode/tasks.json
+.vscode/launch.json
+.vscode/extensions.json
+.vscode/*.log
+
+# Rider IDE
+.idea/
+.idea_modules/
+*.iml
+*.iws
+*.ipr
+out/
+riderModule.iml
+_ReSharper*/
+
+# ReSharper is a .NET coding add-in
+_ReSharper*/
+*.[Rr]e[Ss]harper
+*.DotSettings.user
+
+# Test Explorer
+.testExplorer/
+
+# NuGet Packages
+*.nupkg
+*.snupkg
+.nuget/
+.packages/
+*.packages.config
+
+# Entity Framework Core migrations backup
+*.efcore_backup.sql
+
+# Local user configuration
+appsettings.local.json
+appsettings.*.local.json
+appsettings.Development.local.json
+
+# Logs
+logs/
+*.log
+*.logs
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.swp
+*~
+
+# OS specific
+.DS_Store
+Thumbs.db
+
+# ============================================================================
+# FRONTEND - Angular
+# ============================================================================
+
+# Dependencies
+node_modules/
+npm-debug.log
+npm-error.log
+yarn-error.log
+yarn.lock
+package-lock.json
+
+# Angular
+/dist/
+/.angular/
+/angular.json
+/tsconfig.json
+/tsconfig.app.json
+/tsconfig.spec.json
+
+# Build output
+/out-tsc/
+/tmp/
+/temp/
+
+# IDE Generated Files
+.editorconfig
+.eslintignore
+.prettierignore
+.prettierrc
+.browserslistrc
+
+# Production bundle analysis
+/reports/
+
+# Testing
+/coverage/
+/test-results/
+*.lcov
+
+# ============================================================================
+# DEVELOPMENT ENVIRONMENT
+# ============================================================================
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Secret files
+*.secrets
+secrets.json
+user-secrets.json
+
+# Development settings
+appsettings.Development.json (if using default values across team)
+launchSettings.json (optional - can be shared)
+
+# ============================================================================
+# IDE AND EDITOR
+# ============================================================================
+
+# Visual Studio
+*.vcxproj
+*.vcxproj.filters
+.vs/
+.visualstudio/
+*.sln.DotSettings
+
+# Visual Studio Code
+.vscode/
+*.code-workspace
+
+# JetBrains IDEs
+.idea/
+*.iml
+*.iws
+*.ipr
+.DS_Store
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Atom
+.atom/
+.apm/
+
+# vim
+.vim/
+*.swp
+*.swo
+*~
+
+# Emacs
+*~
+\#*\#
+.\#*
+
+# ============================================================================
+# DOCKER
+# ============================================================================
+
+# Docker
+docker-compose.override.yml
+.dockerignore (already in docker folder, but list for completeness)
+
+# Docker volumes and data
+/data/
+/volumes/
+mysql_data/
+postgres_data/
+sql_data/
+
+# ============================================================================
+# DATABASE
+# ============================================================================
+
+# SQLite
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
+# SQL Server
+*.mdf
+*.ldf
+*.ndf
+
+# Migrations backup
+*.sql.backup
+
+# ============================================================================
+# BUILD AND DEPENDENCY MANAGEMENT
+# ============================================================================
+
+# Package managers
+.npm/
+.cache/
+.grunt/
+dist/
+
+# Bower
+bower_components/
+
+# Gradle
+.gradle/
+gradle/
+gradlew
+gradlew.bat
+
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+
+# ============================================================================
+# DOCUMENTATION BUILD
+# ============================================================================
+
+# Documentation builds
+docs/_build/
+docs/.doctrees/
+site/
+*.epub
+*.pdf
+
+# Sphinx
+sphinx_build/
+
+# ============================================================================
+# DEPLOYMENT AND RELEASE
+# ============================================================================
+
+# Deployment directories
+deploy/
+release/
+publish/
+publishProfiles/
+
+# CI/CD
+.github/workflows/
+.gitlab-ci.yml
+.travis.yml
+azure-pipelines.yml
+Jenkins/
+
+# ============================================================================
+# TEMPORARY AND CACHE FILES
+# ============================================================================
+
+# OS Temporary files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+
+# Editor temporary files
+*~
+*.swp
+*.swo
+*#
+.#*
+*.orig
+*.rej
+
+# Temporary directories
+tmp/
+temp/
+cache/
+.cache/
+
+# ============================================================================
+# SYSTEM FILES
+# ============================================================================
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Linux
+.directory
+*~
+
+# ============================================================================
+# BACKUP FILES
+# ============================================================================
+
+# Backup
+*.backup
+*.bak
+*.backup.*
+*.old
+
+# ============================================================================
+# CERTIFICATES AND KEYS
+# ============================================================================
+
+# SSL/TLS Certificates
+*.pem
+*.pfx
+*.p12
+*.key
+*.crt
+*.cer
+*.csr
+
+# GPG Keys
+*.asc
+*.gpg
+
+# SSH Keys
+*.pub
+*.private
+
+# ============================================================================
+# PROJECT SPECIFIC EXCLUSIONS
+# ============================================================================
+
+# Specific to this project
+# (Add any project-specific patterns here)
+
+# Keep these directories but ignore their contents in some cases
+!.github/workflows/  # Keep workflow files
+!.github/instructions/
+!.vscode/extensions.json  # Can be useful for team
+
+# ============================================================================
+# ALLOW SPECIFIC FILES (exceptions to ignore patterns)
+# ============================================================================
+
+# Keep these files even if they match ignore patterns
+!.gitkeep
+!.gitignore
+!.editorconfig
+!.prettierrc (if using prettier)
+
+# Docker files should be committed
+!docker/docker-compose.yml
+!docker/Dockerfile.api
+!docker/Dockerfile.frontend
+!docker/.dockerignore
+
+# Core project files
+!README.md
+!LICENSE
+!package.json
+!package-lock.json (optional - some teams prefer this)
+!tsconfig.json
+!.angular-cli.json
+
+# Documentation
+!tutorial-docs/
+!GETTING_STARTED.md
+!SETUP_COMPLETE.md
+!PROJECT_MANIFEST.md
+
+# ============================================================================
+# NOTES
+# ============================================================================
+# 
+# This .gitignore file covers:
+# - Backend: .NET 9 build artifacts, Visual Studio files
+# - Frontend: Angular build, node_modules, dist
+# - Docker: configuration persistence
+# - Environment: local configs, secrets, sensitive data
+# - IDE: All major IDEs (VS, VSCode, Rider, Sublime, etc.)
+# - OS: Windows, macOS, Linux artifacts
+# - Build: Temporary build and cache files
+#
+# Important:
+# - Never commit: .env files, secrets, passwords, API keys
+# - Never commit: Local IDE configurations (unless team agreement)
+# - Always commit: docker-compose.yml, Dockerfile, documentation
+# - Always commit: package.json, tsconfig.json, .editorconfig
+#
+# For more patterns: https://github.com/github/gitignore
+# ============================================================================
