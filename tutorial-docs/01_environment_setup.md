@@ -112,15 +112,15 @@ tutorial-angular-dotnet/
 Navigate to the backend directory and create the API project:
 
 ```powershell
-cd d:\Formazione\tutorial-angular-dotnet\backend\ProjectTracker.API
+cd backend\ProjectTracker.API
 
 # Create a new Web API project
-dotnet new webapi -name ProjectTracker.API --framework net9.0 --use-minimal-apis
+dotnet new webapi --name ProjectTracker.API --framework net9.0 --use-minimal-apis
 
 # Or if you prefer, use Visual Studio:
 # File > New > Project > ASP.NET Core Web API
 # - Name: ProjectTracker.API
-# - Location: d:\Formazione\tutorial-angular-dotnet\backend\ProjectTracker.API
+# - Location: backend\ProjectTracker.API
 # - Framework: .NET 9.0
 # - Use controllers: No (we'll use Minimal APIs)
 ```
@@ -128,7 +128,7 @@ dotnet new webapi -name ProjectTracker.API --framework net9.0 --use-minimal-apis
 ### Step 2: Verify the Backend Builds
 
 ```powershell
-cd d:\Formazione\tutorial-angular-dotnet\backend\ProjectTracker.API
+cd backend\ProjectTracker.API
 
 # Restore NuGet packages
 dotnet restore
@@ -142,13 +142,13 @@ dotnet build
 ### Step 3: Add Required NuGet Packages
 
 ```powershell
-cd d:\Formazione\tutorial-angular-dotnet\backend\ProjectTracker.API
+cd backend\ProjectTracker.API
 
 # Add Dapper for data access
 dotnet add package Dapper
 
 # Add SQL Server connection
-dotnet add package System.Data.SqlClient
+dotnet add package Microsoft.Data.SqlClient
 
 # Add Entity Framework for migrations
 dotnet add package Microsoft.EntityFrameworkCore.SqlServer
@@ -185,7 +185,7 @@ dotnet add package Dapper.Contrib
 ### Step 1: Create the Angular 20 Project
 
 ```powershell
-cd d:\Formazione\tutorial-angular-dotnet\frontend
+cd frontend
 
 # Create a new Angular project with strict mode and routing
 ng new project-tracker --strict --routing --style=css --package-manager=npm --skip-git
@@ -198,7 +198,7 @@ ng new project-tracker --strict --routing --style=css --package-manager=npm --sk
 ### Step 2: Verify the Frontend Builds
 
 ```powershell
-cd d:\Formazione\tutorial-angular-dotnet\frontend\project-tracker
+cd frontend\project-tracker
 
 # Install dependencies
 npm install
@@ -212,7 +212,7 @@ ng build
 ### Step 3: Add Required Angular Packages
 
 ```powershell
-cd d:\Formazione\tutorial-angular-dotnet\frontend\project-tracker
+cd frontend\project-tracker
 
 # Add Bootstrap CSS framework
 npm install bootstrap
@@ -286,7 +286,7 @@ docker ps
 ### Step 2: Test Docker Compose Configuration
 
 ```powershell
-cd d:\Formazione\tutorial-angular-dotnet\docker
+cd docker
 
 # Verify the docker-compose.yml syntax
 docker-compose config
@@ -403,7 +403,7 @@ Thumbs.db
 ### Step 1: Start Backend Only
 
 ```powershell
-cd d:\Formazione\tutorial-angular-dotnet\backend\ProjectTracker.API
+cd backend\ProjectTracker.API
 
 # Run the backend
 dotnet run
@@ -422,7 +422,7 @@ Press `Ctrl+C` to stop.
 ### Step 2: Start Frontend Only
 
 ```powershell
-cd d:\Formazione\tutorial-angular-dotnet\frontend\project-tracker
+cd frontend\project-tracker
 
 # Run the frontend
 ng serve
@@ -442,7 +442,7 @@ Press `Ctrl+C` to stop.
 If you want to verify Docker setup:
 
 ```powershell
-cd d:\Formazione\tutorial-angular-dotnet\docker
+cd docker
 
 # Start all services (this may take a few minutes on first run)
 docker-compose up -d

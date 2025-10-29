@@ -1,3 +1,4 @@
+name: angular-tutorial
 version: '3.8'
 
 services:
@@ -19,9 +20,9 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - projecttracker_network
+      - angular-tutorial
 
-  # Backend API (.NET 9)
+  # Backend API (.NET 10)
   api:
     build:
       context: ../backend/ProjectTracker.API
@@ -30,14 +31,13 @@ services:
     ports:
       - "5001:8080"
     depends_on:
-      sqlserver:
-        condition: service_healthy
+      - sqlserver
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:8080
       ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=ProjectTrackerDb;User Id=sa;Password=YourPassword123!@#;TrustServerCertificate=true;"
     networks:
-      - projecttracker_network
+      - angular-tutorial
     volumes:
       - ../backend/ProjectTracker.API:/app
 
@@ -54,7 +54,7 @@ services:
     environment:
       API_URL: http://api:8080
     networks:
-      - projecttracker_network
+      - angular-tutorial
     volumes:
       - ../frontend/project-tracker:/app
 
@@ -63,5 +63,5 @@ volumes:
     driver: local
 
 networks:
-  projecttracker_network:
+  angular-tutorial:
     driver: bridge
