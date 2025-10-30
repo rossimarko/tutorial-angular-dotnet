@@ -108,7 +108,223 @@ backend/ProjectTracker.API/
 
 ---
 
-## 📊 Token Flow Diagram
+## 🔐 Complete API Usage Examples
+
+### Example 1: User Registration
+
+**Request:**
+```http
+POST /api/auth/register
+Content-Type: application/json
+
+{
+  "email": "john.doe@example.com",
+  "password": "SecurePassword123!",
+  "firstName": "John",
+  "lastName": "Doe"
+}
+```
+
+**Success Response (201):**
+```json
+{
+  "success": true,
+  "data": {
+    "id": 1,
+    "email": "john.doe@example.com",
+    "firstName": "John",
+    "lastName": "Doe",
+    "fullName": "John Doe",
+    "isActive": true,
+    "createdAt": "2025-10-30T12:00:00Z"
+  }
+}
+```
+
+**Error Response (400):**
+```json
+{
+  "success": false,
+  "message": "User with this email already exists"
+}
+```
+
+### Example 2: User Login
+
+**Request:**
+```http
+POST /api/auth/login
+Content-Type: application/json
+
+{
+  "email": "john.doe@example.com",
+  "password": "SecurePassword123!"
+}
+```
+
+**Success Response (200):**
+```json
+{
+  "success": true,
+  "data": {
+    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZW1haWwiOiJqb2huLmRvZUBleGFtcGxlLmNvbSIsImV4cCI6MTcwMzAwMzYwMH0.xyz...",
+    "refreshToken": "rO3vQs+vL8kK2pN5mJ9wE1xR4yT6uI0fG3hJ7bM8cD",
+    "tokenType": "Bearer",
+    "expiresIn": 900
+  }
+}
+```
+
+**Error Response (401):**
+```json
+{
+  "success": false,
+  "message": "Invalid email or password"
+}
+```
+
+### Example 3: Accessing Protected Resource
+
+**Request:**
+```http
+GET /api/projects
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZW1haWwiOiJqb2huLmRvZUBleGFtcGxlLmNvbSIsImV4cCI6MTcwMzAwMzYwMH0.xyz...
+```
+
+**Success Response (200):**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": 1,
+      "name": "Project A",
+      "description": "First project"
+    }
+  ]
+}
+```
+
+**Error Response (401 - Invalid Token):**
+```json
+{
+  "message": "Authorization token is missing or invalid"
+}
+```
+
+### Example 4: Refresh Token
+
+**Request:**
+```http
+POST /api/auth/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "rO3vQs+vL8kK2pN5mJ9wE1xR4yT6uI0fG3hJ7bM8cD"
+}
+```
+
+**Success Response (200):**
+```json
+{
+  "success": true,
+  "data": {
+    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZW1haWwiOiJqb2huLmRvZUBleGFtcGxlLmNvbSIsImV4cCI6MTcwMzAwNDUwMH0.abc...",
+    "refreshToken": "aB9eXs+mK7nL3oR6pQ0vS2xT5yU8zV1wJ4cN7dE",
+    "tokenType": "Bearer",
+    "expiresIn": 900
+  }
+}
+```
+
+**Error Response (401):**
+```json
+{
+  "success": false,
+  "message": "Invalid refresh token"
+}
+```
+
+### Example 5: Get Current User
+
+**Request:**
+```http
+GET /api/auth/me
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZW1haWwiOiJqb2huLmRvZUBleGFtcGxlLmNvbSIsImV4cCI6MTcwMzAwMzYwMH0.xyz...
+```
+
+**Success Response (200):**
+```json
+{
+  "success": true,
+  "data": {
+    "id": 1,
+    "email": "john.doe@example.com",
+    "firstName": "John",
+    "lastName": "Doe",
+    "fullName": "John Doe",
+    "isActive": true,
+    "createdAt": "2025-10-30T12:00:00Z"
+  }
+}
+```
+
+### Example 6: Logout
+
+**Request:**
+```http
+POST /api/auth/logout
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZW1haWwiOiJqb2huLmRvZUBleGFtcGxlLmNvbSIsImV4cCI6MTcwMzAwMzYwMH0.xyz...
+```
+
+**Success Response (200):**
+```json
+{
+  "success": true,
+  "data": "Logged out successfully"
+}
+```
+
+---
+
+## 🔑 JWT Token Anatomy
+
+**Example JWT Token Structure:**
+```
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZW1haWwiOiJqb2huLmRvZUBleGFtcGxlLmNvbSIsImV4cCI6MTcwMzAwMzYwMH0.xyz...
+```
+
+Decoded into three parts:
+
+**Header:**
+```json
+{
+  "alg": "HS256",
+  "typ": "JWT"
+}
+```
+
+**Payload (Claims):**
+```json
+{
+  "sub": "1",
+  "email": "john.doe@example.com",
+  "given_name": "John",
+  "family_name": "Doe",
+  "jti": "12345678-1234-1234-1234-123456789012",
+  "iat": 1703000000,
+  "exp": 1703003600,
+  "userId": "1",
+  "isActive": "true",
+  "iss": "ProjectTrackerAPI",
+  "aud": "ProjectTrackerClient"
+}
+```
+
+**Signature:**
+```
+HMACSHA256(base64UrlEncode(header) + "." + base64UrlEncode(payload), secretKey)
+```
 
 ```
 1. User Registration
@@ -142,32 +358,795 @@ backend/ProjectTracker.API/
 
 ---
 
-## 🔑 Key Methods to Implement
+## 🔑 Implementation Details with Code Examples
+
+### 1. Password Hashing Service
 
 ```csharp
-// PasswordHasher
-public string HashPassword(string password)
-public bool VerifyPassword(string password, string hash)
+// Authentication/IPasswordHasher.cs
+namespace ProjectTracker.API.Authentication;
 
-// JwtTokenProvider
-public TokenResponse GenerateTokens(User user)
-public ClaimsPrincipal GetClaimsFromToken(string token)
-public bool ValidateToken(string token)
-
-// AuthService
-public async Task<UserResponse> RegisterAsync(RegisterRequest request)
-public async Task<AuthTokenResponse> LoginAsync(LoginRequest request)
-public async Task<AuthTokenResponse> RefreshTokenAsync(string refreshToken)
-public async Task LogoutAsync(int userId)
-
-// Endpoints
-public static void MapAuthEndpoints(WebApplication app)
+public interface IPasswordHasher
 {
-    var group = app.MapGroup("/api/auth");
-    group.MapPost("/register", Register);
-    group.MapPost("/login", Login);
-    group.MapPost("/refresh", Refresh);
-    group.MapPost("/logout", Logout).RequireAuthorization();
+    string HashPassword(string password);
+    bool VerifyPassword(string password, string hash);
+}
+
+// Authentication/PasswordHasher.cs
+using BC = BCrypt.Net.BCrypt;
+
+namespace ProjectTracker.API.Authentication;
+
+public class PasswordHasher : IPasswordHasher
+{
+    public string HashPassword(string password)
+    {
+        return BC.HashPassword(password, BC.GenerateSalt(12));
+    }
+
+    public bool VerifyPassword(string password, string hash)
+    {
+        try
+        {
+            return BC.Verify(password, hash);
+        }
+        catch
+        {
+            return false;
+        }
+    }
+}
+```
+
+### 2. JWT Token Provider
+
+```csharp
+// Authentication/IJwtTokenProvider.cs
+using System.Security.Claims;
+using ProjectTracker.API.Models.Entities;
+
+namespace ProjectTracker.API.Authentication;
+
+public interface IJwtTokenProvider
+{
+    TokenResponse GenerateTokens(User user);
+    ClaimsPrincipal? GetClaimsFromToken(string token);
+    bool ValidateToken(string token);
+    string GenerateRefreshToken();
+}
+
+// Authentication/JwtTokenProvider.cs
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
+using Microsoft.IdentityModel.Tokens;
+using ProjectTracker.API.Configuration;
+using ProjectTracker.API.Models.Entities;
+using ProjectTracker.API.Models.Responses;
+
+namespace ProjectTracker.API.Authentication;
+
+public class JwtTokenProvider : IJwtTokenProvider
+{
+    private readonly JwtOptions _jwtOptions;
+    private readonly ILogger<JwtTokenProvider> _logger;
+
+    public JwtTokenProvider(JwtOptions jwtOptions, ILogger<JwtTokenProvider> logger)
+    {
+        _jwtOptions = jwtOptions;
+        _logger = logger;
+    }
+
+    public TokenResponse GenerateTokens(User user)
+    {
+        var accessToken = GenerateAccessToken(user);
+        var refreshToken = GenerateRefreshToken();
+
+        return new TokenResponse
+        {
+            AccessToken = accessToken,
+            RefreshToken = refreshToken,
+            ExpiresIn = _jwtOptions.ExpirationMinutes * 60, // seconds
+            TokenType = "Bearer"
+        };
+    }
+
+    private string GenerateAccessToken(User user)
+    {
+        var claims = new[]
+        {
+            new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+            new Claim(JwtRegisteredClaimNames.Email, user.Email),
+            new Claim(JwtRegisteredClaimNames.GivenName, user.FirstName ?? ""),
+            new Claim(JwtRegisteredClaimNames.FamilyName, user.LastName ?? ""),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new Claim(JwtRegisteredClaimNames.Iat, 
+                new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds().ToString(), 
+                ClaimValueTypes.Integer64),
+            new Claim("userId", user.Id.ToString()),
+            new Claim("isActive", user.IsActive.ToString())
+        };
+
+        var key = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(_jwtOptions.SecretKey));
+        var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+        var token = new JwtSecurityToken(
+            issuer: _jwtOptions.Issuer,
+            audience: _jwtOptions.Audience,
+            claims: claims,
+            expires: DateTime.UtcNow.AddMinutes(_jwtOptions.ExpirationMinutes),
+            signingCredentials: credentials
+        );
+
+        return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+
+    public string GenerateRefreshToken()
+    {
+        var randomBytes = new byte[32];
+        using var rng = RandomNumberGenerator.Create();
+        rng.GetBytes(randomBytes);
+        return Convert.ToBase64String(randomBytes);
+    }
+
+    public ClaimsPrincipal? GetClaimsFromToken(string token)
+    {
+        try
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.ASCII.GetBytes(_jwtOptions.SecretKey);
+
+            var validationParameters = new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(key),
+                ValidateIssuer = true,
+                ValidIssuer = _jwtOptions.Issuer,
+                ValidateAudience = true,
+                ValidAudience = _jwtOptions.Audience,
+                ValidateLifetime = false, // We check this separately
+                ClockSkew = TimeSpan.Zero
+            };
+
+            var principal = tokenHandler.ValidateToken(token, validationParameters, out _);
+            return principal;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to validate token");
+            return null;
+        }
+    }
+
+    public bool ValidateToken(string token)
+    {
+        var claims = GetClaimsFromToken(token);
+        return claims is not null;
+    }
+}
+```
+
+### 3. Authentication Service
+
+```csharp
+// Authentication/IAuthService.cs
+using System.Security.Claims;
+using ProjectTracker.API.Models.Entities;
+using ProjectTracker.API.Models.Requests;
+using ProjectTracker.API.Models.Responses;
+
+namespace ProjectTracker.API.Authentication;
+
+public interface IAuthService
+{
+    Task<AuthResult<UserResponse>> RegisterAsync(RegisterRequest request);
+    Task<AuthResult<TokenResponse>> LoginAsync(LoginRequest request);
+    Task<AuthResult<TokenResponse>> RefreshTokenAsync(string refreshToken);
+    Task<AuthResult<bool>> LogoutAsync(int userId);
+    Task<User?> GetCurrentUserAsync(ClaimsPrincipal principal);
+}
+
+// Authentication/AuthService.cs
+using System.Security.Claims;
+using ProjectTracker.API.Data.Repositories;
+using ProjectTracker.API.Models.Common;
+using ProjectTracker.API.Models.Entities;
+using ProjectTracker.API.Models.Requests;
+using ProjectTracker.API.Models.Responses;
+
+namespace ProjectTracker.API.Authentication;
+
+public class AuthService : IAuthService
+{
+    private readonly IUserRepository _userRepository;
+    private readonly IPasswordHasher _passwordHasher;
+    private readonly IJwtTokenProvider _tokenProvider;
+    private readonly JwtOptions _jwtOptions;
+    private readonly ILogger<AuthService> _logger;
+
+    public AuthService(
+        IUserRepository userRepository,
+        IPasswordHasher passwordHasher,
+        IJwtTokenProvider tokenProvider,
+        JwtOptions jwtOptions,
+        ILogger<AuthService> logger)
+    {
+        _userRepository = userRepository;
+        _passwordHasher = passwordHasher;
+        _tokenProvider = tokenProvider;
+        _jwtOptions = jwtOptions;
+        _logger = logger;
+    }
+
+    public async Task<AuthResult<UserResponse>> RegisterAsync(RegisterRequest request)
+    {
+        try
+        {
+            // Check if user already exists
+            var existingUser = await _userRepository.GetByEmailAsync(request.Email);
+            if (existingUser is not null)
+            {
+                return AuthResult<UserResponse>.Failure("User with this email already exists");
+            }
+
+            // Create new user
+            var user = new User
+            {
+                Email = request.Email,
+                FirstName = request.FirstName,
+                LastName = request.LastName,
+                PasswordHash = _passwordHasher.HashPassword(request.Password),
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow,
+                IsActive = true
+            };
+
+            var createdUser = await _userRepository.CreateAsync(user);
+            
+            var userResponse = new UserResponse
+            {
+                Id = createdUser.Id,
+                Email = createdUser.Email,
+                FirstName = createdUser.FirstName,
+                LastName = createdUser.LastName,
+                FullName = createdUser.FullName,
+                IsActive = createdUser.IsActive,
+                CreatedAt = createdUser.CreatedAt
+            };
+
+            _logger.LogInformation("User registered successfully: {Email}", request.Email);
+            return AuthResult<UserResponse>.Success(userResponse);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error during user registration for email: {Email}", request.Email);
+            return AuthResult<UserResponse>.Failure("Registration failed");
+        }
+    }
+
+    public async Task<AuthResult<TokenResponse>> LoginAsync(LoginRequest request)
+    {
+        try
+        {
+            // Find user by email
+            var user = await _userRepository.GetByEmailAsync(request.Email);
+            if (user is null)
+            {
+                return AuthResult<TokenResponse>.Failure("Invalid email or password");
+            }
+
+            // Verify password
+            if (!_passwordHasher.VerifyPassword(request.Password, user.PasswordHash))
+            {
+                return AuthResult<TokenResponse>.Failure("Invalid email or password");
+            }
+
+            // Check if user is active
+            if (!user.IsActive)
+            {
+                return AuthResult<TokenResponse>.Failure("Account is deactivated");
+            }
+
+            // Generate tokens
+            var tokenResponse = _tokenProvider.GenerateTokens(user);
+            
+            // Store refresh token in database
+            var refreshToken = new RefreshToken
+            {
+                UserId = user.Id,
+                Token = tokenResponse.RefreshToken,
+                ExpiresAt = DateTime.UtcNow.AddDays(_jwtOptions.RefreshTokenExpirationDays),
+                CreatedAt = DateTime.UtcNow
+            };
+
+            await _userRepository.SaveRefreshTokenAsync(refreshToken);
+
+            _logger.LogInformation("User logged in successfully: {Email}", request.Email);
+            return AuthResult<TokenResponse>.Success(tokenResponse);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error during login for email: {Email}", request.Email);
+            return AuthResult<TokenResponse>.Failure("Login failed");
+        }
+    }
+
+    public async Task<AuthResult<TokenResponse>> RefreshTokenAsync(string refreshToken)
+    {
+        try
+        {
+            // Find refresh token in database
+            var storedToken = await _userRepository.GetRefreshTokenAsync(refreshToken);
+            if (storedToken is null || !storedToken.IsValid)
+            {
+                return AuthResult<TokenResponse>.Failure("Invalid refresh token");
+            }
+
+            // Get user
+            var user = await _userRepository.GetByIdAsync(storedToken.UserId);
+            if (user is null || !user.IsActive)
+            {
+                return AuthResult<TokenResponse>.Failure("User not found or inactive");
+            }
+
+            // Generate new tokens
+            var newTokenResponse = _tokenProvider.GenerateTokens(user);
+
+            // Revoke old refresh token and create new one
+            await _userRepository.RevokeRefreshTokenAsync(refreshToken);
+            
+            var newRefreshToken = new RefreshToken
+            {
+                UserId = user.Id,
+                Token = newTokenResponse.RefreshToken,
+                ExpiresAt = DateTime.UtcNow.AddDays(_jwtOptions.RefreshTokenExpirationDays),
+                CreatedAt = DateTime.UtcNow
+            };
+
+            await _userRepository.SaveRefreshTokenAsync(newRefreshToken);
+
+            _logger.LogInformation("Token refreshed for user: {UserId}", user.Id);
+            return AuthResult<TokenResponse>.Success(newTokenResponse);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error during token refresh");
+            return AuthResult<TokenResponse>.Failure("Token refresh failed");
+        }
+    }
+
+    public async Task<AuthResult<bool>> LogoutAsync(int userId)
+    {
+        try
+        {
+            await _userRepository.RevokeAllRefreshTokensAsync(userId);
+            _logger.LogInformation("User logged out: {UserId}", userId);
+            return AuthResult<bool>.Success(true);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error during logout for user: {UserId}", userId);
+            return AuthResult<bool>.Failure("Logout failed");
+        }
+    }
+
+    public async Task<User?> GetCurrentUserAsync(ClaimsPrincipal principal)
+    {
+        var userIdClaim = principal.FindFirst("userId")?.Value;
+        if (!int.TryParse(userIdClaim, out var userId))
+        {
+            return null;
+        }
+
+        return await _userRepository.GetByIdAsync(userId);
+    }
+}
+```
+
+### 4. Request/Response Models
+
+```csharp
+// Models/Requests/RegisterRequest.cs
+using System.ComponentModel.DataAnnotations;
+
+namespace ProjectTracker.API.Models.Requests;
+
+public class RegisterRequest
+{
+    [Required]
+    [EmailAddress]
+    public required string Email { get; set; }
+
+    [Required]
+    [MinLength(6)]
+    public required string Password { get; set; }
+
+    [Required]
+    public required string FirstName { get; set; }
+
+    [Required]
+    public required string LastName { get; set; }
+}
+
+// Models/Requests/LoginRequest.cs
+using System.ComponentModel.DataAnnotations;
+
+namespace ProjectTracker.API.Models.Requests;
+
+public class LoginRequest
+{
+    [Required]
+    [EmailAddress]
+    public required string Email { get; set; }
+
+    [Required]
+    public required string Password { get; set; }
+}
+
+// Models/Requests/RefreshTokenRequest.cs
+using System.ComponentModel.DataAnnotations;
+
+namespace ProjectTracker.API.Models.Requests;
+
+public class RefreshTokenRequest
+{
+    [Required]
+    public required string RefreshToken { get; set; }
+}
+
+// Models/Responses/TokenResponse.cs
+namespace ProjectTracker.API.Models.Responses;
+
+public class TokenResponse
+{
+    public required string AccessToken { get; set; }
+    public required string RefreshToken { get; set; }
+    public required string TokenType { get; set; } = "Bearer";
+    public int ExpiresIn { get; set; }
+}
+
+// Models/Responses/UserResponse.cs
+namespace ProjectTracker.API.Models.Responses;
+
+public class UserResponse
+{
+    public int Id { get; set; }
+    public required string Email { get; set; }
+    public string? FirstName { get; set; }
+    public string? LastName { get; set; }
+    public string FullName { get; set; } = string.Empty;
+    public bool IsActive { get; set; }
+    public DateTime CreatedAt { get; set; }
+}
+
+// Models/Common/AuthResult.cs
+namespace ProjectTracker.API.Models.Common;
+
+public class AuthResult<T>
+{
+    public bool IsSuccess { get; set; }
+    public T? Data { get; set; }
+    public string? ErrorMessage { get; set; }
+    public List<string> Errors { get; set; } = new();
+
+    public static AuthResult<T> Success(T data) => new()
+    {
+        IsSuccess = true,
+        Data = data
+    };
+
+    public static AuthResult<T> Failure(string errorMessage) => new()
+    {
+        IsSuccess = false,
+        ErrorMessage = errorMessage,
+        Errors = [errorMessage]
+    };
+
+    public static AuthResult<T> Failure(List<string> errors) => new()
+    {
+        IsSuccess = false,
+        Errors = errors,
+        ErrorMessage = string.Join(", ", errors)
+    };
+}
+```
+
+### 5. Authentication Endpoints
+
+```csharp
+// Endpoints/AuthEndpoints.cs
+using Microsoft.AspNetCore.Authorization;
+using ProjectTracker.API.Authentication;
+using ProjectTracker.API.Models.Common;
+using ProjectTracker.API.Models.Requests;
+using ProjectTracker.API.Models.Responses;
+using System.Security.Claims;
+
+namespace ProjectTracker.API.Endpoints;
+
+public static class AuthEndpoints
+{
+    public static void MapAuthEndpoints(this WebApplication app)
+    {
+        var authGroup = app.MapGroup("/api/auth")
+            .WithTags("Authentication")
+            .WithOpenApi();
+
+        authGroup.MapPost("/register", Register)
+            .WithSummary("Register a new user")
+            .WithDescription("Creates a new user account with email and password");
+
+        authGroup.MapPost("/login", Login)
+            .WithSummary("User login")
+            .WithDescription("Authenticates user and returns JWT tokens");
+
+        authGroup.MapPost("/refresh", RefreshToken)
+            .WithSummary("Refresh access token")
+            .WithDescription("Generates new access token using refresh token");
+
+        authGroup.MapPost("/logout", Logout)
+            .RequireAuthorization()
+            .WithSummary("User logout")
+            .WithDescription("Revokes all refresh tokens for the user");
+
+        authGroup.MapGet("/me", GetCurrentUser)
+            .RequireAuthorization()
+            .WithSummary("Get current user")
+            .WithDescription("Returns current authenticated user information");
+    }
+
+    private static async Task<IResult> Register(
+        RegisterRequest request,
+        IAuthService authService)
+    {
+        var result = await authService.RegisterAsync(request);
+        
+        return result.IsSuccess
+            ? Results.Created("/api/auth/me", ApiResponse<object>.Success(result.Data))
+            : Results.BadRequest(ApiResponse<object>.Error(result.ErrorMessage ?? "Registration failed"));
+    }
+
+    private static async Task<IResult> Login(
+        LoginRequest request,
+        IAuthService authService)
+    {
+        var result = await authService.LoginAsync(request);
+        
+        return result.IsSuccess
+            ? Results.Ok(ApiResponse<object>.Success(result.Data))
+            : Results.Unauthorized(ApiResponse<object>.Error(result.ErrorMessage ?? "Login failed"));
+    }
+
+    private static async Task<IResult> RefreshToken(
+        RefreshTokenRequest request,
+        IAuthService authService)
+    {
+        var result = await authService.RefreshTokenAsync(request.RefreshToken);
+        
+        return result.IsSuccess
+            ? Results.Ok(ApiResponse<object>.Success(result.Data))
+            : Results.Unauthorized(ApiResponse<object>.Error(result.ErrorMessage ?? "Token refresh failed"));
+    }
+
+    private static async Task<IResult> Logout(
+        ClaimsPrincipal user,
+        IAuthService authService)
+    {
+        var userIdClaim = user.FindFirst("userId")?.Value;
+        if (!int.TryParse(userIdClaim, out var userId))
+        {
+            return Results.Unauthorized();
+        }
+
+        var result = await authService.LogoutAsync(userId);
+        
+        return result.IsSuccess
+            ? Results.Ok(ApiResponse<object>.Success("Logged out successfully"))
+            : Results.BadRequest(ApiResponse<object>.Error(result.ErrorMessage ?? "Logout failed"));
+    }
+
+    private static async Task<IResult> GetCurrentUser(
+        ClaimsPrincipal user,
+        IAuthService authService)
+    {
+        var currentUser = await authService.GetCurrentUserAsync(user);
+        if (currentUser is null)
+        {
+            return Results.Unauthorized();
+        }
+
+        var userResponse = new UserResponse
+        {
+            Id = currentUser.Id,
+            Email = currentUser.Email,
+            FirstName = currentUser.FirstName,
+            LastName = currentUser.LastName,
+            FullName = currentUser.FullName,
+            IsActive = currentUser.IsActive,
+            CreatedAt = currentUser.CreatedAt
+        };
+
+        return Results.Ok(ApiResponse<UserResponse>.Success(userResponse));
+    }
+}
+```
+
+### 6. Service Registration in Program.cs
+
+```csharp
+// Add these lines in Program.cs after line 74 (ConfigureJwtAuthentication):
+
+// Register authentication services
+builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
+builder.Services.AddScoped<IJwtTokenProvider, JwtTokenProvider>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+
+// And uncomment/add this line before app.Run():
+AuthEndpoints.MapAuthEndpoints(app);
+```
+
+---
+
+## 🧪 Testing with Swagger/OpenAPI
+
+Once you implement and register the services, you can test all endpoints directly from Swagger:
+
+1. **Navigate to Swagger UI**: `https://localhost:5000/swagger/index.html`
+
+2. **Test Registration**:
+   - Click "POST /api/auth/register"
+   - Enter credentials and click "Try it out"
+
+3. **Test Login**:
+   - Click "POST /api/auth/login"
+   - Use the same credentials from registration
+   - Copy the `accessToken` from response
+
+4. **Test Protected Endpoints**:
+   - Click the "Authorize" button (top right)
+   - Paste: `Bearer <your_access_token>`
+   - Now try accessing protected endpoints like GET /api/auth/me
+
+5. **Test Token Refresh**:
+   - Click "POST /api/auth/refresh"
+   - Paste the `refreshToken` from login response
+   - Get new access token
+
+---
+
+## 🛡️ Security Implementation Details
+
+### Password Security
+- **Bcrypt Hashing**: Uses cost factor 12 (2^12 iterations)
+- **Never Plain Text**: Passwords are hashed immediately and never stored
+- **Verification Only**: VerifyPassword safely compares hashes
+
+```csharp
+// Example: Password hashing process
+string password = "SecurePassword123!";
+string hash = _passwordHasher.HashPassword(password);
+// hash = "$2a$12$..." (bcrypt format with salt)
+
+// Verification
+bool isValid = _passwordHasher.VerifyPassword(password, hash); // true
+bool isInvalid = _passwordHasher.VerifyPassword("wrongPassword", hash); // false
+```
+
+### Token Security
+- **Access Token**: 15 minutes (short-lived)
+- **Refresh Token**: 7 days (longer-lived)
+- **Token Signing**: HMAC-SHA256 with secret key
+- **Token Claims**: User info embedded in token (stateless)
+
+### Refresh Token Rotation
+```csharp
+// OLD METHOD - Revoke old token on refresh
+await _userRepository.RevokeRefreshTokenAsync(oldRefreshToken);
+
+// NEW METHOD - Create new refresh token
+var newRefreshToken = new RefreshToken
+{
+    UserId = user.Id,
+    Token = tokenResponse.RefreshToken,
+    ExpiresAt = DateTime.UtcNow.AddDays(7),
+    CreatedAt = DateTime.UtcNow
+};
+await _userRepository.SaveRefreshTokenAsync(newRefreshToken);
+```
+
+### Claims Structure
+The JWT contains these standard claims:
+- **sub** (Subject): User ID
+- **email**: User email address
+- **given_name**: First name
+- **family_name**: Last name
+- **jti** (JWT ID): Unique token identifier
+- **iat** (Issued At): Token creation time
+- **exp** (Expiration): Token expiration time
+- **iss** (Issuer): "ProjectTrackerAPI"
+- **aud** (Audience): "ProjectTrackerClient"
+
+Custom claims:
+- **userId**: User database ID
+- **isActive**: Account status
+
+---
+
+## 🚀 Frontend Integration (Angular)
+
+Example Angular service for authentication:
+
+```typescript
+// auth.service.ts
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { BehaviorSubject, Observable } from 'rxjs';
+
+@Injectable({ providedIn: 'root' })
+export class AuthService {
+  private currentUser = new BehaviorSubject(null);
+  private accessToken = '';
+
+  constructor(private http: HttpClient) {
+    this.loadToken();
+  }
+
+  register(email: string, password: string, firstName: string, lastName: string): Observable<any> {
+    return this.http.post('/api/auth/register', {
+      email, password, firstName, lastName
+    });
+  }
+
+  login(email: string, password: string): Observable<any> {
+    return this.http.post('/api/auth/login', { email, password });
+  }
+
+  refreshToken(refreshToken: string): Observable<any> {
+    return this.http.post('/api/auth/refresh', { refreshToken });
+  }
+
+  logout(): void {
+    this.http.post('/api/auth/logout', {}).subscribe(() => {
+      this.accessToken = '';
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+    });
+  }
+
+  getAccessToken(): string {
+    return this.accessToken;
+  }
+
+  setTokens(accessToken: string, refreshToken: string): void {
+    this.accessToken = accessToken;
+    localStorage.setItem('accessToken', accessToken);
+    localStorage.setItem('refreshToken', refreshToken);
+  }
+
+  private loadToken(): void {
+    this.accessToken = localStorage.getItem('accessToken') || '';
+  }
+}
+
+// Example: Using in component
+export class LoginComponent {
+  constructor(private authService: AuthService, private router: Router) {}
+
+  login(email: string, password: string): void {
+    this.authService.login(email, password).subscribe({
+      next: (response) => {
+        this.authService.setTokens(
+          response.data.accessToken,
+          response.data.refreshToken
+        );
+        this.router.navigate(['/projects']);
+      },
+      error: (error) => {
+        console.error('Login failed', error);
+      }
+    });
+  }
 }
 ```
 
