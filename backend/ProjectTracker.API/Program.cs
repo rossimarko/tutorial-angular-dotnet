@@ -1,41 +1,172 @@
+using Microsoft.OpenApi.Models;
+using ProjectTracker.API.Configuration;
+using ProjectTracker.API.Data;
+using ProjectTracker.API.Data.Repositories;
+using ProjectTracker.API.Middleware;
+using Serilog;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+// ============================================
+// 1. LOGGING CONFIGURATION
+// ============================================
+builder.Host.UseSerilog((context, config) =>
+{
+    config
+        .MinimumLevel.Debug()
+        .WriteTo.Console()
+        .WriteTo.File("logs/app-.txt", 
+            rollingInterval: RollingInterval.Day,
+            outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}");
+});
 
+// ============================================
+// 2. SERVICES CONFIGURATION
+// ============================================
+
+// Add controllers (alternative to Minimal APIs, we'll use both)
+builder.Services.AddControllers();
+
+
+// Add Swagger/OpenAPI
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c =>
+{    
+    c.SwaggerDoc("v1", new OpenApiInfo()
+    { 
+        Title = "Project Tracker API", 
+        Version = "v1",
+        Description = "REST API for Project Tracker application with Angular frontend"
+    });
+    
+    // Add JWT authentication to Swagger
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
+    {
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Name = "Authorization",
+        Description = "Enter 'Bearer' followed by your token"
+    });
+});
+
+// Add CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAngularApp", policy =>
+    {
+        policy.WithOrigins(
+                "http://localhost:4200",
+                "https://localhost:4200",
+                "http://localhost:3000"  // for ng serve alternative ports
+            )
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials();
+    });
+});
+
+// Add Health Checks
+builder.Services.AddHealthChecks();
+
+// Add Authentication (JWT)
+builder.Services.ConfigureJwtAuthentication(builder.Configuration);
+
+//Database
+builder.Services.AddSingleton<DbConnection>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IProjectRepository, ProjectRepository>();
+
+// ============================================
+// 3. APPLICATION SERVICES (We'll add these in next modules)
+// ============================================
+
+// Uncomment as we create services:
+// builder.Services.AddScoped<IProjectService, ProjectService>();
+// builder.Services.AddScoped<IProjectRepository, ProjectRepository>();
+
+// ============================================
+// 4. BUILD THE APP
+// ============================================
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// ============================================
+// 5. MIDDLEWARE PIPELINE
+// ============================================
+
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Project Tracker API v1");
+    });
 }
 
-app.UseHttpsRedirection();
+// Custom middleware
+app.UseMiddleware<ErrorHandlingMiddleware>();
+app.UseMiddleware<LoggingMiddleware>();
 
-var summaries = new[]
+// HTTPS redirection (disabled in development for easier testing)
+if (!app.Environment.IsDevelopment())
 {
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+    app.UseHttpsRedirection();
+}
 
-app.MapGet("/weatherforecast", () =>
+// Enable CORS
+app.UseCors("AllowAngularApp");
+
+// Enable Authentication and Authorization
+app.UseAuthentication();
+app.UseAuthorization();
+
+// Health checks endpoint
+app.MapHealthChecks("/health");
+
+// Run database migrations
+using (var scope = app.Services.CreateScope())
 {
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<MigrationRunner>>();
+    var config = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+    var connectionString = config.GetConnectionString("DefaultConnection");
+
+    try
+    {
+        logger.LogInformation("Starting database migrations...");
+        var migrationRunner = new MigrationRunner(connectionString!, logger);
+        await migrationRunner.RunMigrationsAsync();
+        logger.LogInformation("Database migrations completed successfully");
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Database migration failed: {Message}", ex.Message);
+        throw;
+    }
+}
+
+
+// ============================================
+// 6. MAP ENDPOINTS
+// ============================================
+
+// Map controllers (if using controller-based APIs)
+app.MapControllers();
+
+// Add a test endpoint to verify database connection
+app.MapGet("/api/test/db", async (IUserRepository userRepo) =>
+{
+    var users = await userRepo.GetAllAsync();
+    return Results.Ok(new { success = true, userCount = users.Count() });
 })
-.WithName("GetWeatherForecast");
+.WithName("TestDatabase")
+.WithOpenApi();
 
+// Map Minimal API endpoints (we'll add these in later modules)
+// AuthEndpoints.MapAuthEndpoints(app);
+// ProjectEndpoints.MapProjectEndpoints(app);
+
+// ============================================
+// 7. RUN THE APP
+// ============================================
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
