@@ -175,7 +175,7 @@ The HTTP Client allows your Angular app to communicate with your backend API.
 ```typescript
 import { ApplicationConfig } from '@angular/core';
 import { provideRouter } from '@angular/router';
-import { provideHttpClient } from '@angular/platform-browser/http';
+import { provideHttpClient } from '@angular/common/http';
 import { routes } from './app.routes';
 
 export const appConfig: ApplicationConfig = {
@@ -207,10 +207,10 @@ interface Project {
   providedIn: 'root'  // Make this service available everywhere
 })
 export class ProjectService {
+  private readonly http = inject(HttpClient);
+  
   // Store projects in a signal
   protected readonly projects = signal<Project[]>([]);
-
-  constructor(private http: HttpClient) {}
 
   // Fetch all projects from API
   loadProjects() {
@@ -232,7 +232,7 @@ export class ProjectService {
 
 **`components/project-list.component.ts`**:
 ```typescript
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ProjectService } from '../services/project.service';
 
@@ -249,9 +249,8 @@ interface Project {
   styleUrl: './project-list.component.css'
 })
 export class ProjectListComponent implements OnInit {
-  projects$ = this.projectService.getProjects();
-
-  constructor(private projectService: ProjectService) {}
+  private readonly projectService = inject(ProjectService);
+  protected readonly projects$ = this.projectService.getProjects();
 
   ngOnInit() {
     // Load projects when component initializes
@@ -291,8 +290,7 @@ Dependency Injection (DI) is how Angular provides services to components.
 Instead of constructor injection, use the `inject()` function:
 
 ```typescript
-import { Component } from '@angular/core';
-import { inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { ProjectService } from '../services/project.service';
 
 @Component({
@@ -301,7 +299,7 @@ import { ProjectService } from '../services/project.service';
 })
 export class ExampleComponent {
   // Inject the service
-  private projectService = inject(ProjectService);
+  private readonly projectService = inject(ProjectService);
 
   loadData() {
     this.projectService.loadProjects();
@@ -419,12 +417,11 @@ import { Project, CreateProjectRequest } from '../../../shared/models/project.mo
   providedIn: 'root'
 })
 export class ProjectService {
+  private readonly http = inject(HttpClient);
   private readonly apiUrl = 'http://localhost:5001/api/projects';
   private readonly projects = signal<Project[]>([]);
   private readonly loading = signal(false);
   private readonly error = signal<string | null>(null);
-
-  constructor(private http: HttpClient) {}
 
   // Load all projects from API
   loadProjects() {
@@ -489,7 +486,6 @@ import { ProjectService } from '../services/project.service';
   templateUrl: './project-list.component.html',
   styleUrl: './project-list.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: true,
   imports: [CommonModule]
 })
 export class ProjectListComponent implements OnInit {
