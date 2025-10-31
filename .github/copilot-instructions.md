@@ -9,6 +9,8 @@ On the .github/instructions/csharp.instructions.md file, you will find detailed 
 
 On the .github/instructions/angular.instructions.md file, you will find detailed instructions on best practices for building Angular applications, including project structure, component design, state management, routing, forms, HTTP communication, and testing.
 
+When you create o modify documentation or code examples, please ensure they align with the guidelines provided in these instruction files and don't create md file with the list of changes or diffs.
+
 ## Repository Overview
 
 **backend** folder: .NET 9 Web API project (C# /.NET 9)

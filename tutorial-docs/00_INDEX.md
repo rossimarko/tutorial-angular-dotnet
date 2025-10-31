@@ -88,7 +88,7 @@
   - Translation files (JSON)
   - Language switching
   - Locale-specific formatting
-- **File**: [07_angular_i18n.md](./07_angular_i18n.md)
+- **File**: [07_angular_internationalization.md](./07_angular_internationalization.md)
 
 #### Module 8: Authentication UI & Guards
 - **Duration**: 2-3 hours

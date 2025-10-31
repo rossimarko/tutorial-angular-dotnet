@@ -663,4 +663,4 @@ export class ProjectListComponent implements OnInit {
 
 ---
 
-**Ready to build? Move to [Module 7: Internationalization](./07_angular_i18n.md)**
+**Ready to build? Move to [Module 7: Internationalization](./07_angular_internationalization.md)**
