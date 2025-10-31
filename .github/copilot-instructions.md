@@ -11,6 +11,8 @@ On the .github/instructions/angular.instructions.md file, you will find detailed
 
 When you create o modify documentation or code examples, please ensure they align with the guidelines provided in these instruction files and don't create md file with the list of changes or diffs.
 
+Before making changes, explain me briefly what you plan to do.
+
 ## Repository Overview
 
 **backend** folder: .NET 9 Web API project (C# /.NET 9)
