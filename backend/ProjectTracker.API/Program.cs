@@ -1,7 +1,9 @@
 using Microsoft.OpenApi.Models;
+using ProjectTracker.API.Authentication;
 using ProjectTracker.API.Configuration;
 using ProjectTracker.API.Data;
 using ProjectTracker.API.Data.Repositories;
+using ProjectTracker.API.Endpoints;
 using ProjectTracker.API.Middleware;
 using Serilog;
 
@@ -72,6 +74,11 @@ builder.Services.AddHealthChecks();
 
 // Add Authentication (JWT)
 builder.Services.ConfigureJwtAuthentication(builder.Configuration);
+
+// Register authentication services
+builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
+builder.Services.AddScoped<IJwtTokenProvider, JwtTokenProvider>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 //Database
 builder.Services.AddSingleton<DbConnection>();
@@ -163,7 +170,7 @@ app.MapGet("/api/test/db", async (IUserRepository userRepo) =>
 .WithOpenApi();
 
 // Map Minimal API endpoints (we'll add these in later modules)
-// AuthEndpoints.MapAuthEndpoints(app);
+AuthEndpoints.MapAuthEndpoints(app);
 // ProjectEndpoints.MapProjectEndpoints(app);
 
 // ============================================

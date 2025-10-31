@@ -14,4 +14,8 @@ public interface IUserRepository
     Task<bool> UpdateAsync(User user);
     Task<bool> DeleteAsync(int id);
     Task<bool> EmailExistsAsync(string email);
+    Task SaveRefreshTokenAsync(RefreshToken refreshToken);
+    Task<RefreshToken?> GetRefreshTokenAsync(string token);
+    Task<bool> RevokeRefreshTokenAsync(string token);
+    Task<bool> RevokeAllRefreshTokensAsync(int userId);
 }
