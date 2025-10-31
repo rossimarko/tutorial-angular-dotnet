@@ -135,6 +135,7 @@ CREATE TABLE [RefreshTokens] (
     [ExpiresAt] DATETIME2 NOT NULL,
     [RevokedAt] DATETIME2,
     [CreatedAt] DATETIME2 DEFAULT GETUTCDATE(),
+    [IsExpired] BIT NOT NULL,
     FOREIGN KEY ([UserId]) REFERENCES [Users]([Id]) ON DELETE CASCADE
 );
 
