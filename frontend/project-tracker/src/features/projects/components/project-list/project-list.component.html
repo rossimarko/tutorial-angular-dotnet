@@ -1,0 +1,50 @@
+<div class="container-fluid py-4">
+  <h2 class="mb-4">Projects</h2>
+
+  @if (loading()) {
+    <div class="alert alert-info" role="alert">
+      <div class="spinner-border spinner-border-sm me-2" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      Loading projects...
+    </div>
+  } @else if (error()) {
+    <div class="alert alert-danger" role="alert">
+      {{ error() }}
+    </div>
+  } @else {
+    @if (projects().length > 0) {
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead class="table-light">
+            <tr>
+              <th>Name</th>
+              <th>Description</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (project of projects(); track project.id) {
+              <tr>
+                <td class="fw-bold">{{ project.name }}</td>
+                <td>{{ project.description }}</td>
+                <td>
+                  <button 
+                    (click)="deleteProject(project.id)" 
+                    class="btn btn-sm btn-outline-danger">
+                    <i class="fas fa-trash"></i> Delete
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else {
+      <div class="alert alert-secondary" role="alert">
+        <i class="fas fa-info-circle me-2"></i>
+        No projects found.
+      </div>
+    }
+  }
+</div>

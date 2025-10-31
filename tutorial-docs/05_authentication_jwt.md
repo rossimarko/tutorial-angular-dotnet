@@ -47,19 +47,22 @@ backend/ProjectTracker.API/
 ├── Authentication/
 │   ├── IAuthService.cs          # Service interface
 │   ├── AuthService.cs           # Implementation
+│   ├── IJwtTokenProvider.cs     # Token provider interface
 │   ├── JwtTokenProvider.cs      # Token generation
-│   ├── PasswordHasher.cs        # Bcrypt hashing
-│   └── JwtSettings.cs           # Configuration
+│   ├── IPasswordHasher.cs       # Password hasher interface
+│   └── PasswordHasher.cs        # Bcrypt hashing
+├── Controllers/
+│   └── AuthController.cs        # Authentication endpoints (Controller-based API)
 ├── Models/
 │   ├── Requests/
 │   │   ├── RegisterRequest.cs
 │   │   ├── LoginRequest.cs
 │   │   └── RefreshTokenRequest.cs
 │   └── Responses/
-│       ├── AuthTokenResponse.cs
+│       ├── TokenResponse.cs
 │       └── UserResponse.cs
-└── Endpoints/
-    └── AuthEndpoints.cs         # Authentication endpoints
+└── Configuration/
+    └── JwtOptions.cs            # JWT configuration
 ```
 
 ---
@@ -852,108 +855,163 @@ public class AuthResult<T>
 }
 ```
 
-### 5. Authentication Endpoints
+### 5. Authentication Controller
+
+Now let's create the controller-based API. This will be familiar if you've used .NET Framework WebAPI.
+
+Create folder: `backend/ProjectTracker.API/Controllers`
+
+**File: Controllers/AuthController.cs**
 
 ```csharp
-// Endpoints/AuthEndpoints.cs
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using ProjectTracker.API.Authentication;
 using ProjectTracker.API.Models.Common;
 using ProjectTracker.API.Models.Requests;
 using ProjectTracker.API.Models.Responses;
-using System.Security.Claims;
 
-namespace ProjectTracker.API.Endpoints;
+namespace ProjectTracker.API.Controllers;
 
-public static class AuthEndpoints
+/// <summary>
+/// Authentication endpoints for user registration, login, and token management
+/// This is similar to WebAPI 2 controllers in .NET Framework 4.8
+/// </summary>
+[ApiController]
+[Route("api/[controller]")]
+public class AuthController : ControllerBase
 {
-    public static void MapAuthEndpoints(this WebApplication app)
+    private readonly IAuthService _authService;
+    private readonly ILogger<AuthController> _logger;
+
+    // Constructor injection - same as .NET Framework with Unity/Ninject
+    public AuthController(IAuthService authService, ILogger<AuthController> logger)
     {
-        var authGroup = app.MapGroup("/api/auth")
-            .WithTags("Authentication")
-            .WithOpenApi();
-
-        authGroup.MapPost("/register", Register)
-            .WithSummary("Register a new user")
-            .WithDescription("Creates a new user account with email and password");
-
-        authGroup.MapPost("/login", Login)
-            .WithSummary("User login")
-            .WithDescription("Authenticates user and returns JWT tokens");
-
-        authGroup.MapPost("/refresh", RefreshToken)
-            .WithSummary("Refresh access token")
-            .WithDescription("Generates new access token using refresh token");
-
-        authGroup.MapPost("/logout", Logout)
-            .RequireAuthorization()
-            .WithSummary("User logout")
-            .WithDescription("Revokes all refresh tokens for the user");
-
-        authGroup.MapGet("/me", GetCurrentUser)
-            .RequireAuthorization()
-            .WithSummary("Get current user")
-            .WithDescription("Returns current authenticated user information");
+        _authService = authService;
+        _logger = logger;
     }
 
-    private static async Task<IResult> Register(
-        RegisterRequest request,
-        IAuthService authService)
+    /// <summary>
+    /// Register a new user account
+    /// POST: api/auth/register
+    /// </summary>
+    /// <param name="request">Registration details (email, password, name)</param>
+    /// <returns>Created user information</returns>
+    [HttpPost("register")]
+    [ProducesResponseType(typeof(ApiResponse<UserResponse>), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ApiResponse<UserResponse>), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<ApiResponse<UserResponse>>> Register([FromBody] RegisterRequest request)
     {
-        var result = await authService.RegisterAsync(request);
+        _logger.LogInformation("Registration attempt for email: {Email}", request.Email);
         
-        return result.IsSuccess
-            ? Results.Created("/api/auth/me", ApiResponse<object>.Success(result.Data))
-            : Results.BadRequest(ApiResponse<object>.Error(result.ErrorMessage ?? "Registration failed"));
-    }
+        var result = await _authService.RegisterAsync(request);
 
-    private static async Task<IResult> Login(
-        LoginRequest request,
-        IAuthService authService)
-    {
-        var result = await authService.LoginAsync(request);
-        
-        return result.IsSuccess
-            ? Results.Ok(ApiResponse<object>.Success(result.Data))
-            : Results.Unauthorized(ApiResponse<object>.Error(result.ErrorMessage ?? "Login failed"));
-    }
-
-    private static async Task<IResult> RefreshToken(
-        RefreshTokenRequest request,
-        IAuthService authService)
-    {
-        var result = await authService.RefreshTokenAsync(request.RefreshToken);
-        
-        return result.IsSuccess
-            ? Results.Ok(ApiResponse<object>.Success(result.Data))
-            : Results.Unauthorized(ApiResponse<object>.Error(result.ErrorMessage ?? "Token refresh failed"));
-    }
-
-    private static async Task<IResult> Logout(
-        ClaimsPrincipal user,
-        IAuthService authService)
-    {
-        var userIdClaim = user.FindFirst("userId")?.Value;
-        if (!int.TryParse(userIdClaim, out var userId))
+        if (!result.IsSuccess)
         {
-            return Results.Unauthorized();
+            return BadRequest(ApiResponse<UserResponse>.Fail(
+                result.ErrorMessage ?? "Registration failed"));
         }
 
-        var result = await authService.LogoutAsync(userId);
-        
-        return result.IsSuccess
-            ? Results.Ok(ApiResponse<object>.Success("Logged out successfully"))
-            : Results.BadRequest(ApiResponse<object>.Error(result.ErrorMessage ?? "Logout failed"));
+        // Return 201 Created with location header pointing to user info endpoint
+        return CreatedAtAction(
+            nameof(GetCurrentUser),
+            ApiResponse<UserResponse>.Ok(result.Data));
     }
 
-    private static async Task<IResult> GetCurrentUser(
-        ClaimsPrincipal user,
-        IAuthService authService)
+    /// <summary>
+    /// User login - authenticates and returns JWT tokens
+    /// POST: api/auth/login
+    /// </summary>
+    /// <param name="request">Login credentials (email and password)</param>
+    /// <returns>Access and refresh tokens</returns>
+    [HttpPost("login")]
+    [ProducesResponseType(typeof(ApiResponse<TokenResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<TokenResponse>), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<ApiResponse<TokenResponse>>> Login([FromBody] LoginRequest request)
     {
-        var currentUser = await authService.GetCurrentUserAsync(user);
+        _logger.LogInformation("Login attempt for email: {Email}", request.Email);
+        
+        var result = await _authService.LoginAsync(request);
+
+        if (!result.IsSuccess)
+        {
+            _logger.LogWarning("Failed login attempt for email: {Email}", request.Email);
+            return BadRequest(ApiResponse<TokenResponse>.Fail(
+                result.ErrorMessage ?? "Login failed"));
+        }
+
+        return Ok(ApiResponse<TokenResponse>.Ok(result.Data));
+    }
+
+    /// <summary>
+    /// Refresh access token using refresh token
+    /// POST: api/auth/refresh
+    /// </summary>
+    /// <param name="request">Refresh token</param>
+    /// <returns>New access and refresh tokens</returns>
+    [HttpPost("refresh")]
+    [ProducesResponseType(typeof(ApiResponse<TokenResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<TokenResponse>), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<ApiResponse<TokenResponse>>> RefreshToken(
+        [FromBody] RefreshTokenRequest request)
+    {
+        var result = await _authService.RefreshTokenAsync(request.RefreshToken);
+
+        if (!result.IsSuccess)
+        {
+            return BadRequest(ApiResponse<TokenResponse>.Fail(
+                result.ErrorMessage ?? "Token refresh failed"));
+        }
+
+        return Ok(ApiResponse<TokenResponse>.Ok(result.Data));
+    }
+
+    /// <summary>
+    /// Logout current user - revokes all refresh tokens
+    /// POST: api/auth/logout
+    /// </summary>
+    /// <returns>Success status</returns>
+    [HttpPost("logout")]
+    [Authorize]  // Requires valid JWT token - same as .NET Framework [Authorize]
+    [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<ApiResponse<bool>>> Logout()
+    {
+        // Extract user ID from JWT claims
+        var userIdClaim = User.FindFirst("userId")?.Value;
+        if (!int.TryParse(userIdClaim, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        _logger.LogInformation("Logout for user ID: {UserId}", userId);
+        
+        var result = await _authService.LogoutAsync(userId);
+
+        if (!result.IsSuccess)
+        {
+            return BadRequest(ApiResponse<bool>.Fail(
+                result.ErrorMessage ?? "Logout failed"));
+        }
+
+        return Ok(ApiResponse<bool>.Ok(true, "Logged out successfully"));
+    }
+
+    /// <summary>
+    /// Get current authenticated user information
+    /// GET: api/auth/me
+    /// </summary>
+    /// <returns>Current user details</returns>
+    [HttpGet("me")]
+    [Authorize]
+    [ProducesResponseType(typeof(ApiResponse<UserResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<ApiResponse<UserResponse>>> GetCurrentUser()
+    {
+        var currentUser = await _authService.GetCurrentUserAsync(User);
         if (currentUser is null)
         {
-            return Results.Unauthorized();
+            return Unauthorized();
         }
 
         var userResponse = new UserResponse
@@ -967,24 +1025,45 @@ public static class AuthEndpoints
             CreatedAt = currentUser.CreatedAt
         };
 
-        return Results.Ok(ApiResponse<UserResponse>.Success(userResponse));
+        return Ok(ApiResponse<UserResponse>.Ok(userResponse));
     }
 }
 ```
 
+### 🔄 Understanding Controller Attributes (.NET Framework Developers)
+
+| Attribute | Purpose | .NET Framework 4.8 WebAPI Equivalent |
+|-----------|---------|--------------------------------------|
+| `[ApiController]` | Enables automatic model validation and API-specific behaviors | Same in WebAPI 2 |
+| `[Route("api/[controller]")]` | Base route template (becomes "api/auth") | `[RoutePrefix("api/auth")]` |
+| `[HttpPost("login")]` | POST endpoint at api/auth/login | `[HttpPost]` + `[Route("login")]` |
+| `[Authorize]` | Requires JWT authentication | Same |
+| `[FromBody]` | Deserialize from request body | Same |
+| `[ProducesResponseType]` | Documents response types (for Swagger) | New - better API docs |
+| `ActionResult<T>` | Strongly-typed action result | New - adds type safety |
+
+**What's Better in .NET Core:**
+- ✅ Attribute routing is cleaner and built-in
+- ✅ `ActionResult<T>` provides better IntelliSense
+- ✅ Better integration with Swagger/OpenAPI
+- ✅ Automatic model validation with `[ApiController]`
+
 ### 6. Service Registration in Program.cs
 
+Add these lines in `Program.cs` in the services section:
+
 ```csharp
-// Add these lines in Program.cs after line 74 (ConfigureJwtAuthentication):
+// ============================================
+// 3. AUTHENTICATION SERVICES
+// ============================================
 
 // Register authentication services
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 builder.Services.AddScoped<IJwtTokenProvider, JwtTokenProvider>();
 builder.Services.AddScoped<IAuthService, AuthService>();
-
-// And uncomment/add this line before app.Run():
-AuthEndpoints.MapAuthEndpoints(app);
 ```
+
+**Note:** You don't need to map endpoints manually - `app.MapControllers()` automatically discovers and maps all controller routes!
 
 ---
 

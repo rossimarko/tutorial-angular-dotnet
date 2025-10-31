@@ -424,14 +424,9 @@ export class ProjectService {
   private readonly loading = signal(false);
   private readonly error = signal<string | null>(null);
 
-  // Expose as readonly signals
-  readonly projects$ = this.projects.asReadonly();
-  readonly loading$ = this.loading.asReadonly();
-  readonly error$ = this.error.asReadonly();
-
   constructor(private http: HttpClient) {}
 
-  // Load all projects
+  // Load all projects from API
   loadProjects() {
     this.loading.set(true);
     this.error.set(null);
@@ -447,6 +442,21 @@ export class ProjectService {
         console.error('Error loading projects:', err);
       }
     });
+  }
+
+  // Get projects as readonly signal
+  getProjects() {
+    return this.projects.asReadonly();
+  }
+
+  // Get loading state
+  getLoading() {
+    return this.loading.asReadonly();
+  }
+
+  // Get error state
+  getError() {
+    return this.error.asReadonly();
   }
 
   // Create a new project
@@ -470,88 +480,24 @@ export class ProjectService {
 
 **`features/projects/components/project-list.component.ts`**:
 ```typescript
-import { Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ProjectService } from '../services/project.service';
 
 @Component({
   selector: 'app-project-list',
+  templateUrl: './project-list.component.html',
+  styleUrl: './project-list.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule],
-  template: `
-    <div class="container-fluid py-4">
-      <h2 class="mb-4">My Projects</h2>
-
-      @if (loading()) {
-        <div class="alert alert-info" role="alert">
-          <div class="spinner-border spinner-border-sm me-2" role="status">
-            <span class="visually-hidden">Loading...</span>
-          </div>
-          Loading projects...
-        </div>
-      } @else if (error()) {
-        <div class="alert alert-danger" role="alert">
-          {{ error() }}
-        </div>
-      } @else {
-        @if ((projects() && projects().length > 0)) {
-          <div class="table-responsive">
-            <table class="table table-hover">
-              <thead class="table-light">
-                <tr>
-                  <th>Name</th>
-                  <th>Description</th>
-                  <th>Status</th>
-                  <th>Created</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (project of projects(); track project.id) {
-                  <tr>
-                    <td class="fw-bold">{{ project.name }}</td>
-                    <td>{{ project.description }}</td>
-                    <td>
-                      <span 
-                        class="badge"
-                        [ngClass]="{
-                          'bg-success': project.status === 'Active',
-                          'bg-info': project.status === 'Completed',
-                          'bg-warning': project.status === 'On Hold'
-                        }">
-                        {{ project.status }}
-                      </span>
-                    </td>
-                    <td>{{ project.createdDate | date: 'short' }}</td>
-                    <td>
-                      <button 
-                        (click)="deleteProject(project.id)" 
-                        class="btn btn-sm btn-outline-danger">
-                        <i class="fas fa-trash"></i> Delete
-                      </button>
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
-        } @else {
-          <div class="alert alert-secondary" role="alert">
-            <i class="fas fa-info-circle me-2"></i>
-            No projects yet. Create one to get started!
-          </div>
-        }
-      }
-    </div>
-  `
+  imports: [CommonModule]
 })
 export class ProjectListComponent implements OnInit {
-  private projectService = inject(ProjectService);
+  private readonly projectService = inject(ProjectService);
 
-  // Expose signals from service
-  protected readonly projects = this.projectService.projects$;
-  protected readonly loading = this.projectService.loading$;
-  protected readonly error = this.projectService.error$;
+  protected readonly projects = this.projectService.getProjects();
+  protected readonly loading = this.projectService.getLoading();
+  protected readonly error = this.projectService.getError();
 
   ngOnInit() {
     this.projectService.loadProjects();
@@ -560,10 +506,9 @@ export class ProjectListComponent implements OnInit {
   deleteProject(id: number) {
     this.projectService.deleteProject(id).subscribe({
       next: () => {
-        // Reload projects after deletion
         this.projectService.loadProjects();
       },
-      error: (err) => {
+      error: (err: unknown) => {
         console.error('Error deleting project:', err);
       }
     });
@@ -571,7 +516,73 @@ export class ProjectListComponent implements OnInit {
 }
 ```
 
-📝 **Note**: We use inline `template` with Bootstrap classes. No separate CSS file needed!
+**`features/projects/components/project-list.component.html`**:
+```html
+<div class="container-fluid py-4">
+  <h2 class="mb-4">My Projects</h2>
+
+  @if (loading()) {
+    <div class="alert alert-info" role="alert">
+      <div class="spinner-border spinner-border-sm me-2" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      Loading projects...
+    </div>
+  } @else if (error()) {
+    <div class="alert alert-danger" role="alert">
+      {{ error() }}
+    </div>
+  } @else {
+    @if (projects().length > 0) {
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead class="table-light">
+            <tr>
+              <th>Name</th>
+              <th>Description</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (project of projects(); track project.id) {
+              <tr>
+                <td class="fw-bold">{{ project.name }}</td>
+                <td>{{ project.description }}</td>
+                <td>
+                  <button 
+                    (click)="deleteProject(project.id)" 
+                    class="btn btn-sm btn-outline-danger">
+                    <i class="fas fa-trash"></i> Delete
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else {
+      <div class="alert alert-secondary" role="alert">
+        <i class="fas fa-info-circle me-2"></i>
+        No projects found.
+      </div>
+    }
+  }
+</div>
+```
+
+**`features/projects/components/project-list.component.css`**:
+```css
+/* Bootstrap handles all styling via utility classes */
+```
+
+✅ **Best Practices Applied:**
+- ✅ `ChangeDetectionStrategy.OnPush` for optimal performance
+- ✅ Separate files for template and styles (following file organization rules)
+- ✅ Using `inject()` function instead of constructor injection
+- ✅ Using native control flow (`@if`, `@for`) instead of `*ngIf`, `*ngFor`
+- ✅ Using class bindings instead of `ngClass`
+- ✅ Proper type safety with `unknown` for error handling
+- ✅ Readonly properties for safety
 
 
 

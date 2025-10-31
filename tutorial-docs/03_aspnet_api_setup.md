@@ -28,7 +28,54 @@ dir /s
 # - Properties/launchSettings.json
 ```
 
-## 📝 Program.cs Configuration
+## � For .NET Framework 4.8 Developers - Understanding Program.cs
+
+If you're coming from .NET Framework 4.8, you're used to configuring your app in multiple places:
+- **Global.asax** - Application lifecycle events (Application_Start, etc.)
+- **Web.config** - XML configuration
+- **App_Start/RouteConfig.cs** - Routing configuration
+- **App_Start/WebApiConfig.cs** - Web API configuration
+
+In .NET Core 9, **everything is consolidated in Program.cs**. This is simpler, type-safe, and easier to maintain.
+
+### Key Differences:
+
+| .NET Framework 4.8 | .NET Core 9 | Benefit |
+|--------------------|-------------|---------|
+| Global.asax + Web.config | Program.cs | One place for all config |
+| XML configuration | JSON (appsettings.json) | Easier to read/edit |
+| HttpModules | Middleware | More flexible pipeline |
+| Unity/Ninject DI | Built-in DI | Native support |
+| Separate route configs | Inline with controllers | Simpler routing |
+
+### Top-Level Statements
+
+You'll notice there's no `class Program` or `static void Main()`. .NET 6+ uses **top-level statements** - the compiler generates these for you automatically.
+
+**What you're used to:**
+```csharp
+namespace MyApp
+{
+    public class Program
+    {
+        public static void Main(string[] args)
+        {
+            // Setup code
+        }
+    }
+}
+```
+
+**What you'll see (it's the same thing!):**
+```csharp
+var builder = WebApplication.CreateBuilder(args);
+// Service registration
+var app = builder.Build();
+// Middleware configuration
+app.Run();
+```
+
+## �📝 Program.cs Configuration
 
 The `Program.cs` file is the entry point and where we configure all services. Let's build it step by step:
 
@@ -61,7 +108,8 @@ builder.Host.UseSerilog((context, config) =>
 // 2. SERVICES CONFIGURATION
 // ============================================
 
-// Add controllers (alternative to Minimal APIs, we'll use both)
+// Add controllers for API endpoints
+// This is similar to WebApiConfig.Register() in .NET Framework
 builder.Services.AddControllers();
 
 // Add Swagger/OpenAPI
@@ -167,12 +215,9 @@ app.MapHealthChecks("/health");
 // 6. MAP ENDPOINTS
 // ============================================
 
-// Map controllers (if using controller-based APIs)
+// Map all controller routes
+// This replaces RouteConfig.RegisterRoutes from .NET Framework
 app.MapControllers();
-
-// Map Minimal API endpoints (we'll add these in later modules)
-// AuthEndpoints.MapAuthEndpoints(app);
-// ProjectEndpoints.MapProjectEndpoints(app);
 
 // ============================================
 // 7. RUN THE APP
@@ -478,6 +523,85 @@ public class LoggingMiddleware
     }
 }
 ```
+
+## 🎯 Creating Your First Controller
+
+Controllers in .NET Core are very similar to .NET Framework WebAPI controllers, with some improvements.
+
+### Step 1: Create Controllers Folder
+
+```powershell
+cd d:\Formazione\tutorial-angular-dotnet\backend\ProjectTracker.API
+mkdir Controllers
+```
+
+### Step 2: Create Health Check Controller
+
+Create file: `backend/ProjectTracker.API/Controllers/HealthController.cs`
+
+```csharp
+using Microsoft.AspNetCore.Mvc;
+
+namespace ProjectTracker.API.Controllers;
+
+/// <summary>
+/// Health check endpoint for monitoring
+/// </summary>
+[ApiController]
+[Route("api/[controller]")]
+public class HealthController : ControllerBase
+{
+    private readonly ILogger<HealthController> _logger;
+
+    public HealthController(ILogger<HealthController> logger)
+    {
+        _logger = logger;
+    }
+
+    /// <summary>
+    /// Check if API is running
+    /// </summary>
+    /// <returns>Health status</returns>
+    [HttpGet]
+    [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
+    public ActionResult<object> GetHealth()
+    {
+        _logger.LogInformation("Health check endpoint called");
+        return Ok(new { status = "Healthy", timestamp = DateTime.UtcNow });
+    }
+
+    /// <summary>
+    /// Check database connectivity
+    /// </summary>
+    /// <returns>Database health status</returns>
+    [HttpGet("database")]
+    [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(object), StatusCodes.Status503ServiceUnavailable)]
+    public ActionResult<object> GetDatabaseHealth()
+    {
+        // We'll implement this fully in Module 4 with database access
+        return Ok(new { status = "Database not yet configured", message = "Will be available in Module 4" });
+    }
+}
+```
+
+### Understanding Controller Attributes
+
+| Attribute | Purpose | .NET Framework Equivalent |
+|-----------|---------|---------------------------|
+| `[ApiController]` | Enables API-specific behaviors (auto model validation, etc.) | Same in WebAPI 2 |
+| `[Route("api/[controller]")]` | Base route for all actions | `[RoutePrefix("api/health")]` |
+| `[HttpGet]` | HTTP GET endpoint | Same |
+| `[HttpPost]` | HTTP POST endpoint | Same |
+| `[ProducesResponseType]` | Documents response type for Swagger | New - improves API docs |
+| `ControllerBase` | Base class for API controllers (no View support) | Same |
+
+**What's Different from .NET Framework:**
+- ✅ `[ApiController]` adds automatic model validation
+- ✅ Attribute routing is now standard (not optional)
+- ✅ No need for separate RouteConfig.cs file
+- ✅ `ControllerBase` instead of `ApiController` (naming change)
+- ✅ Better integration with Swagger/OpenAPI
 
 ## 📊 Common Models
 

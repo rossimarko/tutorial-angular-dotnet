@@ -3,7 +3,6 @@ using ProjectTracker.API.Authentication;
 using ProjectTracker.API.Configuration;
 using ProjectTracker.API.Data;
 using ProjectTracker.API.Data.Repositories;
-using ProjectTracker.API.Endpoints;
 using ProjectTracker.API.Middleware;
 using Serilog;
 
@@ -26,7 +25,8 @@ builder.Host.UseSerilog((context, config) =>
 // 2. SERVICES CONFIGURATION
 // ============================================
 
-// Add controllers (alternative to Minimal APIs, we'll use both)
+// Add controllers for API endpoints
+// This is the standard approach, familiar to .NET Framework developers
 builder.Services.AddControllers();
 
 
@@ -75,31 +75,31 @@ builder.Services.AddHealthChecks();
 // Add Authentication (JWT)
 builder.Services.ConfigureJwtAuthentication(builder.Configuration);
 
+// ============================================
+// 3. AUTHENTICATION SERVICES
+// ============================================
+
 // Register authentication services
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 builder.Services.AddScoped<IJwtTokenProvider, JwtTokenProvider>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 
-//Database
+// ============================================
+// 4. DATABASE SERVICES
+// ============================================
+
+// Database connection and repositories
 builder.Services.AddSingleton<DbConnection>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IProjectRepository, ProjectRepository>();
 
 // ============================================
-// 3. APPLICATION SERVICES (We'll add these in next modules)
-// ============================================
-
-// Uncomment as we create services:
-// builder.Services.AddScoped<IProjectService, ProjectService>();
-// builder.Services.AddScoped<IProjectRepository, ProjectRepository>();
-
-// ============================================
-// 4. BUILD THE APP
+// 5. BUILD THE APP
 // ============================================
 var app = builder.Build();
 
 // ============================================
-// 5. MIDDLEWARE PIPELINE
+// 6. MIDDLEWARE PIPELINE
 // ============================================
 
 if (app.Environment.IsDevelopment())
@@ -154,26 +154,15 @@ using (var scope = app.Services.CreateScope())
 
 
 // ============================================
-// 6. MAP ENDPOINTS
+// 7. MAP ENDPOINTS
 // ============================================
 
-// Map controllers (if using controller-based APIs)
+// Map all controller routes
+// This automatically discovers all [ApiController] classes and their [HttpGet/Post/etc] methods
+// Similar to RouteConfig.MapHttpAttributeRoutes() in .NET Framework
 app.MapControllers();
 
-// Add a test endpoint to verify database connection
-app.MapGet("/api/test/db", async (IUserRepository userRepo) =>
-{
-    var users = await userRepo.GetAllAsync();
-    return Results.Ok(new { success = true, userCount = users.Count() });
-})
-.WithName("TestDatabase")
-.WithOpenApi();
-
-// Map Minimal API endpoints (we'll add these in later modules)
-AuthEndpoints.MapAuthEndpoints(app);
-// ProjectEndpoints.MapProjectEndpoints(app);
-
 // ============================================
-// 7. RUN THE APP
+// 8. RUN THE APP
 // ============================================
 app.Run();
