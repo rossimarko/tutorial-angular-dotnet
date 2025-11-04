@@ -185,8 +185,8 @@ public class ProjectsController : ControllerBase
     /// GET: api/projects/paged?pageNumber=1&pageSize=10&searchTerm=test&sortBy=title&sortDirection=asc
     /// </summary>
     [HttpGet("paged")]
-    [ProducesResponseType(typeof(PagedResponse<ProjectResponse>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<PagedResponse<ProjectResponse>>> GetPaged(
+    [ProducesResponseType(typeof(PaginatedResponse<ProjectResponse>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<PaginatedResponse<ProjectResponse>>> GetPaged(
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 10,
         [FromQuery] string? searchTerm = null,
@@ -208,13 +208,12 @@ public class ProjectsController : ControllerBase
         };
 
         var (items, total) = await _projectRepository.GetPagedAsync(userId, request);
-        var response = new PagedResponse<ProjectResponse>
-        {
-            Items = items.Select(MapToResponse).ToList(),
-            TotalCount = total,
-            PageNumber = pageNumber,
-            PageSize = pageSize
-        };
+        var response = PaginatedResponse<ProjectResponse>.Create(
+            pageNumber,
+            pageSize,
+            total,
+            items.Select(MapToResponse).ToList()
+        );
 
         return Ok(response);
     }

@@ -10,6 +10,7 @@ Content-Type: application/json
   "password": "SecurePassword123!"
 }
 
+###
 @auth_token = {{response.body.$.data.accessToken}}
 
 ### Get all projects
