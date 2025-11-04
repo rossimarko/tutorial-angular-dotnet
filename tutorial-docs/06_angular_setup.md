@@ -20,6 +20,434 @@ This module covers:
 
 ---
 
+## 🔧 Backend API Implementation - Project Endpoints
+
+Before we can work with projects in the Angular frontend, we need to create the backend API endpoints. The repository layer is already implemented, so we just need to create the controller and DTOs.
+
+### Step 1: Create Request/Response DTOs
+
+**`Models/Requests/CreateProjectRequest.cs`**:
+```csharp
+using System.ComponentModel.DataAnnotations;
+
+namespace ProjectTracker.API.Models.Requests;
+
+/// <summary>
+/// Request model for creating a new project
+/// </summary>
+public class CreateProjectRequest
+{
+    [Required(ErrorMessage = "Title is required")]
+    [StringLength(200, ErrorMessage = "Title cannot exceed 200 characters")]
+    public required string Title { get; set; }
+
+    [StringLength(1000, ErrorMessage = "Description cannot exceed 1000 characters")]
+    public string? Description { get; set; }
+
+    [StringLength(50)]
+    public string Status { get; set; } = "Active";
+
+    [Range(1, 5, ErrorMessage = "Priority must be between 1 and 5")]
+    public int Priority { get; set; } = 1;
+
+    public DateTime? StartDate { get; set; }
+    public DateTime? DueDate { get; set; }
+}
+```
+
+**`Models/Requests/UpdateProjectRequest.cs`**:
+```csharp
+using System.ComponentModel.DataAnnotations;
+
+namespace ProjectTracker.API.Models.Requests;
+
+/// <summary>
+/// Request model for updating an existing project
+/// </summary>
+public class UpdateProjectRequest
+{
+    [Required(ErrorMessage = "Title is required")]
+    [StringLength(200, ErrorMessage = "Title cannot exceed 200 characters")]
+    public required string Title { get; set; }
+
+    [StringLength(1000, ErrorMessage = "Description cannot exceed 1000 characters")]
+    public string? Description { get; set; }
+
+    [StringLength(50)]
+    public string Status { get; set; } = "Active";
+
+    [Range(1, 5, ErrorMessage = "Priority must be between 1 and 5")]
+    public int Priority { get; set; } = 1;
+
+    public DateTime? StartDate { get; set; }
+    public DateTime? DueDate { get; set; }
+}
+```
+
+**`Models/Responses/ProjectResponse.cs`**:
+```csharp
+namespace ProjectTracker.API.Models.Responses;
+
+/// <summary>
+/// Response model for project data
+/// </summary>
+public class ProjectResponse
+{
+    public int Id { get; set; }
+    public int UserId { get; set; }
+    public string Title { get; set; } = string.Empty;
+    public string? Description { get; set; }
+    public string Status { get; set; } = "Active";
+    public int Priority { get; set; } = 1;
+    public DateTime? StartDate { get; set; }
+    public DateTime? DueDate { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime UpdatedAt { get; set; }
+}
+```
+
+### Step 2: Create the Projects Controller
+
+**`Controllers/ProjectsController.cs`**:
+```csharp
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using ProjectTracker.API.Data.Repositories;
+using ProjectTracker.API.Models.Common;
+using ProjectTracker.API.Models.Entities;
+using ProjectTracker.API.Models.Requests;
+using ProjectTracker.API.Models.Responses;
+using System.Security.Claims;
+
+namespace ProjectTracker.API.Controllers;
+
+/// <summary>
+/// Controller for managing projects
+/// Demonstrates standard ASP.NET Core controller pattern with CRUD operations
+/// </summary>
+[ApiController]
+[Route("api/[controller]")]
+[Authorize]
+public class ProjectsController : ControllerBase
+{
+    private readonly IProjectRepository _projectRepository;
+    private readonly ILogger<ProjectsController> _logger;
+
+    public ProjectsController(
+        IProjectRepository projectRepository,
+        ILogger<ProjectsController> logger)
+    {
+        _projectRepository = projectRepository;
+        _logger = logger;
+    }
+
+    /// <summary>
+    /// Get all projects for the authenticated user
+    /// GET: api/projects
+    /// </summary>
+    [HttpGet]
+    [ProducesResponseType(typeof(IEnumerable<ProjectResponse>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<IEnumerable<ProjectResponse>>> GetAll()
+    {
+        var userId = GetUserId();
+        _logger.LogInformation("Fetching all projects for user {UserId}", userId);
+
+        var projects = await _projectRepository.GetByUserIdAsync(userId);
+        var response = projects.Select(MapToResponse);
+
+        return Ok(response);
+    }
+
+    /// <summary>
+    /// Get a specific project by ID
+    /// GET: api/projects/{id}
+    /// </summary>
+    [HttpGet("{id}")]
+    [ProducesResponseType(typeof(ProjectResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ProjectResponse>> GetById(int id)
+    {
+        var userId = GetUserId();
+        _logger.LogInformation("Fetching project {ProjectId} for user {UserId}", id, userId);
+
+        var project = await _projectRepository.GetByIdAsync(id);
+
+        if (project == null || project.UserId != userId)
+        {
+            return NotFound(new { message = "Project not found" });
+        }
+
+        return Ok(MapToResponse(project));
+    }
+
+    /// <summary>
+    /// Get paginated projects with search and sorting
+    /// GET: api/projects/paged?pageNumber=1&pageSize=10&searchTerm=test&sortBy=title&sortDirection=asc
+    /// </summary>
+    [HttpGet("paged")]
+    [ProducesResponseType(typeof(PagedResponse<ProjectResponse>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<PagedResponse<ProjectResponse>>> GetPaged(
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 10,
+        [FromQuery] string? searchTerm = null,
+        [FromQuery] string? sortBy = "CreatedAt",
+        [FromQuery] string sortDirection = "desc")
+    {
+        var userId = GetUserId();
+        _logger.LogInformation(
+            "Fetching paged projects for user {UserId} - Page: {PageNumber}, Size: {PageSize}",
+            userId, pageNumber, pageSize);
+
+        var request = new PaginationRequest
+        {
+            PageNumber = pageNumber,
+            PageSize = pageSize,
+            SearchTerm = searchTerm,
+            SortBy = sortBy,
+            SortDirection = sortDirection
+        };
+
+        var (items, total) = await _projectRepository.GetPagedAsync(userId, request);
+        var response = new PagedResponse<ProjectResponse>
+        {
+            Items = items.Select(MapToResponse).ToList(),
+            TotalCount = total,
+            PageNumber = pageNumber,
+            PageSize = pageSize
+        };
+
+        return Ok(response);
+    }
+
+    /// <summary>
+    /// Search projects
+    /// GET: api/projects/search?term=project
+    /// </summary>
+    [HttpGet("search")]
+    [ProducesResponseType(typeof(IEnumerable<ProjectResponse>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<IEnumerable<ProjectResponse>>> Search([FromQuery] string term)
+    {
+        var userId = GetUserId();
+        _logger.LogInformation("Searching projects for user {UserId} with term: {SearchTerm}", userId, term);
+
+        if (string.IsNullOrWhiteSpace(term))
+        {
+            return BadRequest(new { message = "Search term is required" });
+        }
+
+        var projects = await _projectRepository.SearchAsync(userId, term);
+        var response = projects.Select(MapToResponse);
+
+        return Ok(response);
+    }
+
+    /// <summary>
+    /// Create a new project
+    /// POST: api/projects
+    /// </summary>
+    [HttpPost]
+    [ProducesResponseType(typeof(ProjectResponse), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<ProjectResponse>> Create([FromBody] CreateProjectRequest request)
+    {
+        var userId = GetUserId();
+        _logger.LogInformation("Creating new project for user {UserId}", userId);
+
+        var project = new Project
+        {
+            UserId = userId,
+            Title = request.Title,
+            Description = request.Description,
+            Status = request.Status,
+            Priority = request.Priority,
+            StartDate = request.StartDate,
+            DueDate = request.DueDate
+        };
+
+        var id = await _projectRepository.CreateAsync(project);
+        project.Id = id;
+
+        _logger.LogInformation("Created project {ProjectId} for user {UserId}", id, userId);
+
+        return CreatedAtAction(
+            nameof(GetById),
+            new { id },
+            MapToResponse(project));
+    }
+
+    /// <summary>
+    /// Update an existing project
+    /// PUT: api/projects/{id}
+    /// </summary>
+    [HttpPut("{id}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Update(int id, [FromBody] UpdateProjectRequest request)
+    {
+        var userId = GetUserId();
+        _logger.LogInformation("Updating project {ProjectId} for user {UserId}", id, userId);
+
+        var existing = await _projectRepository.GetByIdAsync(id);
+        if (existing == null || existing.UserId != userId)
+        {
+            return NotFound(new { message = "Project not found" });
+        }
+
+        existing.Title = request.Title;
+        existing.Description = request.Description;
+        existing.Status = request.Status;
+        existing.Priority = request.Priority;
+        existing.StartDate = request.StartDate;
+        existing.DueDate = request.DueDate;
+
+        await _projectRepository.UpdateAsync(existing);
+
+        _logger.LogInformation("Updated project {ProjectId}", id);
+
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Delete a project
+    /// DELETE: api/projects/{id}
+    /// </summary>
+    [HttpDelete("{id}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var userId = GetUserId();
+        _logger.LogInformation("Deleting project {ProjectId} for user {UserId}", id, userId);
+
+        var existing = await _projectRepository.GetByIdAsync(id);
+        if (existing == null || existing.UserId != userId)
+        {
+            return NotFound(new { message = "Project not found" });
+        }
+
+        await _projectRepository.DeleteAsync(id);
+
+        _logger.LogInformation("Deleted project {ProjectId}", id);
+
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Extract user ID from JWT claims
+    /// </summary>
+    private int GetUserId()
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
+        {
+            throw new UnauthorizedAccessException("Invalid user ID in token");
+        }
+        return userId;
+    }
+
+    /// <summary>
+    /// Map entity to response DTO
+    /// </summary>
+    private static ProjectResponse MapToResponse(Project project)
+    {
+        return new ProjectResponse
+        {
+            Id = project.Id,
+            UserId = project.UserId,
+            Title = project.Title,
+            Description = project.Description,
+            Status = project.Status,
+            Priority = project.Priority,
+            StartDate = project.StartDate,
+            DueDate = project.DueDate,
+            CreatedAt = project.CreatedAt,
+            UpdatedAt = project.UpdatedAt
+        };
+    }
+}
+```
+
+### Step 3: Register the Repository in DI Container
+
+Make sure the `IProjectRepository` is registered in `Program.cs`. Add this line with other repository registrations:
+
+```csharp
+builder.Services.AddScoped<IProjectRepository, ProjectRepository>();
+```
+
+### Step 4: Test the API Endpoints
+
+You can test the endpoints using the `.http` file. Add these requests to `ProjectTracker.API.http`:
+
+```http
+### Get all projects
+GET {{ProjectTracker.API_HostAddress}}/api/projects
+Authorization: Bearer {{auth_token}}
+
+### Get project by ID
+GET {{ProjectTracker.API_HostAddress}}/api/projects/1
+Authorization: Bearer {{auth_token}}
+
+### Get paged projects
+GET {{ProjectTracker.API_HostAddress}}/api/projects/paged?pageNumber=1&pageSize=10&sortBy=title&sortDirection=asc
+Authorization: Bearer {{auth_token}}
+
+### Search projects
+GET {{ProjectTracker.API_HostAddress}}/api/projects/search?term=test
+Authorization: Bearer {{auth_token}}
+
+### Create a new project
+POST {{ProjectTracker.API_HostAddress}}/api/projects
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "title": "New Project",
+  "description": "This is a test project",
+  "status": "Active",
+  "priority": 2,
+  "startDate": "2025-01-01",
+  "dueDate": "2025-12-31"
+}
+
+### Update a project
+PUT {{ProjectTracker.API_HostAddress}}/api/projects/1
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "title": "Updated Project Title",
+  "description": "Updated description",
+  "status": "In Progress",
+  "priority": 3,
+  "startDate": "2025-01-01",
+  "dueDate": "2025-12-31"
+}
+
+### Delete a project
+DELETE {{ProjectTracker.API_HostAddress}}/api/projects/1
+Authorization: Bearer {{auth_token}}
+```
+
+### Key Implementation Points
+
+✅ **Controller-Based Pattern**: Using traditional controllers (familiar to .NET Framework developers) instead of minimal APIs
+
+✅ **Authorization**: `[Authorize]` attribute ensures only authenticated users can access projects
+
+✅ **User Isolation**: Each user can only access their own projects (enforced by `GetUserId()` helper)
+
+✅ **DTOs**: Separate Request and Response models for clean API contracts
+
+✅ **Logging**: Comprehensive logging for debugging and monitoring
+
+✅ **Validation**: Data annotations on request DTOs for automatic validation
+
+✅ **RESTful Design**: Standard HTTP verbs (GET, POST, PUT, DELETE) with appropriate status codes
+
+---
+
 ## 🎓 Beginner's Guide to Angular 20 Fundamentals
 
 ### What is Angular?
@@ -192,15 +620,15 @@ Create a service to fetch data from your API:
 
 **`services/project.service.ts`**:
 ```typescript
-import { Injectable } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { signal } from '@angular/core';
 
 // Define the shape of your data
 interface Project {
   id: number;
-  name: string;
+  title: string;
   description: string;
+  status: string;
 }
 
 @Injectable({
@@ -210,7 +638,7 @@ export class ProjectService {
   private readonly http = inject(HttpClient);
   
   // Store projects in a signal
-  protected readonly projects = signal<Project[]>([]);
+  private readonly projects = signal<Project[]>([]);
 
   // Fetch all projects from API
   loadProjects() {
@@ -268,7 +696,7 @@ export class ProjectListComponent implements OnInit {
     <ul>
       @for (project of projects$(); track project.id) {
         <li>
-          <h3>{{ project.name }}</h3>
+          <h3>{{ project.title }}</h3>
           <p>{{ project.description }}</p>
         </li>
       }
@@ -393,15 +821,33 @@ Let's create a complete example that uses all these concepts:
 ```typescript
 export interface Project {
   id: number;
-  name: string;
-  description: string;
-  status: 'Active' | 'Completed' | 'On Hold';
-  createdDate: string;
+  userId: number;
+  title: string;
+  description: string | null;
+  status: string;
+  priority: number;
+  startDate: string | null;
+  dueDate: string | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface CreateProjectRequest {
-  name: string;
-  description: string;
+  title: string;
+  description?: string;
+  status?: string;
+  priority?: number;
+  startDate?: string;
+  dueDate?: string;
+}
+
+export interface UpdateProjectRequest {
+  title: string;
+  description?: string;
+  status?: string;
+  priority?: number;
+  startDate?: string;
+  dueDate?: string;
 }
 ```
 
@@ -409,9 +855,9 @@ export interface CreateProjectRequest {
 
 **`features/projects/services/project.service.ts`**:
 ```typescript
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Project, CreateProjectRequest } from '../../../shared/models/project.model';
+import { Project, CreateProjectRequest, UpdateProjectRequest } from '../../../shared/models/project.model';
 
 @Injectable({
   providedIn: 'root'
@@ -466,9 +912,19 @@ export class ProjectService {
     return this.http.get<Project>(`${this.apiUrl}/${id}`);
   }
 
+  // Update a project
+  updateProject(id: number, request: UpdateProjectRequest) {
+    return this.http.put<void>(`${this.apiUrl}/${id}`, request);
+  }
+
   // Delete a project
   deleteProject(id: number) {
-    return this.http.delete(`${this.apiUrl}/${id}`);
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
+
+  // Search projects
+  searchProjects(term: string) {
+    return this.http.get<Project[]>(`${this.apiUrl}/search?term=${term}`);
   }
 }
 ```
@@ -534,16 +990,22 @@ export class ProjectListComponent implements OnInit {
         <table class="table table-hover">
           <thead class="table-light">
             <tr>
-              <th>Name</th>
+              <th>Title</th>
               <th>Description</th>
+              <th>Status</th>
+              <th>Priority</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             @for (project of projects(); track project.id) {
               <tr>
-                <td class="fw-bold">{{ project.name }}</td>
+                <td class="fw-bold">{{ project.title }}</td>
                 <td>{{ project.description }}</td>
+                <td>
+                  <span class="badge bg-primary">{{ project.status }}</span>
+                </td>
+                <td>{{ project.priority }}</td>
                 <td>
                   <button 
                     (click)="deleteProject(project.id)" 
