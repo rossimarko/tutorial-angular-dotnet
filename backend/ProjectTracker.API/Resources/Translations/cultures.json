@@ -1,0 +1,12 @@
+[
+  {
+    "code": "en-US",
+    "name": "English",
+    "isDefault": true
+  },
+  {
+    "code": "it-IT",
+    "name": "Italiano",
+    "isDefault": false
+  }
+]
