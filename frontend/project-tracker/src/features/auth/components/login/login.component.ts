@@ -36,6 +36,7 @@ export class LoginComponent {
 
     this.loading.set(true);
     this.error.set(null);
+    this.loginForm.disable();
 
     this.authService.login(this.loginForm.value).subscribe({
       next: (response: ApiResponse<TokenResponse>) => {
@@ -48,12 +49,14 @@ export class LoginComponent {
           this.router.navigate(['/projects']);
         } else {
           this.error.set(response.message || 'Login failed');
+          this.loginForm.enable();
         }
         this.loading.set(false);
       },
       error: (err: any) => {
         console.error('Login error:', err);
         this.error.set(err.error?.message || 'Login failed. Please try again.');
+        this.loginForm.enable();
         this.loading.set(false);
       }
     });

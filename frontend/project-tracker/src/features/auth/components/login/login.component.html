@@ -1,60 +1,68 @@
-<div class="login-container">
-  <div class="login-card">
-    <h1>Project Tracker</h1>
-    <h2>Login</h2>
+<div class="min-vh-100 d-flex align-items-center justify-content-center bg-gradient">
+  <div class="card shadow-lg" style="width: 100%; max-width: 400px;">
+    <div class="card-body p-5">
+      <h1 class="card-title text-center mb-2 fw-bold text-primary">Project Tracker</h1>
+      <h2 class="card-subtitle text-center mb-4 text-secondary">Login</h2>
 
-    @if (error()) {
-      <div class="alert alert-danger">
-        {{ error() }}
-      </div>
-    }
+      @if (error()) {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+          {{ error() }}
+          <button type="button" class="btn-close" (click)="error.set(null)"></button>
+        </div>
+      }
 
-    <form [formGroup]="loginForm" (ngSubmit)="onLogin()">
-      <div class="form-group">
-        <label for="email">Email</label>
-        <input
-          type="email"
-          id="email"
-          class="form-control"
-          formControlName="email"
-          placeholder="Enter your email"
-          [disabled]="loading()"
-        />
-        @if (loginForm.get('email')?.invalid && loginForm.get('email')?.touched) {
-          <small class="text-danger">Please enter a valid email</small>
-        }
-      </div>
+      <form [formGroup]="loginForm" (ngSubmit)="onLogin()">
+        <div class="mb-3">
+          <label for="email" class="form-label">Email</label>
+          <input
+            type="email"
+            id="email"
+            class="form-control"
+            formControlName="email"
+            placeholder="Enter your email"
+            [class.is-invalid]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched"
+          />
+          @if (loginForm.get('email')?.invalid && loginForm.get('email')?.touched) {
+            <div class="invalid-feedback d-block">
+              Please enter a valid email
+            </div>
+          }
+        </div>
 
-      <div class="form-group">
-        <label for="password">Password</label>
-        <input
-          type="password"
-          id="password"
-          class="form-control"
-          formControlName="password"
-          placeholder="Enter your password"
-          [disabled]="loading()"
-        />
-        @if (loginForm.get('password')?.invalid && loginForm.get('password')?.touched) {
-          <small class="text-danger">Password is required</small>
-        }
-      </div>
+        <div class="mb-3">
+          <label for="password" class="form-label">Password</label>
+          <input
+            type="password"
+            id="password"
+            class="form-control"
+            formControlName="password"
+            placeholder="Enter your password"
+            [class.is-invalid]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
+          />
+          @if (loginForm.get('password')?.invalid && loginForm.get('password')?.touched) {
+            <div class="invalid-feedback d-block">
+              Password is required
+            </div>
+          }
+        </div>
 
-      <button
-        type="submit"
-        class="btn btn-primary"
-        [disabled]="loginForm.invalid || loading()"
-      >
-        @if (loading()) {
-          <span>Logging in...</span>
-        } @else {
-          <span>Login</span>
-        }
-      </button>
-    </form>
+        <button
+          type="submit"
+          class="btn btn-primary w-100"
+          [disabled]="loginForm.invalid || loading()"
+        >
+          @if (loading()) {
+            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            <span>Logging in...</span>
+          } @else {
+            <span>Login</span>
+          }
+        </button>
+      </form>
 
-    <p class="text-center mt-3">
-      Don't have an account? <a href="/register">Register here</a>
-    </p>
+      <p class="text-center mt-4 mb-0">
+        Don't have an account? <a href="/register" class="link-primary text-decoration-none">Register here</a>
+      </p>
+    </div>
   </div>
 </div>
