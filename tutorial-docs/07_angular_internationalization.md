@@ -1383,74 +1383,347 @@ export class AdminPanelComponent implements OnInit {
 </nav>
 ```
 
-### Example 6: Complete Login Form with Translations
+### Example 6: Complete Login Form with Translations & Auth Integration
+
+This example shows how to combine **Module 06's AuthService** with **Module 07's Translation Service** to create a fully integrated login experience.
+
+#### Component TypeScript (with AuthService integration):
+
+```typescript
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { AuthService, LoginRequest } from '../../../shared/services/auth.service';
+import { TranslationService } from '../../../shared/services/translation.service';
+import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
+
+/// <summary>
+/// Login component integrating:
+/// - Module 06: AuthService with JWT token management
+/// - Module 07: TranslationService with i18n
+/// </summary>
+@Component({
+  selector: 'app-login',
+  templateUrl: './login.component.html',
+  styleUrl: './login.component.css',
+  imports: [CommonModule, ReactiveFormsModule, TranslatePipe],
+  changeDetection: ChangeDetectionStrategy.OnPush
+})
+export class LoginComponent {
+  private readonly authService = inject(AuthService);
+  private readonly translationService = inject(TranslationService);
+  private readonly fb = inject(FormBuilder);
+  private readonly router = inject(Router);
+
+  // Expose translation service for language selector in template
+  protected readonly translation = this.translationService;
+
+  // Form state signals from AuthService
+  protected readonly isLoading = this.authService.isLoading;
+  protected readonly error = this.authService.error;
+
+  // Form group for login
+  protected readonly loginForm = this.fb.group({
+    email: ['', [Validators.required, Validators.email]],
+    password: ['', [Validators.required, Validators.minLength(6)]]
+  });
+
+  /// <summary>
+  /// Handle login form submission
+  /// Calls AuthService.login() which:
+  /// 1. Sends credentials to /api/auth/login
+  /// 2. Receives TokenResponse with accessToken and refreshToken
+  /// 3. Stores tokens via setToken()
+  /// 4. Automatically adds Bearer token to subsequent API requests via interceptor
+  /// </summary>
+  protected onSubmit(): void {
+    if (this.loginForm.invalid) {
+      return;
+    }
+
+    const loginRequest: LoginRequest = {
+      email: this.loginForm.value.email || '',
+      password: this.loginForm.value.password || ''
+    };
+
+    // Call AuthService.login() - this returns an Observable
+    this.authService.login(loginRequest).subscribe({
+      next: (response) => {
+        // Successfully received token response from Module 06
+        // The AuthService handles setToken() internally
+        // Redirect to dashboard or home
+        this.router.navigate(['/dashboard']);
+      },
+      error: (err) => {
+        // Error is automatically set in authService.error signal
+        // displayed in the template via {{ error() | translate }}
+        console.error('Login failed:', err);
+      }
+    });
+  }
+
+  /// <summary>
+  /// Helper method to get form field error message with translation
+  /// </summary>
+  protected getFieldError(fieldName: string): string {
+    const field = this.loginForm.get(fieldName);
+    
+    if (!field || !field.errors || !field.touched) {
+      return '';
+    }
+
+    if (field.hasError('required')) {
+      return this.translationService.translate('validation.required');
+    }
+
+    if (fieldName === 'email' && field.hasError('email')) {
+      return this.translationService.translate('validation.email');
+    }
+
+    if (fieldName === 'password' && field.hasError('minlength')) {
+      const error = field.errors['minlength'];
+      return this.translationService.translate('validation.minLength', { 
+        min: error.requiredLength 
+      });
+    }
+
+    return '';
+  }
+}
+```
+
+#### Component Template (with i18n):
 
 ```html
-<div class="card">
-  <div class="card-body">
-    <h3 class="card-title text-center mb-4">
-      {{ 'auth.login' | translate }}
-    </h3>
-    
-    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-      <!-- Email field -->
-      <div class="mb-3">
-        <label for="email" class="form-label">
-          {{ 'auth.email' | translate }}
-        </label>
-        <input 
-          type="email" 
-          class="form-control" 
-          id="email"
-          formControlName="email"
-          [placeholder]="'auth.email' | translate">
-        
-        @if (loginForm.get('email')?.touched && loginForm.get('email')?.invalid) {
-          <div class="text-danger small mt-1">
-            {{ 'validation.email' | translate }}
-          </div>
-        }
+<div class="container-fluid d-flex align-items-center justify-content-center min-vh-100 bg-light">
+  <div class="card shadow-sm" style="width: 100%; max-width: 400px;">
+    <div class="card-body p-5">
+      <!-- Header -->
+      <div class="text-center mb-4">
+        <h2 class="card-title mb-2">
+          {{ 'auth.login' | translate }}
+        </h2>
+        <p class="text-muted small">
+          {{ 'auth.enterCredentials' | translate }}
+        </p>
       </div>
-      
-      <!-- Password field -->
-      <div class="mb-3">
-        <label for="password" class="form-label">
-          {{ 'auth.password' | translate }}
-        </label>
-        <input 
-          type="password" 
-          class="form-control" 
-          id="password"
-          formControlName="password"
-          [placeholder]="'auth.password' | translate">
-        
-        @if (loginForm.get('password')?.touched && loginForm.get('password')?.invalid) {
-          <div class="text-danger small mt-1">
-            {{ 'validation.required' | translate }}
-          </div>
-        }
+
+      <!-- Language selector (optional) -->
+      <div class="d-flex justify-content-center mb-4">
+        <app-language-selector></app-language-selector>
       </div>
-      
-      <!-- Submit button -->
-      <button 
-        type="submit" 
-        class="btn btn-primary w-100"
-        [disabled]="loginForm.invalid || isLoading()">
-        @if (isLoading()) {
-          <span class="spinner-border spinner-border-sm me-2"></span>
-        }
-        {{ 'auth.login' | translate }}
-      </button>
-    </form>
-    
-    <!-- Error message -->
-    @if (errorMessage()) {
-      <div class="alert alert-danger mt-3">
-        {{ errorMessage() }}
+
+      <!-- Login form -->
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" novalidate>
+        <!-- Email field -->
+        <div class="mb-3">
+          <label for="email" class="form-label">
+            {{ 'auth.email' | translate }}
+          </label>
+          <input 
+            type="email" 
+            class="form-control" 
+            [class.is-invalid]="loginForm.get('email')?.touched && loginForm.get('email')?.invalid"
+            id="email"
+            formControlName="email"
+            [placeholder]="'auth.email' | translate"
+            [attr.aria-label]="'auth.email' | translate"
+            autocomplete="email">
+          
+          @if (getFieldError('email')) {
+            <div class="invalid-feedback d-block">
+              {{ getFieldError('email') }}
+            </div>
+          }
+        </div>
+
+        <!-- Password field -->
+        <div class="mb-3">
+          <label for="password" class="form-label">
+            {{ 'auth.password' | translate }}
+          </label>
+          <input 
+            type="password" 
+            class="form-control" 
+            [class.is-invalid]="loginForm.get('password')?.touched && loginForm.get('password')?.invalid"
+            id="password"
+            formControlName="password"
+            [placeholder]="'auth.password' | translate"
+            [attr.aria-label]="'auth.password' | translate"
+            autocomplete="current-password">
+          
+          @if (getFieldError('password')) {
+            <div class="invalid-feedback d-block">
+              {{ getFieldError('password') }}
+            </div>
+          }
+        </div>
+
+        <!-- Remember me checkbox (optional) -->
+        <div class="form-check mb-3">
+          <input 
+            type="checkbox" 
+            class="form-check-input" 
+            id="rememberMe">
+          <label class="form-check-label" for="rememberMe">
+            {{ 'auth.rememberMe' | translate }}
+          </label>
+        </div>
+
+        <!-- Submit button -->
+        <button 
+          type="submit" 
+          class="btn btn-primary w-100 mb-3"
+          [disabled]="loginForm.invalid || isLoading()">
+          @if (isLoading()) {
+            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            <span>{{ 'common.loading' | translate }}</span>
+          } @else {
+            {{ 'auth.login' | translate }}
+          }
+        </button>
+      </form>
+
+      <!-- Error message (translated from API response) -->
+      @if (error()) {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+          <i class="fas fa-exclamation-circle me-2"></i>
+          <strong>{{ 'common.error' | translate }}:</strong>
+          <!-- This error message comes from the API via AuthService -->
+          {{ error() }}
+        </div>
+      }
+
+      <!-- Footer links -->
+      <div class="text-center mt-4">
+        <p class="mb-0">
+          <a href="/register" class="text-decoration-none">
+            {{ 'auth.dontHaveAccount' | translate }}
+          </a>
+        </p>
+        <p class="mb-0 mt-2">
+          <a href="/forgot-password" class="text-decoration-none small text-muted">
+            {{ 'auth.forgotPassword' | translate }}
+          </a>
+        </p>
       </div>
-    }
+    </div>
   </div>
 </div>
+```
+
+#### Integration with AuthService from Module 06:
+
+The key integration points:
+
+1. **Token Management (Module 06)**:
+   ```typescript
+   // AuthService automatically handles:
+   this.authService.login(loginRequest) // Sends to /api/auth/login
+     .subscribe({
+       next: (response) => {
+         // Sets token internally: this.authService.setToken(token, refreshToken)
+         // Token is stored in localStorage
+         // All future API calls automatically include: Authorization: Bearer {token}
+       }
+     });
+   ```
+
+2. **Automatic Header Injection (Module 06 - Interceptor)**:
+   ```typescript
+   // The authHttpInterceptor automatically:
+   // - Gets token from AuthService: authService.getToken()
+   // - Adds to request: Authorization: Bearer {token}
+   // - If 401 error: authService.logout()
+   ```
+
+3. **Translation Integration (Module 07)**:
+   ```html
+   <!-- All UI text uses translation keys -->
+   {{ 'auth.login' | translate }}
+   {{ getFieldError('email') }} <!-- Returns translated error message -->
+   ```
+
+4. **Error Handling**:
+   ```typescript
+   // API response errors are caught and displayed with translation
+   @if (error()) {
+     {{ error() }} <!-- Automatically displayed via signal -->
+   }
+   ```
+
+#### Translation Keys Required (Add to en-US.json and it-IT.json):
+
+For **`en-US.json`**, add to the `auth` section:
+```json
+{
+  "auth": {
+    // ... existing keys ...
+    "enterCredentials": "Enter your email and password",
+    "dontHaveAccount": "Don't have an account? Register here",
+    "common": {
+      "error": "Error",
+      "loading": "Loading..."
+    }
+  }
+}
+```
+
+For **`it-IT.json`**, add to the `auth` section:
+```json
+{
+  "auth": {
+    // ... existing keys ...
+    "enterCredentials": "Inserisci la tua email e password",
+    "dontHaveAccount": "Non hai un account? Registrati qui",
+    "common": {
+      "error": "Errore",
+      "loading": "Caricamento..."
+    }
+  }
+}
+```
+
+#### How It All Works Together:
+
+```
+User fills form → onSubmit() called
+    ↓
+loginForm validated using Validators (required, email, minLength)
+    ↓
+AuthService.login(email, password) called
+    ↓
+HTTP POST to /api/auth/login
+    ↓
+authHttpInterceptor intercepts (no token yet, so skips auth)
+    ↓
+Backend validates credentials, returns TokenResponse
+    ↓
+AuthService.setToken() stores tokens in localStorage
+    ↓
+isLoading signal changes → Template re-renders
+    ↓
+Router navigates to /dashboard
+    ↓
+ProjectService.loadProjects() called
+    ↓
+authHttpInterceptor intercepts and adds: Authorization: Bearer {token}
+    ↓
+Backend validates token and returns user's projects
+```
+
+✅ **Best Practices Applied:**
+- ✅ Uses Module 06 AuthService for JWT token management
+- ✅ HTTP interceptor automatically adds Bearer token to requests
+- ✅ Error signals from AuthService displayed with i18n translations
+- ✅ Form validation with translated error messages
+- ✅ Loading state via signals (no manual state management)
+- ✅ Accessibility attributes (aria-label, for attribute on labels)
+- ✅ Bootstrap form styling with validation states
+- ✅ Responsive design (max-width, centered layout)
+- ✅ Token persistence across page refreshes via localStorage
+- ✅ Automatic logout on 401 errors via interceptor
 ```
 
 ---
