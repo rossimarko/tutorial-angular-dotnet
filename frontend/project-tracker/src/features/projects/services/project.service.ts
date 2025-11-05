@@ -6,13 +6,24 @@ import { environment } from '../../../environments/environment';
 // Define the shape of your data
 export interface Project {
   id: number;
-  name: string;
-  description: string;
+  userId: number;
+  title: string;
+  description?: string;
+  status: string;
+  priority: number;
+  startDate?: Date;
+  dueDate?: Date;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface CreateProjectRequest {
-  name: string;
-  description: string;
+  title: string;
+  description?: string;
+  status: string;
+  priority: number;
+  startDate?: Date;
+  dueDate?: Date;
 }
 
 @Injectable({

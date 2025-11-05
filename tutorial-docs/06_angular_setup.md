@@ -600,34 +600,228 @@ The HTTP Client allows your Angular app to communicate with your backend API.
 
 **`app.config.ts`** (Configure your app):
 ```typescript
-import { ApplicationConfig } from '@angular/core';
+import { ApplicationConfig, provideBrowserGlobalErrorListeners, provideZoneChangeDetection } from '@angular/core';
 import { provideRouter } from '@angular/router';
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { routes } from './app.routes';
+import { authHttpInterceptor } from './shared/services/auth.http-interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
+    provideBrowserGlobalErrorListeners(),
+    provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
-    provideHttpClient()  // ← Add HTTP client
+    provideHttpClient(withInterceptors([authHttpInterceptor]))  // ← HTTP client with auth interceptor
   ]
 };
 ```
 
-#### Step 2: Create a Data Service
+📝 **Note**: The `withInterceptors()` function is used to add HTTP interceptors for handling authentication headers automatically on all requests.
 
-Create a service to fetch data from your API:
+#### Step 2: Create HTTP Interceptor for Authorization
 
-**`services/project.service.ts`**:
+The HTTP interceptor automatically adds JWT tokens to outgoing API requests and handles authentication errors.
+
+**`shared/services/auth.http-interceptor.ts`**:
+```typescript
+import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
+import { inject } from '@angular/core';
+import { AuthService } from './auth.service';
+import { catchError, throwError } from 'rxjs';
+
+/**
+ * HTTP Interceptor function for adding JWT token to requests
+ * This modern functional approach (Angular 14+) adds the Authorization header
+ * to all API calls (except auth endpoints) and handles 401 errors
+ */
+export const authHttpInterceptor: HttpInterceptorFn = (req, next) => {
+  const authService = inject(AuthService);
+  const token = authService.getToken();
+
+  // Add token to request if it exists and it's not an auth endpoint
+  if (token && !req.url.includes('/auth/')) {
+    req = req.clone({
+      setHeaders: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+  }
+
+  return next(req).pipe(
+    catchError((error: HttpErrorResponse) => {
+      if (error.status === 401) {
+        // Token might be expired, clear it and logout
+        authService.logout();
+      }
+      
+      return throwError(() => error);
+    })
+  );
+};
+```
+
+✅ **Key Features:**
+- ✅ **Automatic Token Injection**: Adds JWT token to every API request
+- ✅ **Excludes Auth Endpoints**: Doesn't add token to `/auth/` endpoints
+- ✅ **401 Handling**: Automatically clears token and logs user out on 401 errors
+- ✅ **Functional Approach**: Modern Angular pattern using `HttpInterceptorFn`
+
+#### Step 3: Create Authentication Service with Signals
+
+The AuthService manages user authentication using modern Angular signals for state management.
+
+**`shared/services/auth.service.ts`**:
+```typescript
+import { Injectable, inject, signal, computed } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../environments/environment';
+import { BehaviorSubject } from 'rxjs';
+
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface TokenResponse {
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: number;
+  tokenType: string;
+}
+
+export interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  message: string;
+}
+
+@Injectable({
+  providedIn: 'root'
+})
+export class AuthService {
+  private readonly http = inject(HttpClient);
+  private readonly apiUrl = `${environment.apiUrl}/auth`;
+
+  // State management using signals
+  private readonly accessToken = signal<string | null>(null);
+  
+  // Computed signal that automatically updates when accessToken changes
+  private readonly isAuthenticated = computed(() => this.accessToken() !== null);
+  
+  // BehaviorSubject for backward compatibility with observables
+  private readonly tokenSubject = new BehaviorSubject<string | null>(null);
+
+  constructor() {
+    // Initialize from localStorage on service creation
+    const storedToken = this.getStoredToken();
+    this.accessToken.set(storedToken);
+    this.tokenSubject.next(storedToken);
+  }
+
+  /**
+   * Login with email and password
+   */
+  login(request: LoginRequest) {
+    return this.http.post<ApiResponse<TokenResponse>>(`${this.apiUrl}/login`, request);
+  }
+
+  /**
+   * Register a new user
+   */
+  register(request: any) {
+    return this.http.post<ApiResponse<any>>(`${this.apiUrl}/register`, request);
+  }
+
+  /**
+   * Store token after successful login
+   */
+  setToken(token: string, refreshToken: string) {
+    localStorage.setItem('accessToken', token);
+    localStorage.setItem('refreshToken', refreshToken);
+    this.accessToken.set(token);
+    this.tokenSubject.next(token);
+  }
+
+  /**
+   * Get current access token
+   */
+  getToken(): string | null {
+    return this.accessToken();
+  }
+
+  /**
+   * Get token as observable (for backward compatibility)
+   */
+  getToken$() {
+    return this.tokenSubject.asObservable();
+  }
+
+  /**
+   * Get authentication state as readonly signal
+   */
+  isAuthenticated$() {
+    return this.isAuthenticated.asReadonly();
+  }
+
+  /**
+   * Logout and clear tokens
+   */
+  logout() {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    this.accessToken.set(null);
+    this.tokenSubject.next(null);
+  }
+
+  /**
+   * Get stored token from localStorage
+   */
+  private getStoredToken(): string | null {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      return localStorage.getItem('accessToken');
+    }
+    return null;
+  }
+}
+```
+
+✅ **Key Features:**
+- ✅ **Signals for State**: Uses `signal()` for reactive token storage
+- ✅ **Computed Authentication**: `isAuthenticated` automatically tracks token state
+- ✅ **localStorage Persistence**: Token survives page refreshes
+- ✅ **Observable Support**: Provides both signals and observables for flexibility
+
+#### Step 4: Create a Data Service
+
+Create a service to fetch data from your API. The HTTP interceptor will automatically add the Authorization header.
+
+**`features/projects/services/project.service.ts`**:
 ```typescript
 import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
 
 // Define the shape of your data
-interface Project {
+export interface Project {
   id: number;
+  userId: number;
   title: string;
-  description: string;
+  description?: string;
   status: string;
+  priority: number;
+  startDate?: Date;
+  dueDate?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface CreateProjectRequest {
+  title: string;
+  description?: string;
+  status: string;
+  priority: number;
+  startDate?: Date;
+  dueDate?: Date;
 }
 
 @Injectable({
@@ -635,76 +829,179 @@ interface Project {
 })
 export class ProjectService {
   private readonly http = inject(HttpClient);
+  private readonly apiUrl = `${environment.apiUrl}/projects`;
   
-  // Store projects in a signal
+  // Store projects in signals
   private readonly projects = signal<Project[]>([]);
+  private readonly loading = signal(false);
+  private readonly error = signal<string | null>(null);
 
-  // Fetch all projects from API
+  /**
+   * Load all projects from API
+   * The Authorization header is automatically added by authHttpInterceptor
+   */
   loadProjects() {
-    this.http
-      .get<Project[]>('http://localhost:5001/api/projects')
-      .subscribe(data => {
+    this.loading.set(true);
+    this.error.set(null);
+
+    this.http.get<Project[]>(this.apiUrl).subscribe({
+      next: (data) => {
         this.projects.set(data);
-      });
+        this.loading.set(false);
+      },
+      error: (err) => {
+        this.error.set('Failed to load projects');
+        this.loading.set(false);
+        console.error('Error loading projects:', err);
+      }
+    });
   }
 
-  // Get projects as signal (read-only)
+  // Get projects as readonly signal
   getProjects() {
     return this.projects.asReadonly();
   }
+
+  // Get loading state
+  getLoading() {
+    return this.loading.asReadonly();
+  }
+
+  // Get error state
+  getError() {
+    return this.error.asReadonly();
+  }
+
+  // Create a new project
+  createProject(request: CreateProjectRequest) {
+    return this.http.post<Project>(this.apiUrl, request);
+  }
+
+  // Get a single project
+  getProject(id: number) {
+    return this.http.get<Project>(`${this.apiUrl}/${id}`);
+  }
+
+  // Delete a project
+  deleteProject(id: number) {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
 }
 ```
 
-#### Step 3: Use the Service in a Component
+📝 **Note**: The API calls automatically include the JWT token via the `authHttpInterceptor`. No manual header setup is needed!
 
-**`components/project-list.component.ts`**:
+#### Step 6: Use the Service in a Component
+
+**`features/projects/components/project-list/project-list.component.ts`**:
 ```typescript
-import { Component, inject, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ProjectService } from '../services/project.service';
-
-interface Project {
-  id: number;
-  name: string;
-  description: string;
-}
+import { ProjectService } from '../../services/project.service';
+import { AuthService } from '../../../../shared/services/auth.service';
 
 @Component({
   selector: 'app-project-list',
-  imports: [CommonModule],
-  templateUrl: './project-list.component.html',
-  styleUrl: './project-list.component.css'
+  templateUrl: './project-list.component.html',  
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: true,
+  imports: [CommonModule]
 })
 export class ProjectListComponent implements OnInit {
   private readonly projectService = inject(ProjectService);
-  protected readonly projects$ = this.projectService.getProjects();
+  private readonly authService = inject(AuthService);
+
+  // Expose services' signals to template
+  protected readonly projects = this.projectService.getProjects();
+  protected readonly loading = this.projectService.getLoading();
+  protected readonly error = this.projectService.getError();
 
   ngOnInit() {
     // Load projects when component initializes
+    // The authorization token is automatically added by authHttpInterceptor
     this.projectService.loadProjects();
+  }
+
+  deleteProject(id: number) {
+    this.projectService.deleteProject(id).subscribe({
+      next: () => {
+        this.projectService.loadProjects();
+      },
+      error: (err: unknown) => {
+        console.error('Error deleting project:', err);
+      }
+    });
   }
 }
 ```
 
-**`components/project-list.component.html`**:
+**`features/projects/components/project-list/project-list.component.html`**:
 ```html
-<div class="projects-container">
-  <h2>Projects</h2>
-  
-  @if ((projects$()) && (projects$().length > 0)) {
-    <ul>
-      @for (project of projects$(); track project.id) {
-        <li>
-          <h3>{{ project.title }}</h3>
-          <p>{{ project.description }}</p>
-        </li>
-      }
-    </ul>
+<div class="container-fluid py-4">
+  <h2 class="mb-4">Projects</h2>
+
+  @if (loading()) {
+    <div class="alert alert-info" role="alert">
+      <div class="spinner-border spinner-border-sm me-2" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      Loading projects...
+    </div>
+  } @else if (error()) {
+    <div class="alert alert-danger" role="alert">
+      {{ error() }}
+    </div>
   } @else {
-    <p>No projects found.</p>
+    @if (projects().length > 0) {
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead class="table-light">
+            <tr>
+              <th>Title</th>
+              <th>Description</th>
+              <th>Status</th>
+              <th>Priority</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (project of projects(); track project.id) {
+              <tr>
+                <td class="fw-bold">{{ project.title }}</td>
+                <td>{{ project.description }}</td>
+                <td>
+                  <span class="badge bg-primary">{{ project.status }}</span>
+                </td>
+                <td>{{ project.priority }}</td>
+                <td>
+                  <button 
+                    (click)="deleteProject(project.id)" 
+                    class="btn btn-sm btn-outline-danger">
+                    <i class="fas fa-trash"></i> Delete
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else {
+      <div class="alert alert-secondary" role="alert">
+        <i class="fas fa-info-circle me-2"></i>
+        No projects found.
+      </div>
+    }
   }
 </div>
 ```
+
+✅ **Best Practices Applied:**
+- ✅ `ChangeDetectionStrategy.OnPush` for optimal performance
+- ✅ Using `inject()` function instead of constructor injection
+- ✅ Using native control flow (`@if`, `@for`) instead of `*ngIf`, `*ngFor`
+- ✅ Using signals for reactive state management
+- ✅ Error handling with user-friendly messages
+- ✅ Loading state indicator
 
 ---
 
@@ -856,6 +1153,7 @@ export interface UpdateProjectRequest {
 ```typescript
 import { Injectable, signal, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
 import { Project, CreateProjectRequest, UpdateProjectRequest } from '../../../shared/models/project.model';
 
 @Injectable({
@@ -863,7 +1161,7 @@ import { Project, CreateProjectRequest, UpdateProjectRequest } from '../../../sh
 })
 export class ProjectService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = 'http://localhost:5001/api/projects';
+  private readonly apiUrl = `${environment.apiUrl}/projects`;
   private readonly projects = signal<Project[]>([]);
   private readonly loading = signal(false);
   private readonly error = signal<string | null>(null);
@@ -1096,18 +1394,80 @@ export class ProjectListComponent implements OnInit {
 
 ---
 
+## 🔐 Authorization Implementation
+
+Your application uses **JWT tokens** for authorization. Here's how it works end-to-end:
+
+### How Authorization Flows
+
+1. **User Logs In**
+   ```
+   User enters credentials → AuthService.login() → Backend validates → Returns JWT token
+   ```
+
+2. **Token Storage**
+   ```
+   JWT token stored in localStorage via AuthService.setToken()
+   ```
+
+3. **API Requests with Token**
+   ```
+   Component calls ProjectService → HttpClient makes request → authHttpInterceptor adds Bearer token → Backend validates token
+   ```
+
+4. **Token Validation**
+   ```
+   Backend checks authorization header: "Authorization: Bearer {token}"
+   If token invalid/expired (401) → authHttpInterceptor catches → authService.logout()
+   ```
+
+### Implementation Details
+
+**Complete Flow Example:**
+
+```typescript
+// 1. User logs in
+const loginResponse = await this.authService.login({ email, password }).toPromise();
+this.authService.setToken(loginResponse.data.accessToken, loginResponse.data.refreshToken);
+
+// 2. Make API call (token automatically added by interceptor)
+this.projectService.loadProjects();
+
+// Behind the scenes in authHttpInterceptor:
+// - Gets token from AuthService: authService.getToken()
+// - Adds to request: Authorization: Bearer {token}
+// - Sends request to backend
+// - If 401 error: authService.logout()
+```
+
+### What Happens Without Token
+
+- ❌ Auth endpoints (`/auth/login`, `/auth/register`): Run normally
+- ✅ Protected endpoints (`/api/projects`): Return 401 Unauthorized
+
+### What Happens With Expired Token
+
+- The interceptor catches the 401 response
+- Calls `authService.logout()` to clear stored token
+- User is effectively logged out
+- Redirect to login page (handled by guards or components)
+
+---
+
 ## ✅ Checklist: What You Should Know
 
 - [ ] I understand what standalone components are
 - [ ] I know how to create signals and update them
 - [ ] I can create computed signals for derived state
-- [ ] I understand how to import and use HTTP Client
+- [ ] I understand how to import and use HTTP Client with interceptors
 - [ ] I can create a service to fetch data from an API
 - [ ] I know how to use `inject()` for dependency injection
 - [ ] I understand the project folder structure
 - [ ] I can use `@if`, `@for` in templates instead of `*ngIf`, `*ngFor`
 - [ ] I can run the Angular development server
 - [ ] I understand the difference between components, services, and models
+- [ ] I understand how JWT authorization works with HTTP interceptors
+- [ ] I know how to store and retrieve tokens from localStorage
 
 ---
 

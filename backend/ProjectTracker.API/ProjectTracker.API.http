@@ -5,12 +5,12 @@ POST {{ProjectTracker.API_HostAddress}}/api/auth/login
 Content-Type: application/json
 
 {
-  "email": "demo@example.com",
-  "password": "Demo@123"
+  "email": "john.doe@example.com",
+  "password": "SecurePassword123!"
 }
 
 ### After login, copy the accessToken from the response and paste it below
-@auth_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyIiwiZW1haWwiOiJqb2huLmRvZUBleGFtcGxlLmNvbSIsImdpdmVuX25hbWUiOiJKb2huIiwiZmFtaWx5X25hbWUiOiJEb2UiLCJqdGkiOiJlYWEyN2M3YS1kODdmLTRkODMtYjdlYy1hNDY1YzJlZjZiMWMiLCJpYXQiOjE3NjIzMzI1ODksInVzZXJJZCI6IjIiLCJpc0FjdGl2ZSI6IlRydWUiLCJleHAiOjE3NjIzMzM0ODksImlzcyI6IlByb2plY3RUcmFja2VyQVBJIiwiYXVkIjoiUHJvamVjdFRyYWNrZXJDbGllbnQifQ.B4PFAuXqrMFfFIXTtIIgbEMkgmxTiqI6RSyFzw_CsKY
+@auth_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyIiwiZW1haWwiOiJqb2huLmRvZUBleGFtcGxlLmNvbSIsImdpdmVuX25hbWUiOiJKb2huIiwiZmFtaWx5X25hbWUiOiJEb2UiLCJqdGkiOiI0M2JlOTg1ZC0wMjI1LTQxMDUtOWJjMC1kYjZmNjllYWZjYzYiLCJpYXQiOjE3NjIzMzY1NDksInVzZXJJZCI6IjIiLCJpc0FjdGl2ZSI6IlRydWUiLCJleHAiOjE3NjIzMzc0NDksImlzcyI6IlByb2plY3RUcmFja2VyQVBJIiwiYXVkIjoiUHJvamVjdFRyYWNrZXJDbGllbnQifQ.IRBg1pAj05TGAFlvgy9B0OfFqDU2bvY8bVch9AoPj3Q
 
 ### Get all projects
 GET {{ProjectTracker.API_HostAddress}}/api/projects
