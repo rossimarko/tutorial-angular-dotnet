@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ProjectService } from '../../services/project.service';
+import { AuthService } from '../../../../shared/services/auth.service';
 
 
 @Component({
@@ -12,12 +13,15 @@ import { ProjectService } from '../../services/project.service';
 })
 export class ProjectListComponent implements OnInit {
   private readonly projectService = inject(ProjectService);
+  private readonly authService = inject(AuthService);
 
   protected readonly projects = this.projectService.getProjects();
   protected readonly loading = this.projectService.getLoading();
   protected readonly error = this.projectService.getError();
 
-  ngOnInit() {
+  ngOnInit() {    
+    const token = this.authService.getToken();    
+    console.log('ProjectListComponent: Token in localStorage:', localStorage.getItem('accessToken')?.substring(0, 50) + '...');
     this.projectService.loadProjects();
   }
 

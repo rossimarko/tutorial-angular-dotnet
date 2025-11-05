@@ -1,6 +1,7 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { signal } from '@angular/core';
+import { environment } from '../../../environments/environment';
 
 // Define the shape of your data
 export interface Project {
@@ -18,12 +19,11 @@ export interface CreateProjectRequest {
   providedIn: 'root'  // Make this service available everywhere
 })
 export class ProjectService {
-  private readonly apiUrl = 'http://localhost:5001/api/projects';
+  private readonly http = inject(HttpClient);
+  private readonly apiUrl = `${environment.apiUrl}/projects`;
   private readonly projects = signal<Project[]>([]);
   private readonly loading = signal(false);
   private readonly error = signal<string | null>(null);
-
-  constructor(private http: HttpClient) {}
 
   // Load all projects from API
   loadProjects() {

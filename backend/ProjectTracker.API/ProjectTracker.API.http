@@ -1,17 +1,16 @@
-@ProjectTracker.API_HostAddress = https://localhost:7026/
-@auth_token = 
+@ProjectTracker.API_HostAddress = https://localhost:7026
 
 ### Login - Get Auth Token (Run this first)
 POST {{ProjectTracker.API_HostAddress}}/api/auth/login
 Content-Type: application/json
 
 {
-  "email": "john.doe@example.com",
-  "password": "SecurePassword123!"
+  "email": "demo@example.com",
+  "password": "Demo@123"
 }
 
-###
-@auth_token = {{response.body.$.data.accessToken}}
+### After login, copy the accessToken from the response and paste it below
+@auth_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyIiwiZW1haWwiOiJqb2huLmRvZUBleGFtcGxlLmNvbSIsImdpdmVuX25hbWUiOiJKb2huIiwiZmFtaWx5X25hbWUiOiJEb2UiLCJqdGkiOiJlYWEyN2M3YS1kODdmLTRkODMtYjdlYy1hNDY1YzJlZjZiMWMiLCJpYXQiOjE3NjIzMzI1ODksInVzZXJJZCI6IjIiLCJpc0FjdGl2ZSI6IlRydWUiLCJleHAiOjE3NjIzMzM0ODksImlzcyI6IlByb2plY3RUcmFja2VyQVBJIiwiYXVkIjoiUHJvamVjdFRyYWNrZXJDbGllbnQifQ.B4PFAuXqrMFfFIXTtIIgbEMkgmxTiqI6RSyFzw_CsKY
 
 ### Get all projects
 GET {{ProjectTracker.API_HostAddress}}/api/projects

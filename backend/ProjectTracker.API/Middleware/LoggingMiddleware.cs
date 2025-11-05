@@ -39,6 +39,8 @@ public class LoggingMiddleware
                     context.Response.StatusCode,
                     stopwatch.ElapsedMilliseconds);
 
+                // Reset the position to the beginning before copying
+                responseBody.Seek(0, SeekOrigin.Begin);
                 await responseBody.CopyToAsync(originalBodyStream);
             }
             finally

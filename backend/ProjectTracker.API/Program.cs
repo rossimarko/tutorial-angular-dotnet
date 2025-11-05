@@ -27,7 +27,13 @@ builder.Host.UseSerilog((context, config) =>
 
 // Add controllers for API endpoints
 // This is the standard approach, familiar to .NET Framework developers
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+        options.JsonSerializerOptions.WriteIndented = true;
+        options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.Never;
+    });
 
 
 // Add Swagger/OpenAPI
