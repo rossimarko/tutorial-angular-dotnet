@@ -13,12 +13,15 @@ export const authHttpInterceptor: HttpInterceptorFn = (req, next) => {
 
   console.log('authHttpInterceptor: Intercepting request', { url: req.url, hasToken: !!token });
 
-  // Add token to request if it exists and it's not an auth endpoint
-  if (token && !req.url.includes('/auth/')) {
+  // Don't add token to public endpoints (translations, auth)
+  const isPublicEndpoint = req.url.includes('/auth/') || req.url.includes('/translations/');
+  
+  if (token && !isPublicEndpoint) {
     console.log('authHttpInterceptor: Adding Bearer token to request', { url: req.url });
     req = req.clone({
       setHeaders: {
-        Authorization: `Bearer ${token}`
+        Authorization: `Bearer ${token}`,
+        'Accept': 'application/json'
       }
     });
     console.log('authHttpInterceptor: Authorization header set:', { 
@@ -28,7 +31,13 @@ export const authHttpInterceptor: HttpInterceptorFn = (req, next) => {
     console.log('authHttpInterceptor: Skipping token add', { 
       url: req.url, 
       hasToken: !!token,
-      isAuthEndpoint: req.url.includes('/auth/')
+      isPublicEndpoint: isPublicEndpoint
+    });
+    // Set Accept header for all requests
+    req = req.clone({
+      setHeaders: {
+        'Accept': 'application/json'
+      }
     });
   }
 

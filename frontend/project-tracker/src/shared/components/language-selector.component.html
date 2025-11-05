@@ -1,0 +1,33 @@
+<div class="language-selector">
+  <div class="dropdown">
+    <button 
+      class="btn btn-outline-secondary dropdown-toggle" 
+      type="button" 
+      id="languageDropdown"
+      data-bs-toggle="dropdown" 
+      aria-expanded="false"
+      [disabled]="loading()">
+      @if (loading()) {
+        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+      }
+      <i class="fas fa-globe me-2"></i>
+      {{ currentCulture()?.name || 'Language' }}
+    </button>
+    <ul class="dropdown-menu" aria-labelledby="languageDropdown">
+      @for (culture of cultures(); track culture.code) {
+        <li>
+          <button 
+            type="button"
+            class="dropdown-item" 
+            [class.active]="culture.code === currentCulture()?.code"
+            (click)="onLanguageChange(culture.code); $event.preventDefault()">
+            {{ culture.name }}
+            @if (culture.code === currentCulture()?.code) {
+              <i class="fas fa-check ms-2"></i>
+            }
+          </button>
+        </li>
+      }
+    </ul>
+  </div>
+</div>
