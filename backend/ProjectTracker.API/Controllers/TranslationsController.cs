@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ProjectTracker.API.Data.Repositories;
 using ProjectTracker.API.Models.Responses;
@@ -9,6 +10,7 @@ namespace ProjectTracker.API.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
+[AllowAnonymous]
 public class TranslationsController(
     ITranslationRepository translationRepository,
     ILogger<TranslationsController> logger) : ControllerBase

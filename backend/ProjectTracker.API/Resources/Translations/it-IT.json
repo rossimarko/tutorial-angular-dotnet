@@ -71,7 +71,9 @@
     "projects": "Progetti",
     "settings": "Impostazioni",
     "profile": "Profilo",
-    "admin": "Amministrazione"
+    "admin": "Amministrazione",
+    "login": "Accedi",
+    "logout": "Esci"
   },
   "settings": {
     "language": "Lingua",

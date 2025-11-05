@@ -26,6 +26,21 @@ export class LanguageSelectorComponent {
   /// Change the application language
   /// </summary>
   protected async onLanguageChange(cultureCode: string): Promise<void> {
-    await this.translationService.setLanguage(cultureCode);
+    console.log('onLanguageChange called with:', cultureCode);
+    try {
+      await this.translationService.setLanguage(cultureCode);
+      console.log('Language changed successfully to:', cultureCode);
+      
+      // Close the dropdown
+      const dropdownButton = document.getElementById('languageDropdown');
+      if (dropdownButton) {
+        const dropdown = (window as any).bootstrap?.Dropdown?.getInstance(dropdownButton);
+        if (dropdown) {
+          dropdown.hide();
+        }
+      }
+    } catch (error) {
+      console.error('Error changing language:', error);
+    }
   }
 }

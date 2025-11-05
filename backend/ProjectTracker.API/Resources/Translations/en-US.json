@@ -71,7 +71,9 @@
     "projects": "Projects",
     "settings": "Settings",
     "profile": "Profile",
-    "admin": "Admin"
+    "admin": "Admin",
+    "login": "Login",
+    "logout": "Logout"
   },
   "settings": {
     "language": "Language",

@@ -62,52 +62,60 @@ export class TranslationService {
   /// Load all available cultures from the API
   /// </summary>
   private async loadCultures(): Promise<void> {
-    this.http.get<Culture[]>(`${this.apiUrl}/cultures`).pipe(
-      tap(cultures => {
-        this.availableCultures.set(cultures);
-        
-        // Set default culture if current is not available
-        const currentCode = this.currentCulture();
-        const isAvailable = cultures.some(c => c.code === currentCode);
-        
-        if (!isAvailable) {
-          const defaultCulture = cultures.find(c => c.isDefault) || cultures[0];
-          if (defaultCulture) {
-            this.currentCulture.set(defaultCulture.code);
+    return new Promise((resolve, reject) => {
+      this.http.get<Culture[]>(`${this.apiUrl}/cultures`).pipe(
+        tap(cultures => {
+          this.availableCultures.set(cultures);
+          
+          // Set default culture if current is not available
+          const currentCode = this.currentCulture();
+          const isAvailable = cultures.some(c => c.code === currentCode);
+          
+          if (!isAvailable) {
+            const defaultCulture = cultures.find(c => c.isDefault) || cultures[0];
+            if (defaultCulture) {
+              this.currentCulture.set(defaultCulture.code);
+            }
           }
-        }
-      }),
-      catchError(err => {
-        console.error('Failed to load cultures:', err);
-        this.error.set('Failed to load available languages');
-        return of([]);
-      })
-    ).subscribe();
+          resolve();
+        }),
+        catchError(err => {
+          console.error('Failed to load cultures:', err);
+          this.error.set('Failed to load available languages');
+          reject(err);
+          return of([]);
+        })
+      ).subscribe();
+    });
   }
 
   /// <summary>
   /// Load all translations for a specific culture
   /// </summary>
   private async loadTranslations(cultureCode: string): Promise<void> {
-    this.isLoading.set(true);
-    this.error.set(null);
+    return new Promise((resolve, reject) => {
+      this.isLoading.set(true);
+      this.error.set(null);
 
-    this.http.get<TranslationsResponse>(`${this.apiUrl}/${cultureCode}`).pipe(
-      tap(response => {
-        this.translations.set(response.translations);
-        this.isLoading.set(false);
-        
-        // Mark all categories as loaded
-        const categories = Object.keys(response.translations);
-        this.loadedCategories.set(new Set(categories));
-      }),
-      catchError(err => {
-        console.error('Failed to load translations:', err);
-        this.error.set('Failed to load translations');
-        this.isLoading.set(false);
-        return of(null);
-      })
-    ).subscribe();
+      this.http.get<TranslationsResponse>(`${this.apiUrl}/${cultureCode}`).pipe(
+        tap(response => {
+          this.translations.set(response.translations);
+          this.isLoading.set(false);
+          
+          // Mark all categories as loaded
+          const categories = Object.keys(response.translations);
+          this.loadedCategories.set(new Set(categories));
+          resolve();
+        }),
+        catchError(err => {
+          console.error('Failed to load translations:', err);
+          this.error.set('Failed to load translations');
+          this.isLoading.set(false);
+          reject(err);
+          return of(null);
+        })
+      ).subscribe();
+    });
   }
 
   /// <summary>

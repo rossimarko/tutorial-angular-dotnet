@@ -16,15 +16,16 @@
     <ul class="dropdown-menu" aria-labelledby="languageDropdown">
       @for (culture of cultures(); track culture.code) {
         <li>
-          <a 
+          <button 
+            type="button"
             class="dropdown-item" 
             [class.active]="culture.code === currentCulture()?.code"
-            (click)="onLanguageChange(culture.code)">
+            (click)="onLanguageChange(culture.code); $event.preventDefault()">
             {{ culture.name }}
             @if (culture.code === currentCulture()?.code) {
               <i class="fas fa-check ms-2"></i>
             }
-          </a>
+          </button>
         </li>
       }
     </ul>
