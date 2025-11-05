@@ -31,6 +31,8 @@
     "firstName": "Nome",
     "lastName": "Cognome",
     "rememberMe": "Ricordami",
+    "enterCredentials": "Inserisci la tua email e password per accedere",
+    "dontHaveAccount": "Non hai un account? Registrati qui",
     "forgotPassword": "Password dimenticata?",
     "loginSuccess": "Accesso effettuato con successo",
     "loginError": "Email o password non validi",

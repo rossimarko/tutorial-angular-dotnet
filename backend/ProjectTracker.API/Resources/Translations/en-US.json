@@ -31,6 +31,8 @@
     "firstName": "First Name",
     "lastName": "Last Name",
     "rememberMe": "Remember me",
+    "enterCredentials": "Enter your email and password to login",
+    "dontHaveAccount": "Don't have an account? Register here",
     "forgotPassword": "Forgot password?",
     "loginSuccess": "Login successful",
     "loginError": "Invalid email or password",

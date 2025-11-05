@@ -1,16 +1,18 @@
-import { Component, inject, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, inject, signal, ChangeDetectionStrategy, computed } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { AuthService, TokenResponse } from '../../../../shared/services/auth.service';
 import { ApiResponse } from '../../../../shared/services/auth.service';
+import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
+import { LanguageSelectorComponent } from '../../../../shared/components/language-selector.component';
 
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
   styleUrl: './login.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule]
+  imports: [CommonModule, ReactiveFormsModule, TranslatePipe, LanguageSelectorComponent]
 })
 export class LoginComponent {
   private readonly authService = inject(AuthService);
@@ -20,6 +22,7 @@ export class LoginComponent {
   protected readonly loginForm: FormGroup;
   protected readonly loading = signal(false);
   protected readonly error = signal<string | null>(null);
+  protected readonly isLoading = computed(() => this.loading());
 
   constructor() {
     this.loginForm = this.fb.group({
@@ -28,7 +31,7 @@ export class LoginComponent {
     });
   }
 
-  protected onLogin() {
+  protected onSubmit() {
     if (this.loginForm.invalid) {
       this.error.set('Please enter valid email and password');
       return;
@@ -60,5 +63,26 @@ export class LoginComponent {
         this.loading.set(false);
       }
     });
+  }
+
+  protected getFieldError(fieldName: string): string | null {
+    const field = this.loginForm.get(fieldName);
+    if (!field || !field.errors || !field.touched) {
+      return null;
+    }
+
+    if (field.hasError('required')) {
+      return `${fieldName} is required`;
+    }
+
+    if (field.hasError('email')) {
+      return 'Please enter a valid email';
+    }
+
+    if (field.hasError('minlength')) {
+      return `${fieldName} must be at least ${field.errors['minlength'].requiredLength} characters`;
+    }
+
+    return null;
   }
 }

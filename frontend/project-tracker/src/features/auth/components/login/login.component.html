@@ -1,68 +1,110 @@
-<div class="min-vh-100 d-flex align-items-center justify-content-center bg-gradient">
-  <div class="card shadow-lg" style="width: 100%; max-width: 400px;">
+<div class="container-fluid d-flex align-items-center justify-content-center min-vh-100 bg-light">
+  <div class="card shadow-sm" style="width: 100%; max-width: 400px;">
     <div class="card-body p-5">
-      <h1 class="card-title text-center mb-2 fw-bold text-primary">Project Tracker</h1>
-      <h2 class="card-subtitle text-center mb-4 text-secondary">Login</h2>
+      <!-- Header -->
+      <div class="text-center mb-4">
+        <h2 class="card-title mb-2">
+          {{ 'auth.login' | translate }}
+        </h2>
+        <p class="text-muted small">
+          {{ 'auth.enterCredentials' | translate }}
+        </p>
+      </div>
 
-      @if (error()) {
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-          {{ error() }}
-          <button type="button" class="btn-close" (click)="error.set(null)"></button>
-        </div>
-      }
-
-      <form [formGroup]="loginForm" (ngSubmit)="onLogin()">
+           <!-- Login form -->
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" novalidate>
+        <!-- Email field -->
         <div class="mb-3">
-          <label for="email" class="form-label">Email</label>
-          <input
-            type="email"
+          <label for="email" class="form-label">
+            {{ 'auth.email' | translate }}
+          </label>
+          <input 
+            type="email" 
+            class="form-control" 
+            [class.is-invalid]="loginForm.get('email')?.touched && loginForm.get('email')?.invalid"
             id="email"
-            class="form-control"
             formControlName="email"
-            placeholder="Enter your email"
-            [class.is-invalid]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched"
-          />
-          @if (loginForm.get('email')?.invalid && loginForm.get('email')?.touched) {
+            [placeholder]="'auth.email' | translate"
+            [attr.aria-label]="'auth.email' | translate"
+            autocomplete="email">
+          
+          @if (getFieldError('email')) {
             <div class="invalid-feedback d-block">
-              Please enter a valid email
+              {{ getFieldError('email') }}
             </div>
           }
         </div>
 
+        <!-- Password field -->
         <div class="mb-3">
-          <label for="password" class="form-label">Password</label>
-          <input
-            type="password"
+          <label for="password" class="form-label">
+            {{ 'auth.password' | translate }}
+          </label>
+          <input 
+            type="password" 
+            class="form-control" 
+            [class.is-invalid]="loginForm.get('password')?.touched && loginForm.get('password')?.invalid"
             id="password"
-            class="form-control"
             formControlName="password"
-            placeholder="Enter your password"
-            [class.is-invalid]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
-          />
-          @if (loginForm.get('password')?.invalid && loginForm.get('password')?.touched) {
+            [placeholder]="'auth.password' | translate"
+            [attr.aria-label]="'auth.password' | translate"
+            autocomplete="current-password">
+          
+          @if (getFieldError('password')) {
             <div class="invalid-feedback d-block">
-              Password is required
+              {{ getFieldError('password') }}
             </div>
           }
         </div>
 
-        <button
-          type="submit"
-          class="btn btn-primary w-100"
-          [disabled]="loginForm.invalid || loading()"
-        >
-          @if (loading()) {
+        <!-- Remember me checkbox (optional) -->
+        <div class="form-check mb-3">
+          <input 
+            type="checkbox" 
+            class="form-check-input" 
+            id="rememberMe">
+          <label class="form-check-label" for="rememberMe">
+            {{ 'auth.rememberMe' | translate }}
+          </label>
+        </div>
+
+        <!-- Submit button -->
+        <button 
+          type="submit" 
+          class="btn btn-primary w-100 mb-3"
+          [disabled]="loginForm.invalid || isLoading()">
+          @if (isLoading()) {
             <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-            <span>Logging in...</span>
+            <span>{{ 'common.loading' | translate }}</span>
           } @else {
-            <span>Login</span>
+            {{ 'auth.login' | translate }}
           }
         </button>
       </form>
 
-      <p class="text-center mt-4 mb-0">
-        Don't have an account? <a href="/register" class="link-primary text-decoration-none">Register here</a>
-      </p>
+      <!-- Error message (translated from API response) -->
+      @if (error()) {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+          <i class="fas fa-exclamation-circle me-2"></i>
+          <strong>{{ 'common.error' | translate }}:</strong>
+          <!-- This error message comes from the API via AuthService -->
+          {{ error() }}
+        </div>
+      }
+
+      <!-- Footer links -->
+      <div class="text-center mt-4">
+        <p class="mb-0">
+          <a href="/register" class="text-decoration-none">
+            {{ 'auth.dontHaveAccount' | translate }}
+          </a>
+        </p>
+        <p class="mb-0 mt-2">
+          <a href="/forgot-password" class="text-decoration-none small text-muted">
+            {{ 'auth.forgotPassword' | translate }}
+          </a>
+        </p>
+      </div>
     </div>
   </div>
 </div>
