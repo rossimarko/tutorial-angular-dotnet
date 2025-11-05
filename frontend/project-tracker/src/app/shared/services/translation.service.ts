@@ -1,7 +1,7 @@
 import { Injectable, signal, computed, inject, effect } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { catchError, of, tap } from 'rxjs';
-import { environment } from '../../environments/environment';
+import { environment } from '../../../environments/environment';
 import { Culture, TranslationsResponse, TranslationParams } from '../models/translation.model';
 
 /// <summary>

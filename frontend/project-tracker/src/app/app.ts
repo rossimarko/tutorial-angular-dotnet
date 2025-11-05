@@ -1,7 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { TranslatePipe } from '../shared/pipes/translate.pipe';
-import { LanguageSelectorComponent } from '../shared/components/language-selector.component';
+import { TranslatePipe } from './shared/pipes/translate.pipe';
+import { LanguageSelectorComponent } from './shared/components/language-selector.component';
 
 @Component({
   selector: 'app-root',

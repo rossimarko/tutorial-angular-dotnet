@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { signal } from '@angular/core';
-import { environment } from '../../../environments/environment';
+import { environment } from '../../../../environments/environment';
 
 // Define the shape of your data
 export interface Project {
