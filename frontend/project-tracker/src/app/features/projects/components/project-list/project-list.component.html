@@ -1,125 +1,190 @@
 <div class="container-fluid py-4">
+  <!-- Header -->
   <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Projects</h2>
+    <div>
+      <h2 class="mb-1">{{ 'projects.title' | translate }}</h2>
+      <p class="text-muted mb-0">{{ 'projects.manageProjects' | translate }}</p>
+    </div>
+    
+    <div class="btn-group" role="group">
+      <button type="button" class="btn btn-primary" (click)="createProject()">
+        <i class="fas fa-plus me-2"></i>
+        {{ 'projects.addProject' | translate }}
+      </button>
+      
+      <!-- Export dropdown -->
+      <button
+        type="button"
+        class="btn btn-outline-secondary dropdown-toggle"
+        data-bs-toggle="dropdown"
+        aria-expanded="false">
+        <i class="fas fa-download me-1"></i>
+        {{ 'common.export' | translate }}
+      </button>
+      <ul class="dropdown-menu dropdown-menu-end">
+        <li>
+          <button type="button" class="dropdown-item" (click)="exportCurrentPageToCSV()">
+            <i class="fas fa-file-csv me-2"></i>
+            {{ 'common.exportPageCSV' | translate }}
+          </button>
+        </li>
+        <li>
+          <button type="button" class="dropdown-item" (click)="exportCurrentPageToExcel()">
+            <i class="fas fa-file-excel me-2"></i>
+            {{ 'common.exportPageExcel' | translate }}
+          </button>
+        </li>
+        <li><hr class="dropdown-divider"></li>
+        <li>
+          <button type="button" class="dropdown-item" (click)="exportAllToCSV()">
+            <i class="fas fa-file-csv me-2"></i>
+            {{ 'common.exportAllCSV' | translate }}
+          </button>
+        </li>
+        <li>
+          <button type="button" class="dropdown-item" (click)="exportAllToExcel()">
+            <i class="fas fa-file-excel me-2"></i>
+            {{ 'common.exportAllExcel' | translate }}
+          </button>
+        </li>
+      </ul>
+    </div>
   </div>
 
-  @if (loading()) {
-    <!-- Loading State -->
-    <div class="alert alert-info" role="alert">
-      <div class="spinner-border spinner-border-sm me-2" role="status">
-        <span class="visually-hidden">Loading...</span>
-      </div>
-      Loading projects...
-    </div>
-  } @else if (error()) {
-    <!-- Error State -->
-    <div class="alert alert-danger" role="alert">
+  <!-- Error Message -->
+  @if (error()) {
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+      <i class="fas fa-exclamation-triangle me-2"></i>
       {{ error() }}
+      <button type="button" class="btn-close"></button>
     </div>
-  } @else {
-    <!-- Search & Filter Section -->
-    <div class="card mb-4">
-      <div class="card-body">
-        <div class="row g-3">
-          <!-- Search Input -->
-          <div class="col-md-6">
-            <label for="search" class="form-label">Search Projects</label>
-            <input 
-              id="search"
-              type="text" 
-              class="form-control" 
-              placeholder="Search by title or description..."
-              [formControl]="searchControl">
-          </div>
+  }
 
-          <!-- Status Filter -->
-          <div class="col-md-6">
-            <label for="status" class="form-label">Filter by Status</label>
-            <select 
-              id="status"
-              class="form-select" 
-              [formControl]="statusFilter">
-              <option value="">All Statuses</option>
-              @for (status of statuses; track status) {
-                <option [value]="status">{{ status }}</option>
-              }
-            </select>
-          </div>
+  <!-- Search and Filter Controls -->
+  <div class="card mb-3">
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label for="search" class="form-label">{{ 'common.search' | translate }}</label>
+          <input
+            id="search"
+            type="text"
+            class="form-control"
+            placeholder="{{ 'projects.searchPlaceholder' | translate }}"
+            [formControl]="searchControl">
+        </div>
+        <div class="col-md-6">
+          <label for="status" class="form-label">{{ 'common.status' | translate }}</label>
+          <select id="status" class="form-select" [formControl]="statusFilter">
+            <option value="">{{ 'common.all' | translate }}</option>
+            @for (status of statuses; track status) {
+              <option [value]="status">{{ status }}</option>
+            }
+          </select>
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- Projects Table or Empty State -->
-    @if (projects().length > 0) {
-      <div class="table-responsive">
-        <table class="table table-hover">
-          <thead class="table-light">
+  <!-- Data Table Card -->
+  <div class="card">
+    <!-- Table -->
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead class="table-light">
+          <tr>
+            <th style="cursor: pointer;" (click)="sortByColumn('Title')">
+              {{ 'projects.title' | translate }}{{ getSortIndicator('Title') }}
+            </th>
+            <th style="cursor: pointer;" (click)="sortByColumn('Status')">
+              {{ 'common.status' | translate }}{{ getSortIndicator('Status') }}
+            </th>
+            <th style="cursor: pointer;" (click)="sortByColumn('Priority')">
+              {{ 'projects.priority' | translate }}{{ getSortIndicator('Priority') }}
+            </th>
+            <th style="cursor: pointer;" (click)="sortByColumn('DueDate')">
+              {{ 'projects.dueDate' | translate }}{{ getSortIndicator('DueDate') }}
+            </th>
+            <th style="cursor: pointer;" (click)="sortByColumn('CreatedAt')">
+              {{ 'projects.createdAt' | translate }}{{ getSortIndicator('CreatedAt') }}
+            </th>
+            <th>{{ 'common.actions' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (loading()) {
             <tr>
-              <th 
-                (click)="sortByColumn('title')"
-                style="cursor: pointer;"
-                role="button"
-                tabindex="0">
-                Name {{ getSortIndicator('title') }}
-              </th>
-              <th 
-                (click)="sortByColumn('status')"
-                style="cursor: pointer;"
-                role="button"
-                tabindex="0">
-                Status {{ getSortIndicator('status') }}
-              </th>
-              <th 
-                (click)="sortByColumn('priority')"
-                style="cursor: pointer;"
-                role="button"
-                tabindex="0">
-                Priority {{ getSortIndicator('priority') }}
-              </th>
-              <th 
-                (click)="sortByColumn('dueDate')"
-                style="cursor: pointer;"
-                role="button"
-                tabindex="0">
-                Due Date {{ getSortIndicator('dueDate') }}
-              </th>
-              <th>Actions</th>
+              <td colspan="6" class="text-center py-4">
+                <div class="spinner-border spinner-border-sm" role="status">
+                  <span class="visually-hidden">{{ 'common.loading' | translate }}</span>
+                </div>
+              </td>
             </tr>
-          </thead>
-          <tbody>
+          } @else if (projects().length === 0) {
+            <tr>
+              <td colspan="6" class="text-center py-4 text-muted">
+                {{ 'projects.noProjects' | translate }}
+              </td>
+            </tr>
+          } @else {
             @for (project of projects(); track project.id) {
               <tr>
-                <td class="fw-bold">{{ project.title }}</td>
+                <td class="fw-medium">{{ project.title }}</td>
                 <td>
                   <span class="badge" [ngClass]="{
                     'bg-success': project.status === 'Active',
                     'bg-warning': project.status === 'Pending',
-                    'bg-secondary': project.status === 'Completed',
+                    'bg-info': project.status === 'Completed',
                     'bg-danger': project.status === 'Cancelled'
                   }">
                     {{ project.status }}
                   </span>
                 </td>
                 <td>{{ project.priority }}</td>
-                <td>{{ project.dueDate | date: 'short' }}</td>
+                <td>{{ project.dueDate | date:'short' }}</td>
+                <td>{{ project.createdAt | date:'short' }}</td>
                 <td>
-                  <button 
-                    (click)="deleteProject(project.id)" 
-                    class="btn btn-sm btn-outline-danger">
-                    <i class="fas fa-trash"></i> Delete
-                  </button>
+                  <div class="btn-group btn-group-sm" role="group">
+                    <button
+                      type="button"
+                      class="btn btn-outline-primary"
+                      (click)="viewProject(project)"
+                      title="{{ 'common.view' | translate }}">
+                      <i class="fas fa-eye"></i>
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-outline-secondary"
+                      (click)="editProject(project)"
+                      title="{{ 'common.edit' | translate }}">
+                      <i class="fas fa-pencil"></i>
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-outline-danger"
+                      (click)="deleteProject(project)"
+                      title="{{ 'common.delete' | translate }}">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </div>
                 </td>
               </tr>
             }
-          </tbody>
-        </table>
-      </div>
-    } @else {
-      <!-- Empty State -->
-      <div class="alert alert-secondary" role="alert">
-        <i class="fas fa-info-circle me-2"></i>
-        No projects found. Try adjusting your search or filter criteria.
-      </div>
-    }
-  }
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination Footer -->
+    <div class="card-footer bg-light">
+      <app-pagination
+        [currentPage]="pageNumber()"
+        [totalPages]="totalPages()"
+        [pageSize]="pageSize()"
+        [totalCount]="totalCount()"
+        (pageChanged)="onPageChanged($event)"
+        (pageSizeChanged)="onPageSizeChanged($event)">
+      </app-pagination>
+    </div>
+  </div>
 </div>

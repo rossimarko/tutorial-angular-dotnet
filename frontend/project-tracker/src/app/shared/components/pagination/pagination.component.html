@@ -1,0 +1,79 @@
+<nav aria-label="Pagination Navigation" class="d-flex justify-content-between align-items-center flex-wrap gap-3 py-3">
+  <!-- Items count display -->
+  <div class="text-muted small">
+    {{ 'common.showing' | translate }}
+    <strong>{{ startItem() }}</strong>
+    {{ 'common.to' | translate }}
+    <strong>{{ endItem() }}</strong>
+    {{ 'common.of' | translate }}
+    <strong>{{ totalCount() }}</strong>
+    {{ 'common.items' | translate }}
+  </div>
+
+  <!-- Page size selector -->
+  <div class="d-flex align-items-center gap-2">
+    <label for="pageSize" class="form-label mb-0 text-muted small">
+      {{ 'common.itemsPerPage' | translate }}:
+    </label>
+    <select
+      id="pageSize"
+      class="form-select form-select-sm"
+      style="width: auto; min-width: 80px;"
+      [value]="pageSize()"
+      (change)="onPageSizeChange($any($event.target).value)"
+      [attr.aria-label]="'common.pageSize' | translate">
+      @for (size of pageSizeOptions(); track size) {
+        <option [value]="size">{{ size }}</option>
+      }
+    </select>
+  </div>
+
+  <!-- Page navigation -->
+  @if (totalPages() > 1) {
+    <ul class="pagination mb-0">
+      <!-- Previous button -->
+      <li class="page-item" [class.disabled]="!hasPrevious()">
+        <button
+          type="button"
+          class="page-link"
+          (click)="previousPage()"
+          [disabled]="!hasPrevious()"
+          [attr.aria-label]="'common.previous' | translate">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+      </li>
+
+      <!-- Page numbers -->
+      @for (page of pageNumbers(); track page) {
+        @if (page === '...') {
+          <li class="page-item disabled">
+            <span class="page-link">{{ page }}</span>
+          </li>
+        } @else {
+          <li class="page-item" [class.active]="page === currentPage()">
+            <button
+              type="button"
+              class="page-link"
+              (click)="goToPage($any(page))"
+              [attr.aria-label]="'Page ' + page"
+              [attr.aria-current]="page === currentPage() ? 'page' : null">
+              {{ page }}
+            </button>
+          </li>
+        }
+      }
+
+      <!-- Next button -->
+      <li class="page-item" [class.disabled]="!hasNext()">
+        <button
+          type="button"
+          class="page-link"
+          (click)="nextPage()"
+          [disabled]="!hasNext()"
+          [attr.aria-label]="'common.next' | translate">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+      </li>
+    </ul>
+  }
+</nav>

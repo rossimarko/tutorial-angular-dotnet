@@ -19,7 +19,20 @@
     "export": "Esporta",
     "import": "Importa",
     "refresh": "Aggiorna",
-    "actions": "Azioni"
+    "actions": "Azioni",
+    "view": "Visualizza",
+    "status": "Stato",
+    "all": "Tutti",
+    "showing": "Visualizzazione",
+    "to": "a",
+    "of": "di",
+    "items": "elementi",
+    "itemsPerPage": "Elementi per pagina",
+    "pageSize": "Dimensione pagina",
+    "exportPageCSV": "Esporta Pagina Corrente (CSV)",
+    "exportPageExcel": "Esporta Pagina Corrente (Excel)",
+    "exportAllCSV": "Esporta Tutti i Risultati (CSV)",
+    "exportAllExcel": "Esporta Tutti i Risultati (Excel)"
   },
   "auth": {
     "login": "Accedi",
@@ -65,7 +78,10 @@
     "createSuccess": "Progetto creato con successo",
     "updateSuccess": "Progetto aggiornato con successo",
     "deleteSuccess": "Progetto eliminato con successo",
-    "loadError": "Errore nel caricamento dei progetti"
+    "loadError": "Errore nel caricamento dei progetti",
+    "manageProjects": "Gestisci i tuoi progetti e le attività",
+    "searchPlaceholder": "Cerca per titolo o descrizione...",
+    "noProjects": "Nessun progetto trovato. Prova a modificare i criteri di ricerca o filtro."
   },
   "navigation": {
     "home": "Home",

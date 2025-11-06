@@ -19,7 +19,20 @@
     "export": "Export",
     "import": "Import",
     "refresh": "Refresh",
-    "actions": "Actions"
+    "actions": "Actions",
+    "view": "View",
+    "status": "Status",
+    "all": "All",
+    "showing": "Showing",
+    "to": "to",
+    "of": "of",
+    "items": "items",
+    "itemsPerPage": "Items per page",
+    "pageSize": "Page size",
+    "exportPageCSV": "Export Current Page (CSV)",
+    "exportPageExcel": "Export Current Page (Excel)",
+    "exportAllCSV": "Export All Results (CSV)",
+    "exportAllExcel": "Export All Results (Excel)"
   },
   "auth": {
     "login": "Login",
@@ -65,7 +78,10 @@
     "createSuccess": "Project created successfully",
     "updateSuccess": "Project updated successfully",
     "deleteSuccess": "Project deleted successfully",
-    "loadError": "Failed to load projects"
+    "loadError": "Failed to load projects",
+    "manageProjects": "Manage your projects and tasks",
+    "searchPlaceholder": "Search by title or description...",
+    "noProjects": "No projects found. Try adjusting your search or filter criteria."
   },
   "navigation": {
     "home": "Home",

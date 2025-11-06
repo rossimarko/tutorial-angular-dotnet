@@ -1,107 +1,246 @@
-import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
+import { Component, inject, signal, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormControl } from '@angular/forms';
+import { Router } from '@angular/router';
 import { ProjectService } from '../../services/project.service';
-import { AuthService } from '../../../../core/services/auth.service';
+import { ExportService } from '../../../../shared/services/export.service';
+import { Project, PaginationParams } from '../../../../shared/models/project.model';
+import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
+import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
+/// <summary>
+/// Project list page with server-side pagination, search, sorting, and export
+/// </summary>
 @Component({
   selector: 'app-project-list',
-  templateUrl: './project-list.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule]
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    PaginationComponent,
+    TranslatePipe
+  ],
+  templateUrl: 'project-list.component.html',
+  styleUrl: 'project-list.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ProjectListComponent implements OnInit {
   private readonly projectService = inject(ProjectService);
-  private readonly authService = inject(AuthService);
+  private readonly exportService = inject(ExportService);
+  private readonly router = inject(Router);
 
-  // Expose service signals to template
-  protected readonly projects = this.projectService.getProjects();
-  protected readonly loading = this.projectService.getLoading();
-  protected readonly error = this.projectService.getError();
+  // Read-only signals from service
+  protected readonly projects = this.projectService.getProjectsSignal();
+  protected readonly loading = this.projectService.getLoadingSignal();
+  protected readonly error = this.projectService.getErrorSignal();
+  protected readonly pageNumber = this.projectService.getPageNumberSignal();
+  protected readonly pageSize = this.projectService.getPageSizeSignal();
+  protected readonly totalCount = this.projectService.getTotalCountSignal();
+  protected readonly totalPages = this.projectService.getTotalPagesSignal();
 
-  // Form controls for search and filter
+  // Form controls for search
   protected readonly searchControl = new FormControl('');
   protected readonly statusFilter = new FormControl('');
-
-  // Available statuses for filter dropdown
   protected readonly statuses = ['Active', 'Pending', 'Completed', 'Cancelled'];
 
-  // Current sort state (for UI display only)
-  protected currentSortColumn: 'title' | 'status' | 'priority' | 'dueDate' = 'title';
-  protected currentSortDirection: 'asc' | 'desc' = 'asc';
+  // Current sort state
+  protected currentSortBy = 'CreatedAt';
+  protected currentSortDirection: 'asc' | 'desc' = 'desc';
 
-  ngOnInit() {
-    // Initial load
+  // Track current pagination state
+  private readonly currentPagination = signal<PaginationParams>({
+    pageNumber: 1,
+    pageSize: 10,
+    sortBy: 'CreatedAt',
+    sortDirection: 'desc'
+  });
+
+  ngOnInit(): void {
     this.loadProjects();
 
-    // Subscribe to search changes with debounce to avoid too many API calls
+    // Subscribe to search changes with debounce
     this.searchControl.valueChanges
       .pipe(
         debounceTime(300),
         distinctUntilChanged()
       )
       .subscribe(() => {
-        this.loadProjects();
+        this.resetPageAndLoad();
       });
 
-    // Subscribe to status filter changes (immediate, no debounce)
+    // Subscribe to status filter changes
     this.statusFilter.valueChanges.subscribe(() => {
-      this.loadProjects();
+      this.resetPageAndLoad();
     });
   }
 
   /// <summary>
-  /// Load projects from API with current search/filter/sort parameters
+  /// Load projects with current filters and pagination
   /// </summary>
-  private loadProjects() {
-    const search = this.searchControl.value || undefined;
-    const status = this.statusFilter.value || undefined;
-
-    this.projectService.loadProjects({
-      search,
-      status,
-      sortBy: this.currentSortColumn,
-      sortOrder: this.currentSortDirection
-    });
+  private loadProjects(): void {
+    const filters = this.buildFilters();
+    this.projectService.loadProjectsPaged(filters).subscribe();
   }
 
   /// <summary>
-  /// Handle column header clicks for sorting
+  /// Reset to page 1 and reload (used when filters change)
   /// </summary>
-  sortByColumn(column: 'title' | 'status' | 'priority' | 'dueDate') {
-    // If clicking the same column, toggle direction
-    if (this.currentSortColumn === column) {
-      this.currentSortDirection = this.currentSortDirection === 'asc' ? 'desc' : 'asc';
-    } else {
-      // New column, sort ascending
-      this.currentSortColumn = column;
-      this.currentSortDirection = 'asc';
-    }
-    
-    // Reload projects with new sort
+  private resetPageAndLoad(): void {
+    this.currentPagination.update(current => ({
+      ...current,
+      pageNumber: 1
+    }));
     this.loadProjects();
   }
 
   /// <summary>
-  /// Get sort indicator for column header
+  /// Build filter object from form controls and internal state
   /// </summary>
-  getSortIndicator(column: string): string {
-    if (this.currentSortColumn !== column) return '';
-    return this.currentSortDirection === 'asc' ? '↑' : '↓';
+  private buildFilters(): Partial<PaginationParams> {
+    const pagination = this.currentPagination();
+    const filters: Partial<PaginationParams> = {
+      ...pagination,
+      searchTerm: this.searchControl.value || undefined
+    };
+
+    if (this.statusFilter.value) {
+      (filters as any).status = this.statusFilter.value;
+    }
+
+    return filters;
   }
 
   /// <summary>
-  /// Delete a project and refresh the list
+  /// Handle page navigation
   /// </summary>
-  deleteProject(id: number) {
-    this.projectService.deleteProject(id).subscribe({
-      next: () => {
-        this.loadProjects();
-      },
-      error: (err: unknown) => {
-        console.error('Error deleting project:', err);
-      }
+  onPageChanged(page: number): void {
+    this.currentPagination.update(current => ({
+      ...current,
+      pageNumber: page
+    }));
+    this.loadProjects();
+  }
+
+  /// <summary>
+  /// Handle page size change
+  /// </summary>
+  onPageSizeChanged(size: number): void {
+    this.currentPagination.update(current => ({
+      ...current,
+      pageSize: size,
+      pageNumber: 1
+    }));
+    this.loadProjects();
+  }
+
+  /// <summary>
+  /// Sort by column
+  /// </summary>
+  sortByColumn(column: 'Title' | 'Status' | 'Priority' | 'DueDate' | 'CreatedAt'): void {
+    if (this.currentSortBy === column) {
+      this.currentSortDirection = this.currentSortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.currentSortBy = column;
+      this.currentSortDirection = 'asc';
+    }
+
+    this.currentPagination.update(current => ({
+      ...current,
+      sortBy: this.currentSortBy,
+      sortDirection: this.currentSortDirection,
+      pageNumber: 1
+    }));
+    this.loadProjects();
+  }
+
+  /// <summary>
+  /// Get sort indicator for table header
+  /// </summary>
+  getSortIndicator(column: string): string {
+    if (this.currentSortBy !== column) return '';
+    return this.currentSortDirection === 'asc' ? ' ↑' : ' ↓';
+  }
+
+  /// <summary>
+  /// Export current page to CSV
+  /// </summary>
+  exportCurrentPageToCSV(): void {
+    this.exportService.exportToCSV(
+      this.projects(),
+      `projects-page-${this.pageNumber()}.csv`
+    );
+  }
+
+  /// <summary>
+  /// Export current page to Excel
+  /// </summary>
+  exportCurrentPageToExcel(): void {
+    this.exportService.exportToExcel(
+      this.projects(),
+      `projects-page-${this.pageNumber()}.xlsx`
+    );
+  }
+
+  /// <summary>
+  /// Export all filtered projects to CSV (fetches with large page size)
+  /// </summary>
+  exportAllToCSV(): void {
+    const allFilters = {
+      ...this.buildFilters(),
+      pageSize: 10000
+    };
+    this.projectService.loadProjectsPaged(allFilters).subscribe(result => {
+      this.exportService.exportToCSV(result.items, 'projects-all.csv');
     });
+  }
+
+  /// <summary>
+  /// Export all filtered projects to Excel
+  /// </summary>
+  exportAllToExcel(): void {
+    const allFilters = {
+      ...this.buildFilters(),
+      pageSize: 10000
+    };
+    this.projectService.loadProjectsPaged(allFilters).subscribe(result => {
+      this.exportService.exportToExcel(result.items, 'projects-all.xlsx');
+    });
+  }
+
+  /// <summary>
+  /// Navigate to create project page
+  /// </summary>
+  createProject(): void {
+    this.router.navigate(['/projects/create']);
+  }
+
+  /// <summary>
+  /// View project details
+  /// </summary>
+  viewProject(project: Project): void {
+    this.router.navigate(['/projects', project.id]);
+  }
+
+  /// <summary>
+  /// Edit project
+  /// </summary>
+  editProject(project: Project): void {
+    this.router.navigate(['/projects', project.id, 'edit']);
+  }
+
+  /// <summary>
+  /// Delete project with confirmation
+  /// </summary>
+  deleteProject(project: Project): void {
+    if (confirm(`Are you sure you want to delete "${project.title}"?`)) {
+      this.projectService.deleteProject(project.id).subscribe({
+        next: () => {
+          this.loadProjects();
+        },
+        error: (error) => {
+          console.error('Delete failed:', error);
+        }
+      });
+    }
   }
 }

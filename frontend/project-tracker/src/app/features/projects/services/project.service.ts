@@ -1,111 +1,176 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { signal } from '@angular/core';
+import { Observable, tap, catchError, of } from 'rxjs';
 import { environment } from '../../../../environments/environment';
+import { 
+  Project, 
+  ProjectPaginatedResponse,
+  PaginationParams,
+  CreateProjectRequest,
+  UpdateProjectRequest
+} from '../../../shared/models/project.model';
 
-// Define the shape of your data
-export interface Project {
-  id: number;
-  userId: number;
-  title: string;
-  description?: string;
-  status: string;
-  priority: number;
-  startDate?: Date;
-  dueDate?: Date;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export interface CreateProjectRequest {
-  title: string;
-  description?: string;
-  status: string;
-  priority: number;
-  startDate?: Date;
-  dueDate?: Date;
-}
-
+/// <summary>
+/// Service for managing projects with pagination support
+/// Uses signals for state management and server-side pagination
+/// </summary>
 @Injectable({
-  providedIn: 'root'  // Make this service available everywhere
+  providedIn: 'root'
 })
 export class ProjectService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = `${environment.apiUrl}/projects`;
-  
-  // State signals
+
+  // State signals for pagination
   private readonly projects = signal<Project[]>([]);
   private readonly loading = signal(false);
   private readonly error = signal<string | null>(null);
+  private readonly pageNumber = signal(1);
+  private readonly pageSize = signal(10);
+  private readonly totalCount = signal(0);
+  private readonly totalPages = signal(0);
 
   /// <summary>
-  /// Load projects with optional search, filter, and sort parameters
-  /// All filtering is done server-side for pagination support
+  /// Load paginated projects with optional filters
+  /// Supports searching, sorting, and filtering
   /// </summary>
-  loadProjects(options?: {
-    search?: string;
-    status?: string;
-    sortBy?: 'title' | 'status' | 'priority' | 'dueDate';
-    sortOrder?: 'asc' | 'desc';
-  }) {
+  loadProjectsPaged(filters?: Partial<PaginationParams>): Observable<ProjectPaginatedResponse> {
     this.loading.set(true);
     this.error.set(null);
 
-    // Build query parameters
-    let params = new HttpParams();
-    if (options?.search) {
-      params = params.set('search', options.search);
+    // Build query parameters from filters
+    let params = new HttpParams()
+      .set('pageNumber', (filters?.pageNumber ?? 1).toString())
+      .set('pageSize', (filters?.pageSize ?? 10).toString());
+
+    if (filters?.searchTerm) {
+      params = params.set('searchTerm', filters.searchTerm);
     }
-    if (options?.status) {
-      params = params.set('status', options.status);
+    if (filters?.sortBy) {
+      params = params.set('sortBy', filters.sortBy);
     }
-    if (options?.sortBy) {
-      params = params.set('sortBy', options.sortBy);
-    }
-    if (options?.sortOrder) {
-      params = params.set('sortOrder', options.sortOrder);
+    if (filters?.sortDirection) {
+      params = params.set('sortDirection', filters.sortDirection);
     }
 
-    this.http.get<Project[]>(this.apiUrl, { params }).subscribe({
-      next: (data) => {
-        this.projects.set(data);
+    return this.http.get<ProjectPaginatedResponse>(`${this.apiUrl}/paged`, { params }).pipe(
+      tap(response => {
+        this.updatePaginationState(response);
         this.loading.set(false);
-      },
-      error: (err) => {
+      }),
+      catchError(error => {
         this.error.set('Failed to load projects');
         this.loading.set(false);
-        console.error('Error loading projects:', err);
-      }
-    });
+        console.error('Error loading projects:', error);
+        
+        // Return empty response on error
+        return of({
+          items: [],
+          pageNumber: 1,
+          pageSize: 10,
+          totalCount: 0,
+          totalPages: 0,
+          hasPreviousPage: false,
+          hasNextPage: false
+        });
+      })
+    );
   }
 
-  // Get projects as readonly signal
-  getProjects() {
-    return this.projects.asReadonly();
+  /// <summary>
+  /// Update internal pagination state from response
+  /// </summary>
+  private updatePaginationState(response: ProjectPaginatedResponse): void {
+    this.projects.set(response.items);
+    this.pageNumber.set(response.pageNumber);
+    this.pageSize.set(response.pageSize);
+    this.totalCount.set(response.totalCount);
+    this.totalPages.set(response.totalPages);
   }
 
-  // Get loading state
-  getLoading() {
-    return this.loading.asReadonly();
+  /// <summary>
+  /// Create a new project
+  /// </summary>
+  createProject(request: CreateProjectRequest): Observable<Project> {
+    return this.http.post<Project>(this.apiUrl, request).pipe(
+      tap(() => {
+        this.error.set(null);
+      }),
+      catchError(error => {
+        this.error.set('Failed to create project');
+        console.error('Error creating project:', error);
+        throw error;
+      })
+    );
   }
 
-  // Get error state
-  getError() {
-    return this.error.asReadonly();
-  }
-
-  // Create a new project
-  createProject(request: CreateProjectRequest) {
-    return this.http.post<Project>(this.apiUrl, request);
-  }
-
-  // Get a single project
-  getProject(id: number) {
+  /// <summary>
+  /// Get a single project by ID
+  /// </summary>
+  getProject(id: number): Observable<Project> {
     return this.http.get<Project>(`${this.apiUrl}/${id}`);
   }
 
-  // Delete a project
-  deleteProject(id: number) {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  /// <summary>
+  /// Update an existing project
+  /// </summary>
+  updateProject(id: number, request: UpdateProjectRequest): Observable<void> {
+    return this.http.put<void>(`${this.apiUrl}/${id}`, request).pipe(
+      tap(() => {
+        this.error.set(null);
+      }),
+      catchError(error => {
+        this.error.set('Failed to update project');
+        console.error('Error updating project:', error);
+        throw error;
+      })
+    );
+  }
+
+  /// <summary>
+  /// Delete a project
+  /// </summary>
+  deleteProject(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(
+      tap(() => {
+        this.error.set(null);
+      }),
+      catchError(error => {
+        this.error.set('Failed to delete project');
+        console.error('Error deleting project:', error);
+        throw error;
+      })
+    );
+  }
+
+  /// <summary>
+  /// Read-only signal accessors for template binding
+  /// </summary>
+  getProjectsSignal() {
+    return this.projects.asReadonly();
+  }
+
+  getLoadingSignal() {
+    return this.loading.asReadonly();
+  }
+
+  getErrorSignal() {
+    return this.error.asReadonly();
+  }
+
+  getPageNumberSignal() {
+    return this.pageNumber.asReadonly();
+  }
+
+  getPageSizeSignal() {
+    return this.pageSize.asReadonly();
+  }
+
+  getTotalCountSignal() {
+    return this.totalCount.asReadonly();
+  }
+
+  getTotalPagesSignal() {
+    return this.totalPages.asReadonly();
   }
 }
