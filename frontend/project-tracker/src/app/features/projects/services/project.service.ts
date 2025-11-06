@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { signal } from '@angular/core';
 import { environment } from '../../../../environments/environment';
 
@@ -32,16 +32,41 @@ export interface CreateProjectRequest {
 export class ProjectService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = `${environment.apiUrl}/projects`;
+  
+  // State signals
   private readonly projects = signal<Project[]>([]);
   private readonly loading = signal(false);
   private readonly error = signal<string | null>(null);
 
-  // Load all projects from API
-  loadProjects() {
+  /// <summary>
+  /// Load projects with optional search, filter, and sort parameters
+  /// All filtering is done server-side for pagination support
+  /// </summary>
+  loadProjects(options?: {
+    search?: string;
+    status?: string;
+    sortBy?: 'title' | 'status' | 'priority' | 'dueDate';
+    sortOrder?: 'asc' | 'desc';
+  }) {
     this.loading.set(true);
     this.error.set(null);
 
-    this.http.get<Project[]>(this.apiUrl).subscribe({
+    // Build query parameters
+    let params = new HttpParams();
+    if (options?.search) {
+      params = params.set('search', options.search);
+    }
+    if (options?.status) {
+      params = params.set('status', options.status);
+    }
+    if (options?.sortBy) {
+      params = params.set('sortBy', options.sortBy);
+    }
+    if (options?.sortOrder) {
+      params = params.set('sortOrder', options.sortOrder);
+    }
+
+    this.http.get<Project[]>(this.apiUrl, { params }).subscribe({
       next: (data) => {
         this.projects.set(data);
         this.loading.set(false);

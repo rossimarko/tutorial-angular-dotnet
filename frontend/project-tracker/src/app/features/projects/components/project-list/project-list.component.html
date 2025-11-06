@@ -1,7 +1,10 @@
 <div class="container-fluid py-4">
-  <h2 class="mb-4">Projects</h2>
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Projects</h2>
+  </div>
 
   @if (loading()) {
+    <!-- Loading State -->
     <div class="alert alert-info" role="alert">
       <div class="spinner-border spinner-border-sm me-2" role="status">
         <span class="visually-hidden">Loading...</span>
@@ -9,17 +12,77 @@
       Loading projects...
     </div>
   } @else if (error()) {
+    <!-- Error State -->
     <div class="alert alert-danger" role="alert">
       {{ error() }}
     </div>
   } @else {
+    <!-- Search & Filter Section -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <div class="row g-3">
+          <!-- Search Input -->
+          <div class="col-md-6">
+            <label for="search" class="form-label">Search Projects</label>
+            <input 
+              id="search"
+              type="text" 
+              class="form-control" 
+              placeholder="Search by title or description..."
+              [formControl]="searchControl">
+          </div>
+
+          <!-- Status Filter -->
+          <div class="col-md-6">
+            <label for="status" class="form-label">Filter by Status</label>
+            <select 
+              id="status"
+              class="form-select" 
+              [formControl]="statusFilter">
+              <option value="">All Statuses</option>
+              @for (status of statuses; track status) {
+                <option [value]="status">{{ status }}</option>
+              }
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Projects Table or Empty State -->
     @if (projects().length > 0) {
       <div class="table-responsive">
         <table class="table table-hover">
           <thead class="table-light">
             <tr>
-              <th>Name</th>
-              <th>Description</th>
+              <th 
+                (click)="sortByColumn('title')"
+                style="cursor: pointer;"
+                role="button"
+                tabindex="0">
+                Name {{ getSortIndicator('title') }}
+              </th>
+              <th 
+                (click)="sortByColumn('status')"
+                style="cursor: pointer;"
+                role="button"
+                tabindex="0">
+                Status {{ getSortIndicator('status') }}
+              </th>
+              <th 
+                (click)="sortByColumn('priority')"
+                style="cursor: pointer;"
+                role="button"
+                tabindex="0">
+                Priority {{ getSortIndicator('priority') }}
+              </th>
+              <th 
+                (click)="sortByColumn('dueDate')"
+                style="cursor: pointer;"
+                role="button"
+                tabindex="0">
+                Due Date {{ getSortIndicator('dueDate') }}
+              </th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -27,7 +90,18 @@
             @for (project of projects(); track project.id) {
               <tr>
                 <td class="fw-bold">{{ project.title }}</td>
-                <td>{{ project.description }}</td>
+                <td>
+                  <span class="badge" [ngClass]="{
+                    'bg-success': project.status === 'Active',
+                    'bg-warning': project.status === 'Pending',
+                    'bg-secondary': project.status === 'Completed',
+                    'bg-danger': project.status === 'Cancelled'
+                  }">
+                    {{ project.status }}
+                  </span>
+                </td>
+                <td>{{ project.priority }}</td>
+                <td>{{ project.dueDate | date: 'short' }}</td>
                 <td>
                   <button 
                     (click)="deleteProject(project.id)" 
@@ -41,9 +115,10 @@
         </table>
       </div>
     } @else {
+      <!-- Empty State -->
       <div class="alert alert-secondary" role="alert">
         <i class="fas fa-info-circle me-2"></i>
-        No projects found.
+        No projects found. Try adjusting your search or filter criteria.
       </div>
     }
   }

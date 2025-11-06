@@ -30,17 +30,58 @@ public class ProjectsController : ControllerBase
     }
 
     /// <summary>
-    /// Get all projects for the authenticated user
-    /// GET: api/projects
+    /// Get all projects for the authenticated user with optional search, filter, and sorting
+    /// GET: api/projects?search=keyword&status=Active&sortBy=title&sortOrder=asc
     /// </summary>
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<ProjectResponse>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<IEnumerable<ProjectResponse>>> GetAll()
+    public async Task<ActionResult<IEnumerable<ProjectResponse>>> GetAll(
+        [FromQuery] string? search = null,
+        [FromQuery] string? status = null,
+        [FromQuery] string sortBy = "title",
+        [FromQuery] string sortOrder = "asc")
     {
         var userId = GetUserId();
-        _logger.LogInformation("Fetching all projects for user {UserId}", userId);
+        _logger.LogInformation(
+            "Fetching all projects for user {UserId} - Search: {Search}, Status: {Status}, SortBy: {SortBy}, SortOrder: {SortOrder}",
+            userId, search, status, sortBy, sortOrder);
 
         var projects = await _projectRepository.GetByUserIdAsync(userId);
+
+        // Apply search filter
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var searchLower = search.ToLower();
+            projects = projects.Where(p =>
+                p.Title.ToLower().Contains(searchLower) ||
+                (p.Description?.ToLower().Contains(searchLower) ?? false));
+        }
+
+        // Apply status filter
+        if (!string.IsNullOrWhiteSpace(status))
+        {
+            projects = projects.Where(p => p.Status.Equals(status, StringComparison.OrdinalIgnoreCase));
+        }
+
+        // Apply sorting
+        var sortByLower = sortBy.ToLower();
+        projects = sortByLower switch
+        {
+            "title" => sortOrder.ToLower() == "desc" 
+                ? projects.OrderByDescending(p => p.Title)
+                : projects.OrderBy(p => p.Title),
+            "status" => sortOrder.ToLower() == "desc"
+                ? projects.OrderByDescending(p => p.Status)
+                : projects.OrderBy(p => p.Status),
+            "priority" => sortOrder.ToLower() == "desc"
+                ? projects.OrderByDescending(p => p.Priority)
+                : projects.OrderBy(p => p.Priority),
+            "duedate" => sortOrder.ToLower() == "desc"
+                ? projects.OrderByDescending(p => p.DueDate)
+                : projects.OrderBy(p => p.DueDate),
+            _ => projects.OrderBy(p => p.Title) // Default
+        };
+
         var response = projects.Select(MapToResponse);
 
         return Ok(response);

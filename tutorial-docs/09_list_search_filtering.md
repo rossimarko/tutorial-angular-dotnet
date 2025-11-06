@@ -50,28 +50,30 @@ A **data table** should be interactive and help users find what they need:
 
 ```
 ProjectListComponent
-    ↓ (search, filter, sort)
+    ↓ (user enters search/filter/sort)
     ↓
-ProjectService (Signals + Filtering Logic)
+ProjectService
     ↓
-HTTP GET /api/projects
+HTTP GET /api/projects?search=...&status=...&sortBy=...&sortOrder=asc
     ↓
-Backend API
+Backend API (filters/sorts data)
     ↓
 Database
+    ↓
+Filtered & Sorted Results
 ```
 
 ### State Management
 
 The `ProjectService` manages state using Angular signals:
-- `projects`: Array of all projects from the API (unfiltered)
-- `filteredProjects`: Computed signal with search/filter/sort applied
+- `projects`: Array of projects returned from the API
 - `loading`: Boolean to show loading spinner
 - `error`: Error message if something fails
-- `searchTerm`: Current search term
-- `selectedStatus`: Currently selected status filter
-- `sortColumn`: Column currently being sorted
-- `sortDirection`: Sort direction (asc/desc)
+- `currentSearch`: Current search term (local, for UI only)
+- `currentStatus`: Currently selected status filter (local, for UI only)
+- `currentSort`: Current sort column and direction (local, for UI only)
+
+**Note**: Search, filter, and sort parameters are sent to the backend API via query parameters. The backend handles all filtering and sorting logic before returning results.
 
 ---
 
@@ -111,11 +113,11 @@ export interface CreateProjectRequest {
 
 File: `frontend/project-tracker/src/app/features/projects/services/project.service.ts`
 
-The ProjectService now handles search, filtering, and sorting with a computed signal that combines these operations:
+The ProjectService now sends search, filter, and sort parameters to the backend API:
 
 ```typescript
-import { Injectable, inject, signal, computed } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { Injectable, inject, signal } from '@angular/core';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
 
 @Injectable({
@@ -129,58 +131,36 @@ export class ProjectService {
   private readonly projects = signal<Project[]>([]);
   private readonly loading = signal(false);
   private readonly error = signal<string | null>(null);
-  
-  // Filter/Sort signals
-  private readonly searchTerm = signal('');
-  private readonly selectedStatus = signal<string>('');
-  private readonly sortColumn = signal<'title' | 'status' | 'priority' | 'dueDate'>('title');
-  private readonly sortDirection = signal<'asc' | 'desc'>('asc');
-
-  // Computed signal: applies search, filter, and sort to projects
-  private readonly filteredProjects = computed(() => {
-    let result = [...this.projects()];
-
-    // Apply search filter
-    if (this.searchTerm()) {
-      const term = this.searchTerm().toLowerCase();
-      result = result.filter(p =>
-        p.title.toLowerCase().includes(term) ||
-        (p.description?.toLowerCase().includes(term) ?? false)
-      );
-    }
-
-    // Apply status filter
-    if (this.selectedStatus()) {
-      result = result.filter(p => p.status === this.selectedStatus());
-    }
-
-    // Apply sorting
-    result.sort((a, b) => {
-      let aValue: any = a[this.sortColumn()];
-      let bValue: any = b[this.sortColumn()];
-
-      // Handle null/undefined
-      if (aValue === null || aValue === undefined) aValue = '';
-      if (bValue === null || bValue === undefined) bValue = '';
-
-      // Compare
-      const comparison = aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
-
-      // Apply sort direction
-      return this.sortDirection() === 'asc' ? comparison : -comparison;
-    });
-
-    return result;
-  });
 
   /// <summary>
-  /// Load all projects for authenticated user
+  /// Load projects with optional search, filter, and sort parameters
+  /// All filtering is done server-side for pagination support
   /// </summary>
-  loadProjects() {
+  loadProjects(options?: {
+    search?: string;
+    status?: string;
+    sortBy?: 'title' | 'status' | 'priority' | 'dueDate';
+    sortOrder?: 'asc' | 'desc';
+  }) {
     this.loading.set(true);
     this.error.set(null);
 
-    this.http.get<Project[]>(this.apiUrl).subscribe({
+    // Build query parameters
+    let params = new HttpParams();
+    if (options?.search) {
+      params = params.set('search', options.search);
+    }
+    if (options?.status) {
+      params = params.set('status', options.status);
+    }
+    if (options?.sortBy) {
+      params = params.set('sortBy', options.sortBy);
+    }
+    if (options?.sortOrder) {
+      params = params.set('sortOrder', options.sortOrder);
+    }
+
+    this.http.get<Project[]>(this.apiUrl, { params }).subscribe({
       next: (data) => {
         this.projects.set(data);
         this.loading.set(false);
@@ -194,10 +174,10 @@ export class ProjectService {
   }
 
   /// <summary>
-  /// Get filtered projects as readonly signal
+  /// Get projects as readonly signal
   /// </summary>
-  getFilteredProjects() {
-    return this.filteredProjects.asReadonly();
+  getProjects() {
+    return this.projects.asReadonly();
   }
 
   /// <summary>
@@ -212,34 +192,6 @@ export class ProjectService {
   /// </summary>
   getError() {
     return this.error.asReadonly();
-  }
-
-  /// <summary>
-  /// Update search term
-  /// </summary>
-  setSearchTerm(term: string) {
-    this.searchTerm.set(term);
-  }
-
-  /// <summary>
-  /// Update status filter
-  /// </summary>
-  setStatusFilter(status: string) {
-    this.selectedStatus.set(status);
-  }
-
-  /// <summary>
-  /// Update sort column and direction
-  /// </summary>
-  setSorting(column: 'title' | 'status' | 'priority' | 'dueDate') {
-    // If clicking the same column, toggle direction
-    if (this.sortColumn() === column) {
-      this.sortDirection.update(dir => dir === 'asc' ? 'desc' : 'asc');
-    } else {
-      // New column, sort ascending
-      this.sortColumn.set(column);
-      this.sortDirection.set('asc');
-    }
   }
 
   /// <summary>
@@ -265,14 +217,14 @@ export class ProjectService {
 }
 ```
 
-### Key Enhancements:
+### Key Features:
 
-✅ **Computed Signal**: `filteredProjects` automatically updates when search, filter, or sort changes
-✅ **Search Logic**: Filters by title and description (case-insensitive)
-✅ **Status Filter**: Narrows results by project status
-✅ **Sorting**: Handles multiple columns with toggle-able direction
-✅ **Pure Function**: Filtering/sorting logic doesn't mutate original data
-✅ **Type Safe**: All filter/sort operations are strongly typed
+✅ **Query Parameters**: Uses `HttpParams` to build query strings
+✅ **Optional Parameters**: All filter/sort options are optional
+✅ **Server-Side Filtering**: Backend handles all filtering logic
+✅ **Ready for Pagination**: Can easily add `pageNumber` and `pageSize` parameters later
+✅ **Type Safe**: Strong typing for all parameters
+✅ **Flexible**: Supports any combination of filters
 
 ---
 
@@ -280,7 +232,7 @@ export class ProjectService {
 
 File: `frontend/project-tracker/src/app/features/projects/components/project-list/project-list.component.ts`
 
-The component now handles search, filter, and sort interactions:
+The component now sends search, filter, and sort requests to the backend API:
 
 ```typescript
 import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
@@ -288,6 +240,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormControl } from '@angular/forms';
 import { ProjectService } from '../../services/project.service';
 import { AuthService } from '../../../../core/services/auth.service';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 @Component({
   selector: 'app-project-list',
@@ -300,7 +253,7 @@ export class ProjectListComponent implements OnInit {
   private readonly authService = inject(AuthService);
 
   // Expose service signals to template
-  protected readonly projects = this.projectService.getFilteredProjects();
+  protected readonly projects = this.projectService.getProjects();
   protected readonly loading = this.projectService.getLoading();
   protected readonly error = this.projectService.getError();
 
@@ -311,22 +264,42 @@ export class ProjectListComponent implements OnInit {
   // Available statuses for filter dropdown
   protected readonly statuses = ['Active', 'Pending', 'Completed', 'Cancelled'];
 
-  // Current sort state
-  protected currentSortColumn = '';
+  // Current sort state (for UI display only)
+  protected currentSortColumn: 'title' | 'status' | 'priority' | 'dueDate' = 'title';
   protected currentSortDirection: 'asc' | 'desc' = 'asc';
 
   ngOnInit() {
-    // Load projects when component initializes
-    this.projectService.loadProjects();
+    // Initial load
+    this.loadProjects();
 
-    // Subscribe to search changes
-    this.searchControl.valueChanges.subscribe(term => {
-      this.projectService.setSearchTerm(term || '');
+    // Subscribe to search changes with debounce to avoid too many API calls
+    this.searchControl.valueChanges
+      .pipe(
+        debounceTime(300),
+        distinctUntilChanged()
+      )
+      .subscribe(() => {
+        this.loadProjects();
+      });
+
+    // Subscribe to status filter changes (immediate, no debounce)
+    this.statusFilter.valueChanges.subscribe(() => {
+      this.loadProjects();
     });
+  }
 
-    // Subscribe to status filter changes
-    this.statusFilter.valueChanges.subscribe(status => {
-      this.projectService.setStatusFilter(status || '');
+  /// <summary>
+  /// Load projects from API with current search/filter/sort parameters
+  /// </summary>
+  private loadProjects() {
+    const search = this.searchControl.value || undefined;
+    const status = this.statusFilter.value || undefined;
+
+    this.projectService.loadProjects({
+      search,
+      status,
+      sortBy: this.currentSortColumn,
+      sortOrder: this.currentSortDirection
     });
   }
 
@@ -334,8 +307,17 @@ export class ProjectListComponent implements OnInit {
   /// Handle column header clicks for sorting
   /// </summary>
   sortByColumn(column: 'title' | 'status' | 'priority' | 'dueDate') {
-    this.projectService.setSorting(column);
-    this.currentSortColumn = column;
+    // If clicking the same column, toggle direction
+    if (this.currentSortColumn === column) {
+      this.currentSortDirection = this.currentSortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      // New column, sort ascending
+      this.currentSortColumn = column;
+      this.currentSortDirection = 'asc';
+    }
+    
+    // Reload projects with new sort
+    this.loadProjects();
   }
 
   /// <summary>
@@ -352,7 +334,7 @@ export class ProjectListComponent implements OnInit {
   deleteProject(id: number) {
     this.projectService.deleteProject(id).subscribe({
       next: () => {
-        this.projectService.loadProjects();
+        this.loadProjects();
       },
       error: (err: unknown) => {
         console.error('Error deleting project:', err);
@@ -362,13 +344,15 @@ export class ProjectListComponent implements OnInit {
 }
 ```
 
-### Key Enhancements:
+### Key Features:
 
-✅ **FormControl**: For search and status filter inputs
-✅ **ValueChanges Subscription**: Reacts to user input in real-time
-✅ **Sorting Methods**: Handle column header clicks
-✅ **Sort Indicator**: Shows visual feedback for current sort state
-✅ **Separation of Concerns**: Component handles UI interactions, service handles filtering logic
+✅ **Debounce Search**: Waits 300ms after user stops typing to avoid excessive API calls
+✅ **Distinct Until Changed**: Only triggers search if the value actually changed
+✅ **Immediate Filter**: Status filter triggers API call immediately
+✅ **Sort Toggle**: Click same column to toggle between asc/desc
+✅ **Local Sort State**: Component tracks sort state for UI display
+✅ **API Parameters**: Passes all options to service which sends them as query parameters
+✅ **Flexible Loading**: `loadProjects()` can be called with any combination of parameters
 
 ---
 
@@ -436,28 +420,28 @@ File: `frontend/project-tracker/src/app/features/projects/components/project-lis
             <tr>
               <th 
                 (click)="sortByColumn('title')"
-                class="cursor-pointer"
+                style="cursor: pointer;"
                 role="button"
                 tabindex="0">
                 Name {{ getSortIndicator('title') }}
               </th>
               <th 
                 (click)="sortByColumn('status')"
-                class="cursor-pointer"
+                style="cursor: pointer;"
                 role="button"
                 tabindex="0">
                 Status {{ getSortIndicator('status') }}
               </th>
               <th 
                 (click)="sortByColumn('priority')"
-                class="cursor-pointer"
+                style="cursor: pointer;"
                 role="button"
                 tabindex="0">
                 Priority {{ getSortIndicator('priority') }}
               </th>
               <th 
                 (click)="sortByColumn('dueDate')"
-                class="cursor-pointer"
+                style="cursor: pointer;"
                 role="button"
                 tabindex="0">
                 Due Date {{ getSortIndicator('dueDate') }}
@@ -513,26 +497,7 @@ File: `frontend/project-tracker/src/app/features/projects/components/project-lis
 ✅ **Responsive Layout**: Search/filter in card above table
 ✅ **FormControl Integration**: Two-way binding with component controls
 ✅ **Accessibility**: Added `role`, `tabindex`, and proper labels
-
-### Component CSS
-
-File: `frontend/project-tracker/src/app/features/projects/components/project-list/project-list.component.css`
-
-```css
-.cursor-pointer {
-  cursor: pointer;
-  user-select: none;
-}
-
-.cursor-pointer:hover {
-  background-color: #f8f9fa;
-  text-decoration: underline;
-}
-
-.table-hover tbody tr:hover {
-  background-color: #f5f5f5;
-}
-```
+✅ **Bootstrap Styling**: Pure Bootstrap 5 utility classes, no custom CSS
 
 ### User Experience Flow:
 
@@ -546,62 +511,176 @@ File: `frontend/project-tracker/src/app/features/projects/components/project-lis
 
 ## 🎯 Implementation Checklist
 
-Complete these steps to implement search, filtering, and sorting:
+Complete these steps to implement server-side search, filtering, and sorting:
 
-### Step 1: Update the Service
+### Step 1: Backend API Updates (C#/.NET 9)
 
-1. Add import for `computed()` from `@angular/core`
-2. Add filter/sort signals: `searchTerm`, `selectedStatus`, `sortColumn`, `sortDirection`
-3. Create `filteredProjects` computed signal with filtering and sorting logic
-4. Add methods: `setSearchTerm()`, `setStatusFilter()`, `setSorting()`
-5. Update `getFilteredProjects()` to return the computed signal instead of raw projects
+The backend API endpoint must support query parameters:
 
-### Step 2: Update the Component
+```
+GET /api/projects?search=keyword&status=Active&sortBy=title&sortOrder=asc
+```
 
-1. Import `ReactiveFormsModule` and `FormControl`
+Expected implementation:
+- `search` parameter: Filter by title or description (case-insensitive substring match)
+- `status` parameter: Filter by project status (exact match)
+- `sortBy` parameter: Column to sort by (title, status, priority, dueDate)
+- `sortOrder` parameter: Sort direction (asc or desc)
+
+Example C# controller signature:
+```csharp
+[HttpGet]
+public async Task<ActionResult<IEnumerable<ProjectDto>>> GetProjects(
+    [FromQuery] string? search,
+    [FromQuery] string? status,
+    [FromQuery] string? sortBy = "title",
+    [FromQuery] string? sortOrder = "asc")
+{
+    // Filter and sort logic in service/repository
+    var projects = await _projectService.GetProjectsAsync(
+        userId: userId,
+        search: search,
+        status: status,
+        sortBy: sortBy,
+        sortOrder: sortOrder);
+    return Ok(projects);
+}
+```
+
+### Step 2: Update the Frontend Service
+
+1. Import `HttpParams` from `@angular/common/http`
+2. Modify `loadProjects()` to accept options parameter
+3. Build `HttpParams` from options
+4. Pass params to `http.get()` call
+5. Remove any client-side filtering logic
+
+### Step 3: Update the Component
+
+1. Import `ReactiveFormsModule`, `FormControl`, and RxJS operators (`debounceTime`, `distinctUntilChanged`)
 2. Create `searchControl` and `statusFilter` FormControl instances
-3. Create `statuses` array with available status values
-4. In `ngOnInit()`, subscribe to `valueChanges` on both form controls
-5. Add `sortByColumn()` method to handle column clicks
-6. Add `getSortIndicator()` method to display sort direction
-7. Update template binding from `projects` to `projects()` signal
+3. Add `currentSortColumn` and `currentSortDirection` properties (for UI state only)
+4. In `ngOnInit()`:
+   - Call `loadProjects()` for initial load
+   - Subscribe to `searchControl.valueChanges` with `debounceTime(300)` and `distinctUntilChanged()`
+   - Subscribe to `statusFilter.valueChanges` without debounce (immediate response)
+5. Add `loadProjects()` private method that collects current search/filter/sort and calls service
+6. Add `sortByColumn()` method to toggle sort direction
+7. Add `getSortIndicator()` method for UI
 
-### Step 3: Update the Template
+### Step 4: Update the Template
 
 1. Add search input with `[formControl]="searchControl"`
 2. Add status filter select with `[formControl]="statusFilter"`
 3. Make column headers clickable with `(click)="sortByColumn()"`
 4. Add sort indicators (↑↓) to headers
-5. Display status as colored badges using Bootstrap badge classes
-6. Update empty state message
-
-### Step 4: Add Styles
-
-1. Create `.cursor-pointer` class for clickable headers
-2. Add hover effects for better UX
+5. Display results from API (already filtered/sorted)
 
 ### Step 5: Test
 
-1. Type in search box → verify projects filter
-2. Select status → verify filter works
-3. Click column header → verify sorting works
-4. Combine search + filter + sort → verify they work together
-5. Delete a project → verify list updates
+1. Type in search box → verify API is called with search parameter
+2. Select status → verify API is called with status parameter
+3. Click column header → verify API is called with sortBy and sortOrder parameters
+4. Combine search + filter + sort → verify all parameters sent together
+5. Delete a project → verify list refreshes with current filters intact
+6. Verify query strings in browser DevTools Network tab
 
 ---
 
 ## 🔗 Integration Points
 
-### Backend API Endpoints
+### Backend API Implementation
 
-The component still uses these endpoints (no changes needed):
+The backend API endpoint supports search, filter, and sort via query parameters:
 
 ```
-GET    /api/projects              → Get all user projects
-DELETE /api/projects/{id}         → Delete a project
+GET /api/projects                              → Get all user projects (no filters)
+GET /api/projects?search=test                  → Search projects by title/description
+GET /api/projects?status=Active                → Filter by status
+GET /api/projects?sortBy=priority&sortOrder=desc → Sort by priority descending
+GET /api/projects?search=test&status=Active&sortBy=title&sortOrder=asc → Combined
+DELETE /api/projects/{id}                      → Delete a project
 ```
 
-All filtering happens on the client-side using signals (no server calls needed for filter/search/sort).
+**C# Controller Implementation** (Backend):
+
+File: `backend/ProjectTracker.API/Controllers/ProjectsController.cs`
+
+```csharp
+/// <summary>
+/// Get all projects for the authenticated user with optional search, filter, and sorting
+/// GET: api/projects?search=keyword&status=Active&sortBy=title&sortOrder=asc
+/// </summary>
+[HttpGet]
+[ProducesResponseType(typeof(IEnumerable<ProjectResponse>), StatusCodes.Status200OK)]
+public async Task<ActionResult<IEnumerable<ProjectResponse>>> GetAll(
+    [FromQuery] string? search = null,
+    [FromQuery] string? status = null,
+    [FromQuery] string sortBy = "title",
+    [FromQuery] string sortOrder = "asc")
+{
+    var userId = GetUserId();
+    _logger.LogInformation(
+        "Fetching all projects for user {UserId} - Search: {Search}, Status: {Status}, SortBy: {SortBy}, SortOrder: {SortOrder}",
+        userId, search, status, sortBy, sortOrder);
+
+    var projects = await _projectRepository.GetByUserIdAsync(userId);
+
+    // Apply search filter
+    if (!string.IsNullOrWhiteSpace(search))
+    {
+        var searchLower = search.ToLower();
+        projects = projects.Where(p =>
+            p.Title.ToLower().Contains(searchLower) ||
+            (p.Description?.ToLower().Contains(searchLower) ?? false));
+    }
+
+    // Apply status filter
+    if (!string.IsNullOrWhiteSpace(status))
+    {
+        projects = projects.Where(p => p.Status.Equals(status, StringComparison.OrdinalIgnoreCase));
+    }
+
+    // Apply sorting
+    var sortByLower = sortBy.ToLower();
+    projects = sortByLower switch
+    {
+        "title" => sortOrder.ToLower() == "desc" 
+            ? projects.OrderByDescending(p => p.Title)
+            : projects.OrderBy(p => p.Title),
+        "status" => sortOrder.ToLower() == "desc"
+            ? projects.OrderByDescending(p => p.Status)
+            : projects.OrderBy(p => p.Status),
+        "priority" => sortOrder.ToLower() == "desc"
+            ? projects.OrderByDescending(p => p.Priority)
+            : projects.OrderBy(p => p.Priority),
+        "duedate" => sortOrder.ToLower() == "desc"
+            ? projects.OrderByDescending(p => p.DueDate)
+            : projects.OrderBy(p => p.DueDate),
+        _ => projects.OrderBy(p => p.Title) // Default
+    };
+
+    var response = projects.Select(MapToResponse);
+
+    return Ok(response);
+}
+```
+
+**Query Parameter Details:**
+
+- `search` (optional): Filter by title or description (case-insensitive substring match)
+- `status` (optional): Filter by project status (exact match, case-insensitive)
+- `sortBy` (optional, default: "title"): Column to sort by
+  - Valid values: `title`, `status`, `priority`, `dueDate`
+- `sortOrder` (optional, default: "asc"): Sort direction
+  - Valid values: `asc` (ascending), `desc` (descending)
+
+**All parameters are optional** - the endpoint works with any combination:
+- No parameters → returns all projects sorted by title ascending
+- With search → returns filtered by title/description
+- With status → returns filtered by status
+- With sortBy and sortOrder → returns sorted accordingly
+- All combined → returns results with all filters applied
 
 ### Authentication
 
@@ -615,30 +694,38 @@ The component remains lazy-loaded in the routes (no changes needed).
 
 ## 💡 Best Practices Applied
 
-### Signals & Computed Values
-- ✅ Use `signal()` for mutable state (search, filter, sort)
-- ✅ Use `computed()` to derive filtered results automatically
-- ✅ No manual change detection needed (OnPush handles it)
+### Server-Side Operations
+- ✅ **Search/Filter/Sort on Backend**: Database can be optimized for these operations
+- ✅ **Query Parameters**: Standard REST convention for passing filter criteria
+- ✅ **Ready for Pagination**: Can easily add `pageNumber`, `pageSize` later
+- ✅ **Scalability**: Works efficiently with large datasets
+
+### Frontend Optimization
+- ✅ **Debounce Search**: Prevents excessive API calls while user is typing
+- ✅ **DistinctUntilChanged**: Only calls API if value actually changed
+- ✅ **Local Sort State**: Component tracks sort UI state separately
+- ✅ **OnPush Change Detection**: Optimizes change detection when signals update
 
 ### Reactive Forms
-- ✅ Use `FormControl` for user inputs
-- ✅ Subscribe to `valueChanges` to react to user input
-- ✅ Bind controls with `[formControl]` directive
-
-### Performance
-- ✅ OnPush change detection detects only when signals change
-- ✅ Computed signal only recalculates when dependencies change
-- ✅ Native control flow (`@if`, `@for`) is more efficient
-
-### User Experience
-- ✅ Real-time search/filter as user types
-- ✅ Visual feedback for sort direction
-- ✅ Color-coded status indicators
-- ✅ Clear empty state messaging
-- ✅ Responsive design works on mobile
+- ✅ **FormControl for Inputs**: Better state management than ngModel
+- ✅ **ValueChanges Observable**: Clean way to react to user input
+- ✅ **Debounce & Distinct Operators**: Standard RxJS patterns
 
 ### Code Organization
-- ✅ Business logic in service (filtering, sorting)
-- ✅ UI interaction in component (form controls, events)
-- ✅ Template focused on display only
-- ✅ Styles separated in CSS file
+- ✅ **Business Logic in Service**: HTTP calls and parameter building
+- ✅ **UI Logic in Component**: Form controls and event handling
+- ✅ **Template Focused on Display**: Shows data returned from API
+- ✅ **Separation of Concerns**: Each layer has a single responsibility
+
+### User Experience
+- ✅ **Real-time Search**: Debounced to avoid lag
+- ✅ **Visual Feedback**: Sort indicators (↑↓) on headers
+- ✅ **Color-coded Status**: Easy to scan project statuses
+- ✅ **Clear Empty State**: Users know why no results appear
+- ✅ **Responsive Design**: Works on all screen sizes
+
+### Future-Ready
+- ✅ **Easy to Add Pagination**: Just add `pageNumber` and `pageSize` parameters
+- ✅ **Easy to Add More Filters**: Add new query parameters as needed
+- ✅ **Backend-Driven**: Backend can optimize queries independently
+- ✅ **Scalable**: Works with databases of any size
