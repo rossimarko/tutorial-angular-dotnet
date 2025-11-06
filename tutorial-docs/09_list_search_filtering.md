@@ -8,29 +8,39 @@ By the end of this module, you will:
 - ✅ Display projects in a responsive Bootstrap table
 - ✅ Handle loading and empty states
 - ✅ Implement delete functionality
+- ✅ **Implement search functionality** to filter projects by title/description
+- ✅ **Implement sorting** by clicking column headers
+- ✅ **Implement status filtering** to filter by project status
 - ✅ Optimize performance with OnPush change detection
 - ✅ Use services for data management
 
-## 📌 Status: Framework Ready
+## 📌 Status: Ready to Implement
 
-The project list component displays user projects with proper state management using signals and demonstrates loading/empty states.
+Building on Module 8's foundation, you will now add search, filtering, and sorting capabilities to make the project list interactive and user-friendly.
 
-## 📋 What is a Data Table?
+## 📋 What is Search, Filtering & Sorting?
 
-A **data table** displays structured data in rows and columns, allowing users to:
+A **data table** should be interactive and help users find what they need:
 - **View**: See all their projects at a glance
+- **Search**: Find projects by typing title or description
+- **Filter**: Narrow down projects by status or other criteria
+- **Sort**: Click column headers to organize by different fields
 - **Navigate**: Browse through records efficiently
-- **Perform Actions**: Delete projects from the list
+- **Perform Actions**: Delete, edit, or view projects
 
-### Current Implementation Features:
+### Module Features:
 
 - ✅ Responsive Bootstrap table
 - ✅ Loading state with spinner
 - ✅ Empty state messaging
 - ✅ Error state display
 - ✅ Delete functionality with state refresh
+- ✅ **Search input** to filter by title/description
+- ✅ **Status filter dropdown** to filter by project status
+- ✅ **Sortable column headers** - click to sort ascending/descending
 - ✅ Signal-based state management
 - ✅ OnPush change detection for performance
+- ✅ Reactive Forms for search/filter inputs
 
 ---
 
@@ -40,8 +50,9 @@ A **data table** displays structured data in rows and columns, allowing users to
 
 ```
 ProjectListComponent
+    ↓ (search, filter, sort)
     ↓
-ProjectService (Signals)
+ProjectService (Signals + Filtering Logic)
     ↓
 HTTP GET /api/projects
     ↓
@@ -53,9 +64,14 @@ Database
 ### State Management
 
 The `ProjectService` manages state using Angular signals:
-- `projects`: Array of projects from the API
+- `projects`: Array of all projects from the API (unfiltered)
+- `filteredProjects`: Computed signal with search/filter/sort applied
 - `loading`: Boolean to show loading spinner
 - `error`: Error message if something fails
+- `searchTerm`: Current search term
+- `selectedStatus`: Currently selected status filter
+- `sortColumn`: Column currently being sorted
+- `sortDirection`: Sort direction (asc/desc)
 
 ---
 
@@ -91,16 +107,15 @@ export interface CreateProjectRequest {
 
 ---
 
-## 🔧 Service Layer
+## 🔧 Service Layer - Enhanced
 
 File: `frontend/project-tracker/src/app/features/projects/services/project.service.ts`
 
-The ProjectService handles all HTTP communication with the backend API:
+The ProjectService now handles search, filtering, and sorting with a computed signal that combines these operations:
 
 ```typescript
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { signal } from '@angular/core';
 import { environment } from '../../../../environments/environment';
 
 @Injectable({
@@ -114,6 +129,49 @@ export class ProjectService {
   private readonly projects = signal<Project[]>([]);
   private readonly loading = signal(false);
   private readonly error = signal<string | null>(null);
+  
+  // Filter/Sort signals
+  private readonly searchTerm = signal('');
+  private readonly selectedStatus = signal<string>('');
+  private readonly sortColumn = signal<'title' | 'status' | 'priority' | 'dueDate'>('title');
+  private readonly sortDirection = signal<'asc' | 'desc'>('asc');
+
+  // Computed signal: applies search, filter, and sort to projects
+  private readonly filteredProjects = computed(() => {
+    let result = [...this.projects()];
+
+    // Apply search filter
+    if (this.searchTerm()) {
+      const term = this.searchTerm().toLowerCase();
+      result = result.filter(p =>
+        p.title.toLowerCase().includes(term) ||
+        (p.description?.toLowerCase().includes(term) ?? false)
+      );
+    }
+
+    // Apply status filter
+    if (this.selectedStatus()) {
+      result = result.filter(p => p.status === this.selectedStatus());
+    }
+
+    // Apply sorting
+    result.sort((a, b) => {
+      let aValue: any = a[this.sortColumn()];
+      let bValue: any = b[this.sortColumn()];
+
+      // Handle null/undefined
+      if (aValue === null || aValue === undefined) aValue = '';
+      if (bValue === null || bValue === undefined) bValue = '';
+
+      // Compare
+      const comparison = aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
+
+      // Apply sort direction
+      return this.sortDirection() === 'asc' ? comparison : -comparison;
+    });
+
+    return result;
+  });
 
   /// <summary>
   /// Load all projects for authenticated user
@@ -136,10 +194,10 @@ export class ProjectService {
   }
 
   /// <summary>
-  /// Get projects as readonly signal
+  /// Get filtered projects as readonly signal
   /// </summary>
-  getProjects() {
-    return this.projects.asReadonly();
+  getFilteredProjects() {
+    return this.filteredProjects.asReadonly();
   }
 
   /// <summary>
@@ -154,6 +212,34 @@ export class ProjectService {
   /// </summary>
   getError() {
     return this.error.asReadonly();
+  }
+
+  /// <summary>
+  /// Update search term
+  /// </summary>
+  setSearchTerm(term: string) {
+    this.searchTerm.set(term);
+  }
+
+  /// <summary>
+  /// Update status filter
+  /// </summary>
+  setStatusFilter(status: string) {
+    this.selectedStatus.set(status);
+  }
+
+  /// <summary>
+  /// Update sort column and direction
+  /// </summary>
+  setSorting(column: 'title' | 'status' | 'priority' | 'dueDate') {
+    // If clicking the same column, toggle direction
+    if (this.sortColumn() === column) {
+      this.sortDirection.update(dir => dir === 'asc' ? 'desc' : 'asc');
+    } else {
+      // New column, sort ascending
+      this.sortColumn.set(column);
+      this.sortDirection.set('asc');
+    }
   }
 
   /// <summary>
@@ -179,45 +265,85 @@ export class ProjectService {
 }
 ```
 
-### Key Features:
+### Key Enhancements:
 
-✅ **Signals for State**: Using `signal()` for reactive state management
-✅ **Single Responsibility**: Only handles HTTP and state
-✅ **Error Handling**: Catches errors and stores them in state
-✅ **Observable Pattern**: Returns Observables from HTTP methods
-✅ **Type Safe**: Properly typed with TypeScript interfaces
+✅ **Computed Signal**: `filteredProjects` automatically updates when search, filter, or sort changes
+✅ **Search Logic**: Filters by title and description (case-insensitive)
+✅ **Status Filter**: Narrows results by project status
+✅ **Sorting**: Handles multiple columns with toggle-able direction
+✅ **Pure Function**: Filtering/sorting logic doesn't mutate original data
+✅ **Type Safe**: All filter/sort operations are strongly typed
 
 ---
 
-## 📊 Component Implementation
+## 📊 Component Implementation - Enhanced
 
 File: `frontend/project-tracker/src/app/features/projects/components/project-list/project-list.component.ts`
+
+The component now handles search, filter, and sort interactions:
 
 ```typescript
 import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ReactiveFormsModule, FormControl } from '@angular/forms';
 import { ProjectService } from '../../services/project.service';
 import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
   selector: 'app-project-list',
-  templateUrl: './project-list.component.html',  
+  templateUrl: './project-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: true,
-  imports: [CommonModule]
+  imports: [CommonModule, ReactiveFormsModule]
 })
 export class ProjectListComponent implements OnInit {
   private readonly projectService = inject(ProjectService);
   private readonly authService = inject(AuthService);
 
   // Expose service signals to template
-  protected readonly projects = this.projectService.getProjects();
+  protected readonly projects = this.projectService.getFilteredProjects();
   protected readonly loading = this.projectService.getLoading();
   protected readonly error = this.projectService.getError();
 
-  ngOnInit() {    
+  // Form controls for search and filter
+  protected readonly searchControl = new FormControl('');
+  protected readonly statusFilter = new FormControl('');
+
+  // Available statuses for filter dropdown
+  protected readonly statuses = ['Active', 'Pending', 'Completed', 'Cancelled'];
+
+  // Current sort state
+  protected currentSortColumn = '';
+  protected currentSortDirection: 'asc' | 'desc' = 'asc';
+
+  ngOnInit() {
     // Load projects when component initializes
     this.projectService.loadProjects();
+
+    // Subscribe to search changes
+    this.searchControl.valueChanges.subscribe(term => {
+      this.projectService.setSearchTerm(term || '');
+    });
+
+    // Subscribe to status filter changes
+    this.statusFilter.valueChanges.subscribe(status => {
+      this.projectService.setStatusFilter(status || '');
+    });
+  }
+
+  /// <summary>
+  /// Handle column header clicks for sorting
+  /// </summary>
+  sortByColumn(column: 'title' | 'status' | 'priority' | 'dueDate') {
+    this.projectService.setSorting(column);
+    this.currentSortColumn = column;
+  }
+
+  /// <summary>
+  /// Get sort indicator for column header
+  /// </summary>
+  getSortIndicator(column: string): string {
+    if (this.currentSortColumn !== column) return '';
+    return this.currentSortDirection === 'asc' ? '↑' : '↓';
   }
 
   /// <summary>
@@ -226,7 +352,6 @@ export class ProjectListComponent implements OnInit {
   deleteProject(id: number) {
     this.projectService.deleteProject(id).subscribe({
       next: () => {
-        // Reload projects after successful deletion
         this.projectService.loadProjects();
       },
       error: (err: unknown) => {
@@ -237,23 +362,25 @@ export class ProjectListComponent implements OnInit {
 }
 ```
 
-### Key Points:
+### Key Enhancements:
 
-✅ **OnPush Change Detection**: Optimizes performance by only checking when signals change
-✅ **Dependency Injection**: Uses `inject()` function instead of constructor
-✅ **Protected Properties**: Exposes service signals to template (signals are readonly)
-✅ **Lifecycle**: Loads projects on component init
-✅ **Subscriptions**: Manually subscribes to HTTP calls (no memory leak because service unsubscribes)
+✅ **FormControl**: For search and status filter inputs
+✅ **ValueChanges Subscription**: Reacts to user input in real-time
+✅ **Sorting Methods**: Handle column header clicks
+✅ **Sort Indicator**: Shows visual feedback for current sort state
+✅ **Separation of Concerns**: Component handles UI interactions, service handles filtering logic
 
 ---
 
-## 🎨 Template
+## 🎨 Template - Enhanced
 
 File: `frontend/project-tracker/src/app/features/projects/components/project-list/project-list.component.html`
 
 ```html
 <div class="container-fluid py-4">
-  <h2 class="mb-4">Projects</h2>
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Projects</h2>
+  </div>
 
   @if (loading()) {
     <!-- Loading State -->
@@ -269,14 +396,72 @@ File: `frontend/project-tracker/src/app/features/projects/components/project-lis
       {{ error() }}
     </div>
   } @else {
+    <!-- Search & Filter Section -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <div class="row g-3">
+          <!-- Search Input -->
+          <div class="col-md-6">
+            <label for="search" class="form-label">Search Projects</label>
+            <input 
+              id="search"
+              type="text" 
+              class="form-control" 
+              placeholder="Search by title or description..."
+              [formControl]="searchControl">
+          </div>
+
+          <!-- Status Filter -->
+          <div class="col-md-6">
+            <label for="status" class="form-label">Filter by Status</label>
+            <select 
+              id="status"
+              class="form-select" 
+              [formControl]="statusFilter">
+              <option value="">All Statuses</option>
+              @for (status of statuses; track status) {
+                <option [value]="status">{{ status }}</option>
+              }
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Projects Table or Empty State -->
     @if (projects().length > 0) {
       <div class="table-responsive">
         <table class="table table-hover">
           <thead class="table-light">
             <tr>
-              <th>Name</th>
-              <th>Description</th>
+              <th 
+                (click)="sortByColumn('title')"
+                class="cursor-pointer"
+                role="button"
+                tabindex="0">
+                Name {{ getSortIndicator('title') }}
+              </th>
+              <th 
+                (click)="sortByColumn('status')"
+                class="cursor-pointer"
+                role="button"
+                tabindex="0">
+                Status {{ getSortIndicator('status') }}
+              </th>
+              <th 
+                (click)="sortByColumn('priority')"
+                class="cursor-pointer"
+                role="button"
+                tabindex="0">
+                Priority {{ getSortIndicator('priority') }}
+              </th>
+              <th 
+                (click)="sortByColumn('dueDate')"
+                class="cursor-pointer"
+                role="button"
+                tabindex="0">
+                Due Date {{ getSortIndicator('dueDate') }}
+              </th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -284,7 +469,18 @@ File: `frontend/project-tracker/src/app/features/projects/components/project-lis
             @for (project of projects(); track project.id) {
               <tr>
                 <td class="fw-bold">{{ project.title }}</td>
-                <td>{{ project.description }}</td>
+                <td>
+                  <span class="badge" [ngClass]="{
+                    'bg-success': project.status === 'Active',
+                    'bg-warning': project.status === 'Pending',
+                    'bg-secondary': project.status === 'Completed',
+                    'bg-danger': project.status === 'Cancelled'
+                  }">
+                    {{ project.status }}
+                  </span>
+                </td>
+                <td>{{ project.priority }}</td>
+                <td>{{ project.dueDate | date: 'short' }}</td>
                 <td>
                   <button 
                     (click)="deleteProject(project.id)" 
@@ -301,92 +497,148 @@ File: `frontend/project-tracker/src/app/features/projects/components/project-lis
       <!-- Empty State -->
       <div class="alert alert-secondary" role="alert">
         <i class="fas fa-info-circle me-2"></i>
-        No projects found.
+        No projects found. Try adjusting your search or filter criteria.
       </div>
     }
   }
 </div>
 ```
 
-### Template Features:
+### Template Enhancements:
 
-✅ **Conditional Rendering**: Using `@if` and `@else` for state management
-✅ **Loop Rendering**: Using `@for` with track for efficient rendering
-✅ **Loading Indicator**: Shows spinner while loading
-✅ **Error Display**: Shows error messages if something fails
-✅ **Empty State**: Shows friendly message when no projects exist
-✅ **Delete Action**: Button to remove projects
+✅ **Search Input**: Text field for filtering by title/description
+✅ **Status Filter**: Dropdown for filtering by status
+✅ **Sortable Headers**: Click column headers to sort (with visual indicators ↑↓)
+✅ **Status Badges**: Color-coded status indicators
+✅ **Responsive Layout**: Search/filter in card above table
+✅ **FormControl Integration**: Two-way binding with component controls
+✅ **Accessibility**: Added `role`, `tabindex`, and proper labels
 
-### State Flow:
+### Component CSS
 
-1. **Initial Load**: `loading()` is true → shows spinner
-2. **Success**: `projects().length > 0` → shows table
-3. **Empty**: `projects().length === 0` → shows "No projects found"
-4. **Error**: `error()` has value → shows error message
+File: `frontend/project-tracker/src/app/features/projects/components/project-list/project-list.component.css`
+
+```css
+.cursor-pointer {
+  cursor: pointer;
+  user-select: none;
+}
+
+.cursor-pointer:hover {
+  background-color: #f8f9fa;
+  text-decoration: underline;
+}
+
+.table-hover tbody tr:hover {
+  background-color: #f5f5f5;
+}
+```
+
+### User Experience Flow:
+
+1. **Initial Load**: Component loads all projects and displays them
+2. **Search**: User types in search box → projects instantly filter
+3. **Filter**: User selects status → filtered projects update
+4. **Sort**: User clicks column header → projects sort (toggle asc/desc)
+5. **Combined**: All three work together (search + filter + sort)
 
 ---
 
-## 🎯 Integration Points
+## 🎯 Implementation Checklist
+
+Complete these steps to implement search, filtering, and sorting:
+
+### Step 1: Update the Service
+
+1. Add import for `computed()` from `@angular/core`
+2. Add filter/sort signals: `searchTerm`, `selectedStatus`, `sortColumn`, `sortDirection`
+3. Create `filteredProjects` computed signal with filtering and sorting logic
+4. Add methods: `setSearchTerm()`, `setStatusFilter()`, `setSorting()`
+5. Update `getFilteredProjects()` to return the computed signal instead of raw projects
+
+### Step 2: Update the Component
+
+1. Import `ReactiveFormsModule` and `FormControl`
+2. Create `searchControl` and `statusFilter` FormControl instances
+3. Create `statuses` array with available status values
+4. In `ngOnInit()`, subscribe to `valueChanges` on both form controls
+5. Add `sortByColumn()` method to handle column clicks
+6. Add `getSortIndicator()` method to display sort direction
+7. Update template binding from `projects` to `projects()` signal
+
+### Step 3: Update the Template
+
+1. Add search input with `[formControl]="searchControl"`
+2. Add status filter select with `[formControl]="statusFilter"`
+3. Make column headers clickable with `(click)="sortByColumn()"`
+4. Add sort indicators (↑↓) to headers
+5. Display status as colored badges using Bootstrap badge classes
+6. Update empty state message
+
+### Step 4: Add Styles
+
+1. Create `.cursor-pointer` class for clickable headers
+2. Add hover effects for better UX
+
+### Step 5: Test
+
+1. Type in search box → verify projects filter
+2. Select status → verify filter works
+3. Click column header → verify sorting works
+4. Combine search + filter + sort → verify they work together
+5. Delete a project → verify list updates
+
+---
+
+## 🔗 Integration Points
 
 ### Backend API Endpoints
 
-The component uses these backend endpoints:
+The component still uses these endpoints (no changes needed):
 
 ```
 GET    /api/projects              → Get all user projects
 DELETE /api/projects/{id}         → Delete a project
 ```
 
+All filtering happens on the client-side using signals (no server calls needed for filter/search/sort).
+
 ### Authentication
 
-The component automatically sends the JWT token with each request via the HTTP interceptor (configured in the auth module).
+The component automatically sends the JWT token with each request via the HTTP interceptor.
 
 ### Routing
 
-The component is lazy-loaded in the routes:
-
-```typescript
-{
-  path: 'projects',
-  canActivate: [authGuard],
-  loadComponent: () => import('./features/projects/components/project-list/project-list.component')
-    .then(m => m.ProjectListComponent)
-}
-```
+The component remains lazy-loaded in the routes (no changes needed).
 
 ---
 
-## ✅ Summary
+## 💡 Best Practices Applied
 
-### What We're Using:
+### Signals & Computed Values
+- ✅ Use `signal()` for mutable state (search, filter, sort)
+- ✅ Use `computed()` to derive filtered results automatically
+- ✅ No manual change detection needed (OnPush handles it)
 
-1. ✅ **Signals**: For reactive state management (`projects`, `loading`, `error`)
-2. ✅ **OnPush Change Detection**: For performance optimization
-3. ✅ **Bootstrap 5**: For responsive table styling
-4. ✅ **Standalone Components**: No NgModules required
-5. ✅ **Native Control Flow**: Using `@if` and `@for` instead of `*ngIf` and `*ngFor`
-6. ✅ **Dependency Injection**: Using `inject()` function
+### Reactive Forms
+- ✅ Use `FormControl` for user inputs
+- ✅ Subscribe to `valueChanges` to react to user input
+- ✅ Bind controls with `[formControl]` directive
 
-### Best Practices Applied:
+### Performance
+- ✅ OnPush change detection detects only when signals change
+- ✅ Computed signal only recalculates when dependencies change
+- ✅ Native control flow (`@if`, `@for`) is more efficient
 
-- ✅ Single Responsibility Principle (component only handles UI, service handles data)
-- ✅ Type Safety with TypeScript interfaces
-- ✅ Proper error handling
-- ✅ Loading state feedback to user
-- ✅ Memory-efficient change detection
-- ✅ Clean component interaction with signals
+### User Experience
+- ✅ Real-time search/filter as user types
+- ✅ Visual feedback for sort direction
+- ✅ Color-coded status indicators
+- ✅ Clear empty state messaging
+- ✅ Responsive design works on mobile
 
----
-
-## 🚀 Next Steps
-
-Future enhancements for this module:
-
-1. **Search Functionality**: Filter projects by title/description
-2. **Sorting**: Click column headers to sort
-3. **Filtering**: Filter by status or priority
-4. **Pagination**: Load projects in pages
-5. **Edit/View**: Navigate to project detail/edit pages
-6. **i18n Support**: Translate table headers and messages
-
-**Next: [Module 10: Pagination & Export](./10_pagination_export.md)**
+### Code Organization
+- ✅ Business logic in service (filtering, sorting)
+- ✅ UI interaction in component (form controls, events)
+- ✅ Template focused on display only
+- ✅ Styles separated in CSS file
