@@ -13,7 +13,7 @@ When you create o modify documentation or code examples, please ensure they alig
 
 Don't use custom styles, use standard boostrap 5.3 classes for styling.
 
-Before making changes, explain me briefly what you plan to do.
+Before making changes, explain me briefly what you plan to do and avoid creating recap md files.
 
 ## Repository Overview
 

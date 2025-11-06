@@ -81,7 +81,7 @@ export const authGuard: CanActivateFn = (route, state) => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
-  if (authService.isAuthenticatedSignal()()) {
+  if (authService.isAuthenticated$()()) {
     return true;
   }
 
@@ -101,7 +101,7 @@ export const guestGuard: CanActivateFn = () => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
-  if (authService.isAuthenticatedSignal()()) {
+  if (authService.isAuthenticated$()()) {
     router.navigate(['/projects']);
     return false;
   }
@@ -145,7 +145,7 @@ export class LoginComponent {
 
   protected readonly loginForm: FormGroup;
   protected readonly errorMessage = signal<string>('');
-  protected readonly isLoading = this.authService.getLoadingSignal();
+  protected readonly isLoading = signal(false);
   protected readonly showPassword = signal(false);
 
   constructor() {
@@ -512,7 +512,107 @@ export class RegisterComponent {
 
 ---
 
-## Step 4: Configure Routes
+## Step 4: Implement Logout Button in App Component
+
+The logout button is added to the main navigation bar in the root App component.
+
+Update file: `frontend/project-tracker/src/app/app.ts`
+
+```typescript
+import { Component, inject, signal, ChangeDetectionStrategy } from '@angular/core';
+import { RouterOutlet, RouterLink, Router } from '@angular/router';
+import { TranslatePipe } from './shared/pipes/translate.pipe';
+import { LanguageSelectorComponent } from './shared/components/language-selector.component';
+import { AuthService } from './core/services/auth.service';
+
+@Component({
+  selector: 'app-root',
+  imports: [RouterOutlet, RouterLink, TranslatePipe, LanguageSelectorComponent],
+  templateUrl: './app.html',
+  styleUrl: './app.css',
+  changeDetection: ChangeDetectionStrategy.OnPush
+})
+export class App {
+  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
+
+  protected readonly title = signal('project-tracker');
+  protected readonly isAuthenticated = this.authService.isAuthenticated$();
+
+  /// <summary>
+  /// Handle logout action
+  /// </summary>
+  onLogout(): void {
+    this.authService.logout();
+    this.router.navigate(['/auth/login']);
+  }
+}
+```
+
+Update file: `frontend/project-tracker/src/app/app.html`
+
+```html
+<!-- Navigation Bar -->
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="#">
+      {{ 'navigation.home' | translate }}
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto me-3">
+        <!-- Projects link - show only when authenticated -->
+        @if (isAuthenticated()) {
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/projects">{{ 'navigation.projects' | translate }}</a>
+          </li>
+        }
+        
+        <!-- Login link - show only when NOT authenticated -->
+        @if (!isAuthenticated()) {
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/auth/login">{{ 'navigation.login' | translate }}</a>
+          </li>
+        }
+        
+        <!-- Logout button - show only when authenticated -->
+        @if (isAuthenticated()) {
+          <li class="nav-item">
+            <button 
+              class="nav-link btn btn-link" 
+              (click)="onLogout()"
+              [attr.aria-label]="'navigation.logout' | translate"
+              style="text-decoration: none; border: none; cursor: pointer;">
+              {{ 'navigation.logout' | translate }}
+            </button>
+          </li>
+        }
+      </ul>
+      <!-- Language selector -->
+      <app-language-selector></app-language-selector>
+    </div>
+  </div>
+</nav>
+
+<!-- Main Content Area -->
+<div class="container-fluid" style="margin-top: 2rem;">
+  <router-outlet></router-outlet>
+</div>
+```
+
+### Key Features of the Logout Implementation:
+
+1. **Conditional Rendering**: The logout button only appears when `isAuthenticated()` is true
+2. **Logout Function**: Calls `authService.logout()` to clear tokens and then navigates to login
+3. **Navigation Links**: Shows "Projects" link for authenticated users and "Login" link for unauthenticated users
+4. **Styling**: Uses Bootstrap's `btn btn-link` classes for consistent navbar appearance
+5. **Accessibility**: Includes `aria-label` for screen readers
+
+---
+
+## Step 5: Configure Routes
 
 Create or update file: `frontend/project-tracker/src/app/features/auth/auth.routes.ts`
 
@@ -538,7 +638,33 @@ export const authRoutes: Routes = [
 
 ---
 
-## Step 5: Configure App Routes with Guards
+## Step 5: Configure Routes
+
+Create or update file: `frontend/project-tracker/src/app/features/auth/auth.routes.ts`
+
+```typescript
+import { Routes } from '@angular/router';
+import { guestGuard } from '../../core/guards/auth.guard';
+import { LoginComponent } from './login/login.component';
+import { RegisterComponent } from './register/register.component';
+
+export const authRoutes: Routes = [
+  {
+    path: 'login',
+    component: LoginComponent,
+    canActivate: [guestGuard] // Redirect logged-in users away from login
+  },
+  {
+    path: 'register',
+    component: RegisterComponent,
+    canActivate: [guestGuard] // Redirect logged-in users away from register
+  }
+];
+```
+
+---
+
+## Step 6: Configure App Routes with Guards
 
 Update file: `frontend/project-tracker/src/app/app.routes.ts`
 
@@ -579,7 +705,7 @@ export const routes: Routes = [
 
 ---
 
-## Step 6: Configure App Config with Guards
+## Step 7: Configure App Config with Guards
 
 Update file: `frontend/project-tracker/src/app/app.config.ts`
 
@@ -711,6 +837,7 @@ this.projectService.loadProjects(); // Observable call
 | **Guest Guard** | Redirects logged-in users from auth pages | This Module |
 | **Login Component** | UI for user authentication | This Module |
 | **Register Component** | UI for user registration | This Module |
+| **Logout Button** | Root component navbar with authenticated state | This Module |
 
 ---
 

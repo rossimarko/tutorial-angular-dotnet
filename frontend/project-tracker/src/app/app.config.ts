@@ -3,7 +3,7 @@ import { provideRouter } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 
 import { routes } from './app.routes';
-import { authHttpInterceptor } from './shared/services/auth.http-interceptor';
+import { authHttpInterceptor } from './core/interceptors/auth.http-interceptor';
 import { TranslationService } from './shared/services/translation.service';
 
 console.debug('App Config: Initializing application config...');

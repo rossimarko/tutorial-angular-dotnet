@@ -1,6 +1,6 @@
 import { inject } from '@angular/core';
 import { Router, CanActivateFn } from '@angular/router';
-import { AuthService } from '../../shared/services/auth.service';
+import { AuthService } from '../services/auth.service';
 
 /// <summary>
 /// Auth guard to protect routes from unauthorized access

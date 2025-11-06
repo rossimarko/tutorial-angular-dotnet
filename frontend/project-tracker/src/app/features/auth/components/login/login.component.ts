@@ -2,17 +2,16 @@ import { Component, inject, signal, ChangeDetectionStrategy, computed } from '@a
 import { Router } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { AuthService, TokenResponse } from '../../../../shared/services/auth.service';
-import { ApiResponse } from '../../../../shared/services/auth.service';
+import { AuthService, TokenResponse } from '../../../../core/services/auth.service';
+import { ApiResponse } from '../../../../core/services/auth.service';
 import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
-import { LanguageSelectorComponent } from '../../../../shared/components/language-selector.component';
 
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
   styleUrl: './login.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule, TranslatePipe, LanguageSelectorComponent]
+  imports: [CommonModule, ReactiveFormsModule, TranslatePipe]
 })
 export class LoginComponent {
   private readonly authService = inject(AuthService);

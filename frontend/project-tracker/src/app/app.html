@@ -9,12 +9,32 @@
     </button>
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav ms-auto me-3">
-        <li class="nav-item">
-          <a class="nav-link" href="/projects">{{ 'navigation.projects' | translate }}</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="/login">{{ 'navigation.login' | translate }}</a>
-        </li>
+        <!-- Projects link - show only when authenticated -->
+        @if (isAuthenticated()) {
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/projects">{{ 'navigation.projects' | translate }}</a>
+          </li>
+        }
+        
+        <!-- Login link - show only when NOT authenticated -->
+        @if (!isAuthenticated()) {
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/auth/login">{{ 'navigation.login' | translate }}</a>
+          </li>
+        }
+        
+        <!-- Logout button - show only when authenticated -->
+        @if (isAuthenticated()) {
+          <li class="nav-item">
+            <button 
+              class="nav-link btn btn-link" 
+              (click)="onLogout()"
+              [attr.aria-label]="'navigation.logout' | translate"
+              style="text-decoration: none; border: none; cursor: pointer;">
+              {{ 'navigation.logout' | translate }}
+            </button>
+          </li>
+        }
       </ul>
       <!-- Language selector -->
       <app-language-selector></app-language-selector>

@@ -2,15 +2,14 @@ import { Component, inject, signal, ChangeDetectionStrategy } from '@angular/cor
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, AbstractControl } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { AuthService } from '../../../../shared/services/auth.service';
-import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
+import { AuthService } from '../../../../core/services/auth.service';
 
 /// <summary>
 /// Registration component with password confirmation validation
 /// </summary>
 @Component({
   selector: 'app-register',
-  imports: [CommonModule, ReactiveFormsModule, RouterModule, TranslatePipe],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule],
   templateUrl: './register.component.html',
   styleUrl: './register.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush

@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ProjectService } from '../../services/project.service';
-import { AuthService } from '../../../../shared/services/auth.service';
+import { AuthService } from '../../../../core/services/auth.service';
 
 
 @Component({

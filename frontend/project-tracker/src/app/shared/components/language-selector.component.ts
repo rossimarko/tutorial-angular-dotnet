@@ -1,7 +1,6 @@
 import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslationService } from '../services/translation.service';
-import { TranslatePipe } from '../pipes/translate.pipe';
 
 /// <summary>
 /// Component for selecting application language
@@ -9,7 +8,7 @@ import { TranslatePipe } from '../pipes/translate.pipe';
 /// </summary>
 @Component({
   selector: 'app-language-selector',
-  imports: [CommonModule, TranslatePipe],
+  imports: [CommonModule],
   templateUrl: './language-selector.component.html',
   styleUrl: './language-selector.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush
