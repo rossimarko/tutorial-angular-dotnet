@@ -187,4 +187,17 @@
       </app-pagination>
     </div>
   </div>
+
+  <!-- Delete Confirmation Modal -->
+  <app-confirm-dialog
+    [show]="showDeleteConfirm()"
+    title="Confirm Delete"
+    [message]="'Are you sure you want to delete project: ' + projectToDelete()?.title + '?'"
+    confirmText="Delete"
+    cancelText="Cancel"
+    confirmButtonClass="btn-danger"
+    [loading]="deleting()"
+    (confirmed)="confirmDelete()"
+    (cancelled)="cancelDelete()">
+  </app-confirm-dialog>
 </div>

@@ -32,7 +32,14 @@
     "exportPageCSV": "Export Current Page (CSV)",
     "exportPageExcel": "Export Current Page (Excel)",
     "exportAllCSV": "Export All Results (CSV)",
-    "exportAllExcel": "Export All Results (Excel)"
+    "exportAllExcel": "Export All Results (Excel)",
+    "characters": "characters",
+    "requiredFields": "Required fields",
+    "saving": "Saving...",
+    "create": "Create",
+    "update": "Update",
+    "processing": "Processing...",
+    "confirmDelete": "Confirm Delete"
   },
   "auth": {
     "login": "Login",
@@ -64,10 +71,13 @@
   "projects": {
     "title": "Projects",
     "addProject": "Add Project",
+    "createProject": "Create New Project",
     "editProject": "Edit Project",
     "deleteProject": "Delete Project",
     "projectName": "Project Name",
+    "projectNamePlaceholder": "Enter project title",
     "description": "Description",
+    "descriptionPlaceholder": "Enter project description",
     "status": "Status",
     "priority": "Priority",
     "startDate": "Start Date",
@@ -78,10 +88,21 @@
     "createSuccess": "Project created successfully",
     "updateSuccess": "Project updated successfully",
     "deleteSuccess": "Project deleted successfully",
+    "createProjectDesc": "Add a new project to your list",
+    "editProjectDesc": "Update project details",
     "loadError": "Failed to load projects",
     "manageProjects": "Manage your projects and tasks",
     "searchPlaceholder": "Search by title or description...",
-    "noProjects": "No projects found. Try adjusting your search or filter criteria."
+    "noProjects": "No projects found. Try adjusting your search or filter criteria.",
+    "status_Active": "Active",
+    "status_Completed": "Completed",
+    "status_OnHold": "On Hold",
+    "status_Cancelled": "Cancelled",
+    "priority_1": "Low",
+    "priority_2": "Low-Medium",
+    "priority_3": "Medium",
+    "priority_4": "Medium-High",
+    "priority_5": "High"
   },
   "navigation": {
     "home": "Home",

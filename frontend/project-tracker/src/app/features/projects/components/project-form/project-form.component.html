@@ -1,0 +1,197 @@
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <!-- Header -->
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h2 class="mb-1">
+            @if (isEditMode()) {
+              <i class="fas fa-edit me-2"></i>
+              Edit Project
+            } @else {
+              <i class="fas fa-plus me-2"></i>
+              Create New Project
+            }
+          </h2>
+          <p class="text-muted mb-0">
+            @if (isEditMode()) {
+              Update project details
+            } @else {
+              Add a new project to your list
+            }
+          </p>
+        </div>
+      </div>
+
+      <!-- Form Card -->
+      <div class="card shadow-sm">
+        <div class="card-body p-4">
+          <form [formGroup]="form" (ngSubmit)="onSubmit()">
+            <!-- Title -->
+            <div class="mb-3">
+              <label for="title" class="form-label">
+                Project Title
+                <span class="text-danger">*</span>
+              </label>
+              <input
+                type="text"
+                id="title"
+                class="form-control"
+                formControlName="title"
+                [class.is-invalid]="hasError('title')"
+                placeholder="Enter project title">
+              @if (hasError('title')) {
+                <div class="invalid-feedback">
+                  {{ getErrorMessage('title') }}
+                </div>
+              }
+            </div>
+
+            <!-- Description -->
+            <div class="mb-3">
+              <label for="description" class="form-label">
+                Description
+              </label>
+              <textarea
+                id="description"
+                class="form-control"
+                formControlName="description"
+                rows="4"
+                [class.is-invalid]="hasError('description')"
+                placeholder="Enter project description">
+              </textarea>
+              @if (hasError('description')) {
+                <div class="invalid-feedback">
+                  {{ getErrorMessage('description') }}
+                </div>
+              }
+              <div class="form-text">
+                {{ form.get('description')?.value?.length || 0 }} / 1000 characters
+              </div>
+            </div>
+
+            <!-- Status and Priority Row -->
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="status" class="form-label">
+                  Status
+                  <span class="text-danger">*</span>
+                </label>
+                <select
+                  id="status"
+                  class="form-select"
+                  formControlName="status"
+                  [class.is-invalid]="hasError('status')">
+                  @for (status of statusOptions; track status) {
+                    <option [value]="status">
+                      {{ status }}
+                    </option>
+                  }
+                </select>
+                @if (hasError('status')) {
+                  <div class="invalid-feedback">
+                    {{ getErrorMessage('status') }}
+                  </div>
+                }
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label for="priority" class="form-label">
+                  Priority
+                  <span class="text-danger">*</span>
+                </label>
+                <select
+                  id="priority"
+                  class="form-select"
+                  formControlName="priority"
+                  [class.is-invalid]="hasError('priority')">
+                  @for (priority of priorityOptions; track priority) {
+                    <option [value]="priority">
+                      {{ priority }}
+                    </option>
+                  }
+                </select>
+                @if (hasError('priority')) {
+                  <div class="invalid-feedback">
+                    {{ getErrorMessage('priority') }}
+                  </div>
+                }
+              </div>
+            </div>
+
+            <!-- Dates Row -->
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="startDate" class="form-label">
+                  Start Date
+                </label>
+                <input
+                  type="date"
+                  id="startDate"
+                  class="form-control"
+                  formControlName="startDate"
+                  [class.is-invalid]="hasError('startDate')">
+                @if (hasError('startDate')) {
+                  <div class="invalid-feedback">
+                    {{ getErrorMessage('startDate') }}
+                  </div>
+                }
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label for="dueDate" class="form-label">
+                  Due Date
+                </label>
+                <input
+                  type="date"
+                  id="dueDate"
+                  class="form-control"
+                  formControlName="dueDate"
+                  [class.is-invalid]="hasError('dueDate')">
+                @if (hasError('dueDate')) {
+                  <div class="invalid-feedback">
+                    {{ getErrorMessage('dueDate') }}
+                  </div>
+                }
+              </div>
+            </div>
+
+            <!-- Required Fields Notice -->
+            <div class="alert alert-info mb-3">
+              <i class="fas fa-info-circle me-2"></i>
+              <span class="text-danger">*</span> Required fields
+            </div>
+
+            <!-- Form Actions -->
+            <div class="d-flex justify-content-end gap-2">
+              <button
+                type="button"
+                class="btn btn-outline-secondary"
+                (click)="cancel()"
+                [disabled]="loading()">
+                <i class="fas fa-times me-2"></i>
+                Cancel
+              </button>
+              <button
+                type="submit"
+                class="btn btn-primary"
+                [disabled]="loading() || form.invalid">
+                @if (loading()) {
+                  <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                  Saving...
+                } @else {
+                  <i class="fas fa-save me-2"></i>
+                  @if (isEditMode()) {
+                    Update
+                  } @else {
+                    Create
+                  }
+                }
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

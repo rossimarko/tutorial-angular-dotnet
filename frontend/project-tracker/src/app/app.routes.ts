@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { ProjectListComponent } from './features/projects/components/project-list/project-list.component';
+import { ProjectFormComponent } from './features/projects/components/project-form/project-form.component';
 import { LoginComponent } from './features/auth/components/login/login.component';
 import { LanguageSelectorComponent } from './shared/components/language-selector.component';
 import { authGuard } from './core/guards/auth.guard';
@@ -16,8 +17,20 @@ export const routes: Routes = [
   {
     path: 'projects',
     canActivate: [authGuard],
-    loadComponent: () => import('./features/projects/components/project-list/project-list.component')
-      .then(m => m.ProjectListComponent)
+    children: [
+      {
+        path: '',
+        component: ProjectListComponent
+      },
+      {
+        path: 'create',
+        component: ProjectFormComponent
+      },
+      {
+        path: ':id/edit',
+        component: ProjectFormComponent
+      }
+    ]
   },
   
   // Default redirect

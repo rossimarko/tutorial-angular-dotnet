@@ -32,7 +32,14 @@
     "exportPageCSV": "Esporta Pagina Corrente (CSV)",
     "exportPageExcel": "Esporta Pagina Corrente (Excel)",
     "exportAllCSV": "Esporta Tutti i Risultati (CSV)",
-    "exportAllExcel": "Esporta Tutti i Risultati (Excel)"
+    "exportAllExcel": "Esporta Tutti i Risultati (Excel)",
+    "characters": "caratteri",
+    "requiredFields": "Campi obbligatori",
+    "saving": "Salvataggio...",
+    "create": "Crea",
+    "update": "Aggiorna",
+    "processing": "Elaborazione...",
+    "confirmDelete": "Conferma Eliminazione"
   },
   "auth": {
     "login": "Accedi",
@@ -64,10 +71,13 @@
   "projects": {
     "title": "Progetti",
     "addProject": "Aggiungi Progetto",
+    "createProject": "Crea Nuovo Progetto",
     "editProject": "Modifica Progetto",
     "deleteProject": "Elimina Progetto",
     "projectName": "Nome Progetto",
+    "projectNamePlaceholder": "Inserisci titolo progetto",
     "description": "Descrizione",
+    "descriptionPlaceholder": "Inserisci descrizione progetto",
     "status": "Stato",
     "priority": "Priorità",
     "startDate": "Data Inizio",
@@ -78,10 +88,21 @@
     "createSuccess": "Progetto creato con successo",
     "updateSuccess": "Progetto aggiornato con successo",
     "deleteSuccess": "Progetto eliminato con successo",
+    "createProjectDesc": "Aggiungi un nuovo progetto alla tua lista",
+    "editProjectDesc": "Aggiorna i dettagli del progetto",
     "loadError": "Errore nel caricamento dei progetti",
     "manageProjects": "Gestisci i tuoi progetti e le attività",
     "searchPlaceholder": "Cerca per titolo o descrizione...",
-    "noProjects": "Nessun progetto trovato. Prova a modificare i criteri di ricerca o filtro."
+    "noProjects": "Nessun progetto trovato. Prova a modificare i criteri di ricerca o filtro.",
+    "status_Active": "Attivo",
+    "status_Completed": "Completato",
+    "status_OnHold": "In Sospeso",
+    "status_Cancelled": "Annullato",
+    "priority_1": "Bassa",
+    "priority_2": "Bassa-Media",
+    "priority_3": "Media",
+    "priority_4": "Media-Alta",
+    "priority_5": "Alta"
   },
   "navigation": {
     "home": "Home",

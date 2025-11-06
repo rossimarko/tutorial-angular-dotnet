@@ -38,10 +38,18 @@ export class ProjectService {
     this.loading.set(true);
     this.error.set(null);
 
+    // Extract and pre-set pagination parameters to ensure immediate signal updates
+    const pageNumber = filters?.pageNumber ?? 1;
+    const pageSize = filters?.pageSize ?? 10;
+    
+    // Pre-set signals immediately to ensure UI reflects current page/size state
+    this.pageNumber.set(pageNumber);
+    this.pageSize.set(pageSize);
+
     // Build query parameters from filters
     let params = new HttpParams()
-      .set('pageNumber', (filters?.pageNumber ?? 1).toString())
-      .set('pageSize', (filters?.pageSize ?? 10).toString());
+      .set('pageNumber', pageNumber.toString())
+      .set('pageSize', pageSize.toString());
 
     if (filters?.searchTerm) {
       params = params.set('searchTerm', filters.searchTerm);
@@ -66,8 +74,8 @@ export class ProjectService {
         // Return empty response on error
         return of({
           items: [],
-          pageNumber: 1,
-          pageSize: 10,
+          pageNumber: pageNumber,
+          pageSize: pageSize,
           totalCount: 0,
           totalPages: 0,
           hasPreviousPage: false,

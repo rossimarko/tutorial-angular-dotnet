@@ -108,9 +108,9 @@ export class PaginationComponent {
   /// <summary>
   /// Change page size and emit change event
   /// </summary>
-  onPageSizeChange(size: string): void {
-    const newSize = parseInt(size, 10);
-    if (newSize !== this.pageSize()) {
+  onPageSizeChange(size: string | number): void {
+    const newSize = typeof size === 'string' ? parseInt(size, 10) : size;
+    if (!isNaN(newSize) && newSize !== this.pageSize()) {
       this.pageSizeChanged.emit(newSize);
     }
   }

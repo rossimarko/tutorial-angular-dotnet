@@ -1,4 +1,4 @@
-# Module 11: CRUD Operations - Create, Update & Delete# Module 11: CRUD Operations - Create, Update & Delete# Module 11: Add, Edit & Delete Operations
+# Module 11: CRUD Operations - Create, Update & Delete# Module 11: CRUD Operations - Create, Update & Delete# Module 11: CRUD Operations - Create, Update & Delete# Module 11: Add, Edit & Delete Operations
 
 
 
@@ -6,7 +6,7 @@
 
 
 
-By the end of this module, you will understand:## 🎯 Objectives## 🎯 Objectives
+By the end of this module, you will understand:## 🎯 Objectives
 
 
 
@@ -14,1023 +14,2057 @@ By the end of this module, you will understand:## 🎯 Objectives## 🎯 Objecti
 
 - ✅ Frontend CRUD operations with Angular Services
 
-- ✅ Project creation and editing functionalityBy the end of this module, you will:- ✅ Create form component
+- ✅ Project creation and editing functionalityBy the end of this module, you will understand:## 🎯 Objectives## 🎯 Objectives
 
 - ✅ Project deletion with confirmation
 
-- ✅ Server-side and client-side validation- ✅ Build reactive forms with validation- ✅ Update form component
+- ✅ Server-side and client-side validation
 
 - ✅ Error handling and user feedback
 
-- ✅ Toast notifications for success/error messages- ✅ Create and edit projects with the same component- ✅ Delete confirmation
+- ✅ Toast notifications for success/error messages- ✅ Backend CRUD operations with ASP.NET Core Controllers
 
 
 
----- ✅ Implement client-side and server-side validation- ✅ Validation (client & server)
+## 📋 What is CRUD?- ✅ Frontend CRUD operations with Angular Services
 
 
 
-## 📋 What is CRUD?- ✅ Add async validators for unique fields- ✅ Error handling
+**CRUD** stands for the four basic database operations:- ✅ Project creation and editing functionalityBy the end of this module, you will:- ✅ Create form component
 
 
 
-**CRUD** stands for the four basic database operations:- ✅ Create delete confirmation modals- ✅ Success notifications
-
-
-
-- **C**reate: Add new records- ✅ Build a toast notification service
+- **C**reate: Add new records- ✅ Project deletion with confirmation
 
 - **R**ead: Retrieve/display records (covered in Modules 9-10)
 
-- **U**pdate: Modify existing records- ✅ Handle form errors gracefully## 📌 Status: Framework Ready
+- **U**pdate: Modify existing records- ✅ Server-side and client-side validation- ✅ Build reactive forms with validation- ✅ Update form component
 
 - **D**elete: Remove records
 
-- ✅ Manage form state (pristine, dirty, touched)
+- ✅ Error handling and user feedback
 
 This module demonstrates how both the backend API and Angular frontend implement these operations together.
 
-Implement:
+- ✅ Toast notifications for success/error messages- ✅ Create and edit projects with the same component- ✅ Delete confirmation
 
 ---
 
-## 📋 What is CRUD?- [ ] Project form (create/edit)
+
 
 ## 🔙 Backend: ASP.NET Core CRUD Operations
 
-- [ ] Reactive form validation
+---- ✅ Implement client-side and server-side validation- ✅ Validation (client & server)
 
 ### Project Controller Overview
 
-**CRUD** stands for the four basic database operations:- [ ] Async validation
+
 
 The `ProjectsController` in the backend implements all CRUD operations with proper authorization, validation, and error handling.
 
-- **C**reate: Add new records- [ ] Delete confirmation modal
+## 📋 What is CRUD?- ✅ Add async validators for unique fields- ✅ Error handling
 
 **File: `backend/ProjectTracker.API/Controllers/ProjectsController.cs`**
 
-- **R**ead: Retrieve/display records (covered in Modules 9-10)- [ ] Success/error toast notifications
+
 
 ```csharp
 
-[ApiController]- **U**pdate: Modify existing records- [ ] Form state management
+[ApiController]**CRUD** stands for the four basic database operations:- ✅ Create delete confirmation modals- ✅ Success notifications
 
 [Route("api/[controller]")]
 
-[Authorize]- **D**elete: Remove records
+[Authorize]
 
 public class ProjectsController : ControllerBase
 
-{---
+{- **C**reate: Add new records- ✅ Build a toast notification service
 
     private readonly IProjectRepository _projectRepository;
 
-    private readonly ILogger<ProjectsController> _logger;### Form Best Practices:
+    private readonly ILogger<ProjectsController> _logger;- **R**ead: Retrieve/display records (covered in Modules 9-10)
 
 
 
-    public ProjectsController(- **Reactive Forms**: Type-safe, testable, composable**Next: [Module 12: Bootstrap UI](./12_bootstrap_ui.md)**
+    public ProjectsController(- **U**pdate: Modify existing records- ✅ Handle form errors gracefully## 📌 Status: Framework Ready
 
         IProjectRepository projectRepository,
 
-        ILogger<ProjectsController> logger)- **Validation**: Prevent invalid data at submission
+        ILogger<ProjectsController> logger)- **D**elete: Remove records
 
-    {- **User Feedback**: Clear error messages, success notifications
+    {
 
-        _projectRepository = projectRepository;- **Confirmation**: Ask before destructive actions (delete)
+        _projectRepository = projectRepository;- ✅ Manage form state (pristine, dirty, touched)
 
-        _logger = logger;- **Loading States**: Disable form during API calls
+        _logger = logger;
 
-    }
-
----
-
-    // CRUD methods follow...
-
-}## 📝 Step 1: Toast Notification Service
-
-```
-
-First, let's create a service to show success/error notifications.
-
-### Backend Request/Response Models
-
-Create file: `frontend/project-tracker/src/app/shared/services/notification.service.ts`
-
-#### Create Project Request
-
-```typescript
-
-**File: `backend/ProjectTracker.API/Models/Requests/CreateProjectRequest.cs`**import { Injectable, signal } from '@angular/core';
+    }This module demonstrates how both the backend API and Angular frontend implement these operations together.
 
 
 
-```csharp/// <summary>
-
-using System.ComponentModel.DataAnnotations;/// Toast notification type
-
-/// </summary>
-
-namespace ProjectTracker.API.Models.Requests;export type NotificationType = 'success' | 'error' | 'warning' | 'info';
-
-
-
-/// <summary>/// <summary>
-
-/// Request model for creating a new project/// Toast notification model
-
-/// </summary>/// </summary>
-
-public class CreateProjectRequestexport interface Toast {
-
-{  id: number;
-
-    [Required(ErrorMessage = "Title is required")]  type: NotificationType;
-
-    [StringLength(200, ErrorMessage = "Title cannot exceed 200 characters")]  title: string;
-
-    public required string Title { get; set; }  message: string;
-
-  duration: number;
-
-    [StringLength(1000, ErrorMessage = "Description cannot exceed 1000 characters")]}
-
-    public string? Description { get; set; }
-
-/// <summary>
-
-    [StringLength(50)]/// Service for displaying toast notifications
-
-    public string Status { get; set; } = "Active";/// </summary>
-
-@Injectable({
-
-    [Range(1, 5, ErrorMessage = "Priority must be between 1 and 5")]  providedIn: 'root'
-
-    public int Priority { get; set; } = 1;})
-
-export class NotificationService {
-
-    public DateTime? StartDate { get; set; }  private readonly toasts = signal<Toast[]>([]);
-
-    public DateTime? DueDate { get; set; }  private nextId = 1;
+    // CRUD methods follow...Implement:
 
 }
 
-```  /// <summary>
+```---
 
-  /// Get current toasts as readonly signal
 
-#### Update Project Request  /// </summary>
 
-  getToasts() {
+### Backend Request/Response Models## 📋 What is CRUD?- [ ] Project form (create/edit)
 
-**File: `backend/ProjectTracker.API/Models/Requests/UpdateProjectRequest.cs`**    return this.toasts.asReadonly();
 
-  }
 
-```csharp
+#### Create Project Request## 🔙 Backend: ASP.NET Core CRUD Operations
 
-using System.ComponentModel.DataAnnotations;  /// <summary>
 
-  /// Show success notification
 
-namespace ProjectTracker.API.Models.Requests;  /// </summary>
+**File: `backend/ProjectTracker.API/Models/Requests/CreateProjectRequest.cs`**- [ ] Reactive form validation
 
-  success(title: string, message: string, duration: number = 3000): void {
 
-/// <summary>    this.show('success', title, message, duration);
 
-/// Request model for updating an existing project  }
+```csharp### Project Controller Overview
+
+using System.ComponentModel.DataAnnotations;
+
+**CRUD** stands for the four basic database operations:- [ ] Async validation
+
+namespace ProjectTracker.API.Models.Requests;
+
+The `ProjectsController` in the backend implements all CRUD operations with proper authorization, validation, and error handling.
+
+/// <summary>
+
+/// Request model for creating a new project- **C**reate: Add new records- [ ] Delete confirmation modal
 
 /// </summary>
 
-public class UpdateProjectRequest  /// <summary>
-
-{  /// Show error notification
-
-    [Required(ErrorMessage = "Title is required")]  /// </summary>
-
-    [StringLength(200, ErrorMessage = "Title cannot exceed 200 characters")]  error(title: string, message: string, duration: number = 5000): void {
-
-    public required string Title { get; set; }    this.show('error', title, message, duration);
-
-  }
-
-    [StringLength(1000, ErrorMessage = "Description cannot exceed 1000 characters")]
-
-    public string? Description { get; set; }  /// <summary>
-
-  /// Show warning notification
-
-    [StringLength(50)]  /// </summary>
-
-    public string Status { get; set; } = "Active";  warning(title: string, message: string, duration: number = 4000): void {
-
-    this.show('warning', title, message, duration);
-
-    [Range(1, 5, ErrorMessage = "Priority must be between 1 and 5")]  }
-
-    public int Priority { get; set; } = 1;
-
-  /// <summary>
-
-    public DateTime? StartDate { get; set; }  /// Show info notification
-
-    public DateTime? DueDate { get; set; }  /// </summary>
-
-}  info(title: string, message: string, duration: number = 3000): void {
-
-```    this.show('info', title, message, duration);
-
-  }
-
-#### Project Response
-
-  /// <summary>
-
-**File: `backend/ProjectTracker.API/Models/Responses/ProjectResponse.cs`**  /// Show notification
-
-  /// </summary>
-
-```csharp  private show(type: NotificationType, title: string, message: string, duration: number): void {
-
-namespace ProjectTracker.API.Models.Responses;    const toast: Toast = {
-
-      id: this.nextId++,
-
-/// <summary>      type,
-
-/// Response model for project data      title,
-
-/// </summary>      message,
-
-public class ProjectResponse      duration
-
-{    };
-
-    public int Id { get; set; }
-
-    public int UserId { get; set; }    this.toasts.update(toasts => [...toasts, toast]);
-
-    public string Title { get; set; } = string.Empty;
-
-    public string? Description { get; set; }    // Auto-remove after duration
-
-    public string Status { get; set; } = "Active";    if (duration > 0) {
-
-    public int Priority { get; set; } = 1;      setTimeout(() => this.remove(toast.id), duration);
-
-    public DateTime? StartDate { get; set; }    }
-
-    public DateTime? DueDate { get; set; }  }
-
-    public DateTime CreatedAt { get; set; }
-
-    public DateTime UpdatedAt { get; set; }  /// <summary>
-
-}  /// Remove notification by ID
-
-```  /// </summary>
-
-  remove(id: number): void {
-
-### Backend CRUD Endpoints    this.toasts.update(toasts => toasts.filter(t => t.id !== id));
-
-  }
-
-#### Create - POST /api/projects
-
-  /// <summary>
-
-```csharp  /// Clear all notifications
-
-/// <summary>  /// </summary>
-
-/// Create a new project  clear(): void {
-
-/// POST: api/projects    this.toasts.set([]);
-
-/// </summary>  }
-
-[HttpPost]}
-
-[ProducesResponseType(typeof(ProjectResponse), StatusCodes.Status201Created)]```
-
-[ProducesResponseType(StatusCodes.Status400BadRequest)]
-
-public async Task<ActionResult<ProjectResponse>> Create([FromBody] CreateProjectRequest request)Create file: `frontend/project-tracker/src/app/shared/components/toast-container/toast-container.component.ts`
+public class CreateProjectRequest**File: `backend/ProjectTracker.API/Controllers/ProjectsController.cs`**
 
 {
 
-    var userId = GetUserId();```typescript
+    [Required(ErrorMessage = "Title is required")]- **R**ead: Retrieve/display records (covered in Modules 9-10)- [ ] Success/error toast notifications
 
-    _logger.LogInformation("Creating new project for user {UserId}", userId);import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
+    [StringLength(200, ErrorMessage = "Title cannot exceed 200 characters")]
 
-import { CommonModule } from '@angular/common';
+    public required string Title { get; set; }```csharp
 
-    var project = new Projectimport { NotificationService, NotificationType } from '../../services/notification.service';
 
-    {import { TranslatePipe } from '../../pipes/translate.pipe';
+
+    [StringLength(1000, ErrorMessage = "Description cannot exceed 1000 characters")][ApiController]- **U**pdate: Modify existing records- [ ] Form state management
+
+    public string? Description { get; set; }
+
+[Route("api/[controller]")]
+
+    [StringLength(50)]
+
+    public string Status { get; set; } = "Active";[Authorize]- **D**elete: Remove records
+
+
+
+    [Range(1, 5, ErrorMessage = "Priority must be between 1 and 5")]public class ProjectsController : ControllerBase
+
+    public int Priority { get; set; } = 1;
+
+{---
+
+    public DateTime? StartDate { get; set; }
+
+    private readonly IProjectRepository _projectRepository;
+
+    public DateTime? DueDate { get; set; }
+
+}    private readonly ILogger<ProjectsController> _logger;### Form Best Practices:
+
+```
+
+
+
+#### Update Project Request
+
+    public ProjectsController(- **Reactive Forms**: Type-safe, testable, composable**Next: [Module 12: Bootstrap UI](./12_bootstrap_ui.md)**
+
+**File: `backend/ProjectTracker.API/Models/Requests/UpdateProjectRequest.cs`**
+
+        IProjectRepository projectRepository,
+
+```csharp
+
+using System.ComponentModel.DataAnnotations;        ILogger<ProjectsController> logger)- **Validation**: Prevent invalid data at submission
+
+
+
+namespace ProjectTracker.API.Models.Requests;    {- **User Feedback**: Clear error messages, success notifications
+
+
+
+/// <summary>        _projectRepository = projectRepository;- **Confirmation**: Ask before destructive actions (delete)
+
+/// Request model for updating an existing project
+
+/// </summary>        _logger = logger;- **Loading States**: Disable form during API calls
+
+public class UpdateProjectRequest
+
+{    }
+
+    [Required(ErrorMessage = "Title is required")]
+
+    [StringLength(200, ErrorMessage = "Title cannot exceed 200 characters")]---
+
+    public required string Title { get; set; }
+
+    // CRUD methods follow...
+
+    [StringLength(1000, ErrorMessage = "Description cannot exceed 1000 characters")]
+
+    public string? Description { get; set; }}## 📝 Step 1: Toast Notification Service
+
+
+
+    [StringLength(50)]```
+
+    public string Status { get; set; } = "Active";
+
+First, let's create a service to show success/error notifications.
+
+    [Range(1, 5, ErrorMessage = "Priority must be between 1 and 5")]
+
+    public int Priority { get; set; } = 1;### Backend Request/Response Models
+
+
+
+    public DateTime? StartDate { get; set; }Create file: `frontend/project-tracker/src/app/shared/services/notification.service.ts`
+
+
+
+    public DateTime? DueDate { get; set; }#### Create Project Request
+
+}
+
+``````typescript
+
+
+
+#### Project Response**File: `backend/ProjectTracker.API/Models/Requests/CreateProjectRequest.cs`**import { Injectable, signal } from '@angular/core';
+
+
+
+**File: `backend/ProjectTracker.API/Models/Responses/ProjectResponse.cs`**
+
+
+
+```csharp```csharp/// <summary>
+
+namespace ProjectTracker.API.Models.Responses;
+
+using System.ComponentModel.DataAnnotations;/// Toast notification type
+
+/// <summary>
+
+/// Response model for project data/// </summary>
+
+/// </summary>
+
+public class ProjectResponsenamespace ProjectTracker.API.Models.Requests;export type NotificationType = 'success' | 'error' | 'warning' | 'info';
+
+{
+
+    public int Id { get; set; }
+
+
+
+    public int UserId { get; set; }/// <summary>/// <summary>
+
+
+
+    public string Title { get; set; } = string.Empty;/// Request model for creating a new project/// Toast notification model
+
+
+
+    public string? Description { get; set; }/// </summary>/// </summary>
+
+
+
+    public string Status { get; set; } = "Active";public class CreateProjectRequestexport interface Toast {
+
+
+
+    public int Priority { get; set; } = 1;{  id: number;
+
+
+
+    public DateTime? StartDate { get; set; }    [Required(ErrorMessage = "Title is required")]  type: NotificationType;
+
+
+
+    public DateTime? DueDate { get; set; }    [StringLength(200, ErrorMessage = "Title cannot exceed 200 characters")]  title: string;
+
+
+
+    public DateTime CreatedAt { get; set; }    public required string Title { get; set; }  message: string;
+
+
+
+    public DateTime UpdatedAt { get; set; }  duration: number;
+
+}
+
+```    [StringLength(1000, ErrorMessage = "Description cannot exceed 1000 characters")]}
+
+
+
+### Backend CRUD Endpoints    public string? Description { get; set; }
+
+
+
+#### Create - POST /api/projects/// <summary>
+
+
+
+```csharp    [StringLength(50)]/// Service for displaying toast notifications
+
+/// <summary>
+
+/// Create a new project    public string Status { get; set; } = "Active";/// </summary>
+
+/// POST: api/projects
+
+/// </summary>@Injectable({
+
+[HttpPost]
+
+[ProducesResponseType(typeof(ProjectResponse), StatusCodes.Status201Created)]    [Range(1, 5, ErrorMessage = "Priority must be between 1 and 5")]  providedIn: 'root'
+
+[ProducesResponseType(StatusCodes.Status400BadRequest)]
+
+public async Task<ActionResult<ProjectResponse>> Create([FromBody] CreateProjectRequest request)    public int Priority { get; set; } = 1;})
+
+{
+
+    var userId = GetUserId();export class NotificationService {
+
+    _logger.LogInformation("Creating new project for user {UserId}", userId);
+
+    public DateTime? StartDate { get; set; }  private readonly toasts = signal<Toast[]>([]);
+
+    var project = new Project
+
+    {    public DateTime? DueDate { get; set; }  private nextId = 1;
 
         UserId = userId,
 
-        Title = request.Title,/// <summary>
+        Title = request.Title,}
 
-        Description = request.Description,/// Container component for displaying toast notifications
+        Description = request.Description,
 
-        Status = request.Status,/// </summary>
+        Status = request.Status,```  /// <summary>
 
-        Priority = request.Priority,@Component({
+        Priority = request.Priority,
 
-        StartDate = request.StartDate,  selector: 'app-toast-container',
+        StartDate = request.StartDate,  /// Get current toasts as readonly signal
 
-        DueDate = request.DueDate  imports: [CommonModule, TranslatePipe],
+        DueDate = request.DueDate
 
-    };  templateUrl: './toast-container.component.html',
-
-  styleUrl: './toast-container.component.css',
-
-    var id = await _projectRepository.CreateAsync(project);  changeDetection: ChangeDetectionStrategy.OnPush
-
-    project.Id = id;})
-
-export class ToastContainerComponent {
-
-    _logger.LogInformation("Created project {ProjectId} for user {UserId}", id, userId);  private readonly notificationService = inject(NotificationService);
-
-  
-
-    return CreatedAtAction(  protected readonly toasts = this.notificationService.getToasts();
-
-        nameof(GetById),
-
-        new { id },  /// <summary>
-
-        MapToResponse(project));  /// Get Bootstrap class for toast type
-
-}  /// </summary>
-
-```  getToastClass(type: NotificationType): string {
-
-    const classes: Record<NotificationType, string> = {
-
-**Key Features:**      success: 'bg-success text-white',
-
-- ✅ Server-side validation via `DataAnnotations`      error: 'bg-danger text-white',
-
-- ✅ User ID extraction from JWT claims      warning: 'bg-warning text-dark',
-
-- ✅ Returns 201 Created with Location header      info: 'bg-info text-white'
-
-- ✅ Structured logging    };
-
-    return classes[type];
-
-#### Read - GET /api/projects/{id}  }
+    };#### Update Project Request  /// </summary>
 
 
 
-```csharp  /// <summary>
+    var id = await _projectRepository.CreateAsync(project);  getToasts() {
 
-/// <summary>  /// Get icon for toast type
+    project.Id = id;
 
-/// Get a specific project by ID  /// </summary>
+**File: `backend/ProjectTracker.API/Models/Requests/UpdateProjectRequest.cs`**    return this.toasts.asReadonly();
 
-/// GET: api/projects/{id}  getToastIcon(type: NotificationType): string {
+    _logger.LogInformation("Created project {ProjectId} for user {UserId}", id, userId);
 
-/// </summary>    const icons: Record<NotificationType, string> = {
+  }
 
-[HttpGet("{id}")]      success: 'fas fa-check-circle',
+    return CreatedAtAction(
 
-[ProducesResponseType(typeof(ProjectResponse), StatusCodes.Status200OK)]      error: 'fas fa-exclamation-circle',
+        nameof(GetById),```csharp
 
-[ProducesResponseType(StatusCodes.Status404NotFound)]      warning: 'fas fa-exclamation-triangle',
+        new { id },
 
-public async Task<ActionResult<ProjectResponse>> GetById(int id)      info: 'fas fa-info-circle'
+        MapToResponse(project));using System.ComponentModel.DataAnnotations;  /// <summary>
 
-{    };
+}
 
-    var userId = GetUserId();    return icons[type];
+```  /// Show success notification
+
+
+
+**Key Features:**namespace ProjectTracker.API.Models.Requests;  /// </summary>
+
+
+
+- ✅ Server-side validation via `DataAnnotations`  success(title: string, message: string, duration: number = 3000): void {
+
+- ✅ User ID extraction from JWT claims
+
+- ✅ Returns 201 Created with Location header/// <summary>    this.show('success', title, message, duration);
+
+- ✅ Structured logging
+
+/// Request model for updating an existing project  }
+
+#### Read - GET /api/projects/{id}
+
+/// </summary>
+
+```csharp
+
+/// <summary>public class UpdateProjectRequest  /// <summary>
+
+/// Get a specific project by ID
+
+/// GET: api/projects/{id}{  /// Show error notification
+
+/// </summary>
+
+[HttpGet("{id}")]    [Required(ErrorMessage = "Title is required")]  /// </summary>
+
+[ProducesResponseType(typeof(ProjectResponse), StatusCodes.Status200OK)]
+
+[ProducesResponseType(StatusCodes.Status404NotFound)]    [StringLength(200, ErrorMessage = "Title cannot exceed 200 characters")]  error(title: string, message: string, duration: number = 5000): void {
+
+public async Task<ActionResult<ProjectResponse>> GetById(int id)
+
+{    public required string Title { get; set; }    this.show('error', title, message, duration);
+
+    var userId = GetUserId();
 
     _logger.LogInformation("Fetching project {ProjectId} for user {UserId}", id, userId);  }
 
 
 
-    var project = await _projectRepository.GetByIdAsync(id);  /// <summary>
+    var project = await _projectRepository.GetByIdAsync(id);    [StringLength(1000, ErrorMessage = "Description cannot exceed 1000 characters")]
 
-  /// Close toast
 
-    if (project is null || project.UserId != userId)  /// </summary>
 
-    {  close(id: number): void {
+    if (project is null || project.UserId != userId)    public string? Description { get; set; }  /// <summary>
 
-        return NotFound(new { message = "Project not found" });    this.notificationService.remove(id);
+    {
 
-    }  }
-
-}
-
-    return Ok(MapToResponse(project));```
-
-}
-
-```Create file: `frontend/project-tracker/src/app/shared/components/toast-container/toast-container.component.html`
-
-
-
-**Key Features:**```html
-
-- ✅ User ownership verification<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;">
-
-- ✅ 404 Not Found for missing or unauthorized projects  @for (toast of toasts(); track toast.id) {
-
-    <div
-
-#### Update - PUT /api/projects/{id}      class="toast show mb-2"
-
-      [class]="getToastClass(toast.type)"
-
-```csharp      role="alert"
-
-/// <summary>      aria-live="assertive"
-
-/// Update an existing project      aria-atomic="true">
-
-/// PUT: api/projects/{id}      <div class="toast-header" [class]="getToastClass(toast.type)">
-
-/// </summary>        <i [class]="getToastIcon(toast.type) + ' me-2'"></i>
-
-[HttpPut("{id}")]        <strong class="me-auto">{{ toast.title }}</strong>
-
-[ProducesResponseType(StatusCodes.Status204NoContent)]        <button
-
-[ProducesResponseType(StatusCodes.Status400BadRequest)]          type="button"
-
-[ProducesResponseType(StatusCodes.Status404NotFound)]          class="btn-close btn-close-white"
-
-public async Task<IActionResult> Update(int id, [FromBody] UpdateProjectRequest request)          (click)="close(toast.id)"
-
-{          [attr.aria-label]="'common.close' | translate">
-
-    var userId = GetUserId();        </button>
-
-    _logger.LogInformation("Updating project {ProjectId} for user {UserId}", id, userId);      </div>
-
-      <div class="toast-body">
-
-    var existing = await _projectRepository.GetByIdAsync(id);        {{ toast.message }}
-
-    if (existing is null || existing.UserId != userId)      </div>
-
-    {    </div>
-
-        return NotFound(new { message = "Project not found" });  }
-
-    }</div>
-
-```
-
-    existing.Title = request.Title;
-
-    existing.Description = request.Description;Create file: `frontend/project-tracker/src/app/shared/components/toast-container/toast-container.component.css`
-
-    existing.Status = request.Status;
-
-    existing.Priority = request.Priority;```css
-
-    existing.StartDate = request.StartDate;.toast {
-
-    existing.DueDate = request.DueDate;  min-width: 300px;
-
-  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-
-    await _projectRepository.UpdateAsync(existing);}
-
-
-
-    _logger.LogInformation("Updated project {ProjectId}", id);.toast-header {
-
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-
-    return NoContent();}
-
-}
-
-```.btn-close-white {
-
-  filter: invert(1) grayscale(100%) brightness(200%);
-
-**Key Features:**}
-
-- ✅ Ownership verification before update```
-
-- ✅ Returns 204 No Content
-
-- ✅ Automatic timestamp updates in repositoryAdd ToastContainer to your main app component template:
-
-
-
-#### Delete - DELETE /api/projects/{id}```html
-
-<!-- In app.component.html -->
-
-```csharp<app-toast-container></app-toast-container>
-
-/// <summary><router-outlet></router-outlet>
-
-/// Delete a project```
-
-/// DELETE: api/projects/{id}
-
-/// </summary>---
-
-[HttpDelete("{id}")]
-
-[ProducesResponseType(StatusCodes.Status204NoContent)]## 📋 Step 2: Project Form Component
-
-[ProducesResponseType(StatusCodes.Status404NotFound)]
-
-public async Task<IActionResult> Delete(int id)Create file: `frontend/project-tracker/src/app/features/projects/components/project-form/project-form.component.ts`
-
-{
-
-    var userId = GetUserId();```typescript
-
-    _logger.LogInformation("Deleting project {ProjectId} for user {UserId}", id, userId);import { Component, inject, signal, OnInit, input, ChangeDetectionStrategy } from '@angular/core';
-
-import { CommonModule } from '@angular/common';
-
-    var existing = await _projectRepository.GetByIdAsync(id);import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-
-    if (existing is null || existing.UserId != userId)import { Router, ActivatedRoute } from '@angular/router';
-
-    {import { ProjectService } from '../../services/project.service';
-
-        return NotFound(new { message = "Project not found" });import { NotificationService } from '../../../../shared/services/notification.service';
-
-    }import { Project, ProjectStatus } from '../../../../shared/models/project.model';
-
-import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
-
-    await _projectRepository.DeleteAsync(id);
-
-/// <summary>
-
-    _logger.LogInformation("Deleted project {ProjectId}", id);/// Form component for creating and editing projects
-
-/// Uses same component for both create and edit modes
-
-    return NoContent();/// </summary>
-
-}@Component({
-
-```  selector: 'app-project-form',
-
-  imports: [CommonModule, ReactiveFormsModule, TranslatePipe],
-
-**Key Features:**  templateUrl: './project-form.component.html',
-
-- ✅ Owner verification  styleUrl: './project-form.component.css',
-
-- ✅ Returns 204 No Content  changeDetection: ChangeDetectionStrategy.OnPush
-
-- ✅ Audit logging})
-
-export class ProjectFormComponent implements OnInit {
-
----  private readonly fb = inject(FormBuilder);
-
-  private readonly projectService = inject(ProjectService);
-
-## 🎨 Frontend: Angular CRUD Operations  private readonly notificationService = inject(NotificationService);
-
-  private readonly router = inject(Router);
-
-### Project Models  private readonly route = inject(ActivatedRoute);
-
-
-
-**File: `frontend/project-tracker/src/app/shared/models/project.model.ts`**  // Signals for component state
-
-  protected readonly isEditMode = signal(false);
-
-```typescript  protected readonly loading = signal(false);
-
-/// <summary>  protected readonly projectId = signal<number | null>(null);
-
-/// Project entity model
-
-/// </summary>  // Form
-
-export interface Project {  protected readonly form: FormGroup;
-
-  id: number;
-
-  userId: number;  // Status options
-
-  title: string;  protected readonly statusOptions: ProjectStatus[] = ['Active', 'Completed', 'OnHold', 'Cancelled'];
-
-  description?: string;  protected readonly priorityOptions = [1, 2, 3, 4, 5];
-
-  status: string;
-
-  priority: number;  constructor() {
-
-  startDate?: Date;    // Initialize form
-
-  dueDate?: Date;    this.form = this.fb.group({
-
-  createdAt: Date;      title: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(200)]],
-
-  updatedAt: Date;      description: ['', [Validators.maxLength(1000)]],
-
-}      status: ['Active', [Validators.required]],
-
-      priority: [3, [Validators.required, Validators.min(1), Validators.max(5)]],
-
-/// <summary>      startDate: [null],
-
-/// Request to create a new project      dueDate: [null]
-
-/// </summary>    });
-
-export interface CreateProjectRequest {  }
-
-  title: string;
-
-  description?: string;  ngOnInit(): void {
-
-  status: string;    // Check if we're in edit mode
-
-  priority: number;    const id = this.route.snapshot.paramMap.get('id');
-
-  startDate?: Date;    if (id) {
-
-  dueDate?: Date;      this.isEditMode.set(true);
-
-}      this.projectId.set(parseInt(id, 10));
-
-      this.loadProject(parseInt(id, 10));
-
-/// <summary>    }
-
-/// Request to update an existing project  }
-
-/// </summary>
-
-export interface UpdateProjectRequest extends CreateProjectRequest {}  /// <summary>
-
-  /// Load project data for editing
-
-/// <summary>  /// </summary>
-
-/// Paged result wrapper - matches backend response structure  private loadProject(id: number): void {
-
-/// </summary>    this.loading.set(true);
-
-export interface PaginatedResponse<T> {    this.projectService.getProjectById(id).subscribe({
-
-  pageNumber: number;      next: (project) => {
-
-  pageSize: number;        this.form.patchValue({
-
-  totalCount: number;          title: project.title,
-
-  totalPages: number;          description: project.description,
-
-  hasNextPage: boolean;          status: project.status,
-
-  hasPreviousPage: boolean;          priority: project.priority,
-
-  items: T[];          startDate: this.formatDateForInput(project.startDate),
-
-}          dueDate: this.formatDateForInput(project.dueDate)
-
-        });
-
-/// <summary>        this.loading.set(false);
-
-/// Project-specific pagination type      },
-
-/// </summary>      error: (error) => {
-
-export type ProjectPaginatedResponse = PaginatedResponse<Project>;        console.error('Error loading project:', error);
-
-        this.notificationService.error(
-
-/// <summary>          'Error',
-
-/// Pagination parameters for API requests          'Failed to load project data'
-
-/// </summary>        );
-
-export interface PaginationParams {        this.loading.set(false);
-
-  pageNumber: number;        this.router.navigate(['/projects']);
-
-  pageSize: number;      }
-
-  searchTerm?: string;    });
-
-  sortBy?: string;  }
-
-  sortDirection?: 'asc' | 'desc';
-
-}  /// <summary>
-
-```  /// Format date for HTML input (YYYY-MM-DD)
-
-  /// </summary>
-
-### Project Service  private formatDateForInput(date: Date | null): string | null {
-
-    if (!date) return null;
-
-**File: `frontend/project-tracker/src/app/features/projects/services/project.service.ts`**    const d = new Date(date);
-
-    return d.toISOString().split('T')[0];
-
-The service manages all CRUD operations and state using signals:  }
-
-
-
-```typescript  /// <summary>
-
-import { Injectable, inject, signal } from '@angular/core';  /// Submit form
-
-import { HttpClient, HttpParams } from '@angular/common/http';  /// </summary>
-
-import { Observable, tap, catchError, of } from 'rxjs';  onSubmit(): void {
-
-import { environment } from '../../../../environments/environment';    if (this.form.invalid) {
-
-import {       this.form.markAllAsTouched();
-
-  Project,       this.notificationService.warning(
-
-  ProjectPaginatedResponse,        'Validation Error',
-
-  PaginationParams,        'Please fix the errors in the form'
-
-  CreateProjectRequest,      );
-
-  UpdateProjectRequest      return;
-
-} from '../../../shared/models/project.model';    }
-
-
-
-/// <summary>    this.loading.set(true);
-
-/// Service for managing projects with pagination support    const formValue = this.form.value;
-
-/// Uses signals for state management and server-side pagination
-
-/// </summary>    // Convert date strings to Date objects
-
-@Injectable({    const projectData: Partial<Project> = {
-
-  providedIn: 'root'      title: formValue.title,
-
-})      description: formValue.description || null,
-
-export class ProjectService {      status: formValue.status,
-
-  private readonly http = inject(HttpClient);      priority: formValue.priority,
-
-  private readonly apiUrl = `${environment.apiUrl}/projects`;      startDate: formValue.startDate ? new Date(formValue.startDate) : null,
-
-      dueDate: formValue.dueDate ? new Date(formValue.dueDate) : null
-
-  // State signals for pagination    };
-
-  private readonly projects = signal<Project[]>([]);
-
-  private readonly loading = signal(false);    const operation$ = this.isEditMode()
-
-  private readonly error = signal<string | null>(null);      ? this.projectService.updateProject(this.projectId()!, projectData)
-
-      : this.projectService.createProject(projectData);
-
-  /// <summary>
-
-  /// Create a new project    operation$.subscribe({
-
-  /// </summary>      next: () => {
-
-  createProject(request: CreateProjectRequest): Observable<Project> {        this.notificationService.success(
-
-    return this.http.post<Project>(this.apiUrl, request).pipe(          'Success',
-
-      tap(() => {          this.isEditMode() ? 'Project updated successfully' : 'Project created successfully'
-
-        this.error.set(null);        );
-
-      }),        this.loading.set(false);
-
-      catchError(error => {        this.router.navigate(['/projects']);
-
-        this.error.set('Failed to create project');      },
-
-        console.error('Error creating project:', error);      error: (error) => {
-
-        throw error;        console.error('Error saving project:', error);
-
-      })        this.notificationService.error(
-
-    );          'Error',
-
-  }          'Failed to save project. Please try again.'
-
-        );
-
-  /// <summary>        this.loading.set(false);
-
-  /// Get a single project by ID      }
-
-  /// </summary>    });
-
-  getProject(id: number): Observable<Project> {  }
-
-    return this.http.get<Project>(`${this.apiUrl}/${id}`);
-
-  }  /// <summary>
-
-  /// Cancel and go back
-
-  /// <summary>  /// </summary>
-
-  /// Update an existing project  cancel(): void {
-
-  /// </summary>    if (this.form.dirty) {
-
-  updateProject(id: number, request: UpdateProjectRequest): Observable<void> {      if (confirm('You have unsaved changes. Are you sure you want to leave?')) {
-
-    return this.http.put<void>(`${this.apiUrl}/${id}`, request).pipe(        this.router.navigate(['/projects']);
-
-      tap(() => {      }
-
-        this.error.set(null);    } else {
-
-      }),      this.router.navigate(['/projects']);
-
-      catchError(error => {    }
-
-        this.error.set('Failed to update project');  }
-
-        console.error('Error updating project:', error);
-
-        throw error;  /// <summary>
-
-      })  /// Check if field has error
-
-    );  /// </summary>
-
-  }  hasError(fieldName: string, errorType?: string): boolean {
-
-    const field = this.form.get(fieldName);
-
-  /// <summary>    if (!field) return false;
-
-  /// Delete a project
-
-  /// </summary>    if (errorType) {
-
-  deleteProject(id: number): Observable<void> {      return field.hasError(errorType) && (field.dirty || field.touched);
-
-    return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(    }
-
-      tap(() => {    return field.invalid && (field.dirty || field.touched);
-
-        this.error.set(null);  }
-
-      }),
-
-      catchError(error => {  /// <summary>
-
-        this.error.set('Failed to delete project');  /// Get error message for field
-
-        console.error('Error deleting project:', error);  /// </summary>
-
-        throw error;  getErrorMessage(fieldName: string): string {
-
-      })    const field = this.form.get(fieldName);
-
-    );    if (!field || !field.errors) return '';
-
-  }
-
-    const errors = field.errors;
-
-  /// <summary>
-
-  /// Load paginated projects with optional filters    if (errors['required']) {
-
-  /// </summary>      return 'This field is required';
-
-  loadProjectsPaged(filters?: Partial<PaginationParams>): Observable<ProjectPaginatedResponse> {    }
-
-    this.loading.set(true);    if (errors['minlength']) {
-
-    this.error.set(null);      return `Minimum length is ${errors['minlength'].requiredLength} characters`;
+        return NotFound(new { message = "Project not found" });  /// Show warning notification
 
     }
 
-    let params = new HttpParams()    if (errors['maxlength']) {
+    [StringLength(50)]  /// </summary>
 
-      .set('pageNumber', (filters?.pageNumber ?? 1).toString())      return `Maximum length is ${errors['maxlength'].requiredLength} characters`;
+    return Ok(MapToResponse(project));
 
-      .set('pageSize', (filters?.pageSize ?? 10).toString());    }
-
-    if (errors['min']) {
-
-    if (filters?.searchTerm) {      return `Minimum value is ${errors['min'].min}`;
-
-      params = params.set('searchTerm', filters.searchTerm);    }
-
-    }    if (errors['max']) {
-
-    if (filters?.sortBy) {      return `Maximum value is ${errors['max'].max}`;
-
-      params = params.set('sortBy', filters.sortBy);    }
-
-    }
-
-    if (filters?.sortDirection) {    return 'Invalid value';
-
-      params = params.set('sortDirection', filters.sortDirection);  }
-
-    }}
+}    public string Status { get; set; } = "Active";  warning(title: string, message: string, duration: number = 4000): void {
 
 ```
 
-    return this.http.get<ProjectPaginatedResponse>(`${this.apiUrl}/paged`, { params }).pipe(
-
-      tap(response => {Create file: `frontend/project-tracker/src/app/features/projects/components/project-form/project-form.component.html`
-
-        this.projects.set(response.items);
-
-        this.loading.set(false);```html
-
-      }),<div class="container py-4">
-
-      catchError(error => {  <div class="row justify-content-center">
-
-        this.error.set('Failed to load projects');    <div class="col-lg-8">
-
-        this.loading.set(false);      <!-- Header -->
-
-        console.error('Error loading projects:', error);      <div class="d-flex justify-content-between align-items-center mb-4">
-
-        return of({        <div>
-
-          items: [],          <h2 class="mb-1">
-
-          pageNumber: 1,            @if (isEditMode()) {
-
-          pageSize: 10,              <i class="fas fa-edit me-2"></i>
-
-          totalCount: 0,              {{ 'projects.editProject' | translate }}
-
-          totalPages: 0,            } @else {
-
-          hasPreviousPage: false,              <i class="fas fa-plus me-2"></i>
-
-          hasNextPage: false              {{ 'projects.createProject' | translate }}
-
-        });            }
-
-      })          </h2>
-
-    );          <p class="text-muted mb-0">
-
-  }            {{ isEditMode() ? ('projects.editProjectDesc' | translate) : ('projects.createProjectDesc' | translate) }}
-
-}          </p>
-
-```        </div>
-
-      </div>
+    this.show('warning', title, message, duration);
 
 **Key Features:**
 
-- ✅ All CRUD methods return observables      <!-- Form Card -->
+    [Range(1, 5, ErrorMessage = "Priority must be between 1 and 5")]  }
 
-- ✅ Error handling with signal-based state      <div class="card shadow-sm">
+- ✅ User ownership verification
 
-- ✅ Type-safe models        <div class="card-body p-4">
+- ✅ 404 Not Found for missing or unauthorized projects    public int Priority { get; set; } = 1;
 
-- ✅ Automatic loading state management          <form [formGroup]="form" (ngSubmit)="onSubmit()">
 
-            <!-- Title -->
 
-### Project List Component - Delete Operation            <div class="mb-3">
+#### Update - PUT /api/projects/{id}  /// <summary>
+
+
+
+```csharp    public DateTime? StartDate { get; set; }  /// Show info notification
+
+/// <summary>
+
+/// Update an existing project    public DateTime? DueDate { get; set; }  /// </summary>
+
+/// PUT: api/projects/{id}
+
+/// </summary>}  info(title: string, message: string, duration: number = 3000): void {
+
+[HttpPut("{id}")]
+
+[ProducesResponseType(StatusCodes.Status204NoContent)]```    this.show('info', title, message, duration);
+
+[ProducesResponseType(StatusCodes.Status400BadRequest)]
+
+[ProducesResponseType(StatusCodes.Status404NotFound)]  }
+
+public async Task<IActionResult> Update(int id, [FromBody] UpdateProjectRequest request)
+
+{#### Project Response
+
+    var userId = GetUserId();
+
+    _logger.LogInformation("Updating project {ProjectId} for user {UserId}", id, userId);  /// <summary>
+
+
+
+    var existing = await _projectRepository.GetByIdAsync(id);**File: `backend/ProjectTracker.API/Models/Responses/ProjectResponse.cs`**  /// Show notification
+
+
+
+    if (existing is null || existing.UserId != userId)  /// </summary>
+
+    {
+
+        return NotFound(new { message = "Project not found" });```csharp  private show(type: NotificationType, title: string, message: string, duration: number): void {
+
+    }
+
+namespace ProjectTracker.API.Models.Responses;    const toast: Toast = {
+
+    existing.Title = request.Title;
+
+    existing.Description = request.Description;      id: this.nextId++,
+
+    existing.Status = request.Status;
+
+    existing.Priority = request.Priority;/// <summary>      type,
+
+    existing.StartDate = request.StartDate;
+
+    existing.DueDate = request.DueDate;/// Response model for project data      title,
+
+
+
+    await _projectRepository.UpdateAsync(existing);/// </summary>      message,
+
+
+
+    _logger.LogInformation("Updated project {ProjectId}", id);public class ProjectResponse      duration
+
+
+
+    return NoContent();{    };
+
+}
+
+```    public int Id { get; set; }
+
+
+
+**Key Features:**    public int UserId { get; set; }    this.toasts.update(toasts => [...toasts, toast]);
+
+
+
+- ✅ Ownership verification before update    public string Title { get; set; } = string.Empty;
+
+- ✅ Returns 204 No Content
+
+- ✅ Automatic timestamp updates in repository    public string? Description { get; set; }    // Auto-remove after duration
+
+
+
+#### Delete - DELETE /api/projects/{id}    public string Status { get; set; } = "Active";    if (duration > 0) {
+
+
+
+```csharp    public int Priority { get; set; } = 1;      setTimeout(() => this.remove(toast.id), duration);
+
+/// <summary>
+
+/// Delete a project    public DateTime? StartDate { get; set; }    }
+
+/// DELETE: api/projects/{id}
+
+/// </summary>    public DateTime? DueDate { get; set; }  }
+
+[HttpDelete("{id}")]
+
+[ProducesResponseType(StatusCodes.Status204NoContent)]    public DateTime CreatedAt { get; set; }
+
+[ProducesResponseType(StatusCodes.Status404NotFound)]
+
+public async Task<IActionResult> Delete(int id)    public DateTime UpdatedAt { get; set; }  /// <summary>
+
+{
+
+    var userId = GetUserId();}  /// Remove notification by ID
+
+    _logger.LogInformation("Deleting project {ProjectId} for user {UserId}", id, userId);
+
+```  /// </summary>
+
+    var existing = await _projectRepository.GetByIdAsync(id);
+
+  remove(id: number): void {
+
+    if (existing is null || existing.UserId != userId)
+
+    {### Backend CRUD Endpoints    this.toasts.update(toasts => toasts.filter(t => t.id !== id));
+
+        return NotFound(new { message = "Project not found" });
+
+    }  }
+
+
+
+    await _projectRepository.DeleteAsync(id);#### Create - POST /api/projects
+
+
+
+    _logger.LogInformation("Deleted project {ProjectId}", id);  /// <summary>
+
+
+
+    return NoContent();```csharp  /// Clear all notifications
+
+}
+
+```/// <summary>  /// </summary>
+
+
+
+**Key Features:**/// Create a new project  clear(): void {
+
+
+
+- ✅ Owner verification/// POST: api/projects    this.toasts.set([]);
+
+- ✅ Returns 204 No Content
+
+- ✅ Audit logging/// </summary>  }
+
+
+
+---[HttpPost]}
+
+
+
+## 🎨 Frontend: Angular CRUD Operations[ProducesResponseType(typeof(ProjectResponse), StatusCodes.Status201Created)]```
+
+
+
+### Project Models[ProducesResponseType(StatusCodes.Status400BadRequest)]
+
+
+
+**File: `frontend/project-tracker/src/app/shared/models/project.model.ts`**public async Task<ActionResult<ProjectResponse>> Create([FromBody] CreateProjectRequest request)Create file: `frontend/project-tracker/src/app/shared/components/toast-container/toast-container.component.ts`
+
+
+
+```typescript{
+
+/// <summary>
+
+/// Project entity model    var userId = GetUserId();```typescript
+
+/// </summary>
+
+export interface Project {    _logger.LogInformation("Creating new project for user {UserId}", userId);import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
+
+    id: number;
+
+    userId: number;import { CommonModule } from '@angular/common';
+
+    title: string;
+
+    description?: string;    var project = new Projectimport { NotificationService, NotificationType } from '../../services/notification.service';
+
+    status: string;
+
+    priority: number;    {import { TranslatePipe } from '../../pipes/translate.pipe';
+
+    startDate?: Date;
+
+    dueDate?: Date;        UserId = userId,
+
+    createdAt: Date;
+
+    updatedAt: Date;        Title = request.Title,/// <summary>
+
+}
+
+        Description = request.Description,/// Container component for displaying toast notifications
+
+/// <summary>
+
+/// Request to create a new project        Status = request.Status,/// </summary>
+
+/// </summary>
+
+export interface CreateProjectRequest {        Priority = request.Priority,@Component({
+
+    title: string;
+
+    description?: string;        StartDate = request.StartDate,  selector: 'app-toast-container',
+
+    status: string;
+
+    priority: number;        DueDate = request.DueDate  imports: [CommonModule, TranslatePipe],
+
+    startDate?: Date;
+
+    dueDate?: Date;    };  templateUrl: './toast-container.component.html',
+
+}
+
+  styleUrl: './toast-container.component.css',
+
+/// <summary>
+
+/// Request to update an existing project    var id = await _projectRepository.CreateAsync(project);  changeDetection: ChangeDetectionStrategy.OnPush
+
+/// </summary>
+
+export interface UpdateProjectRequest extends CreateProjectRequest {}    project.Id = id;})
+
+
+
+/// <summary>export class ToastContainerComponent {
+
+/// Paged result wrapper - matches backend response structure
+
+/// </summary>    _logger.LogInformation("Created project {ProjectId} for user {UserId}", id, userId);  private readonly notificationService = inject(NotificationService);
+
+export interface PaginatedResponse<T> {
+
+    pageNumber: number;  
+
+    pageSize: number;
+
+    totalCount: number;    return CreatedAtAction(  protected readonly toasts = this.notificationService.getToasts();
+
+    totalPages: number;
+
+    hasNextPage: boolean;        nameof(GetById),
+
+    hasPreviousPage: boolean;
+
+    items: T[];        new { id },  /// <summary>
+
+}
+
+        MapToResponse(project));  /// Get Bootstrap class for toast type
+
+/// <summary>
+
+/// Project-specific pagination type}  /// </summary>
+
+/// </summary>
+
+export type ProjectPaginatedResponse = PaginatedResponse<Project>;```  getToastClass(type: NotificationType): string {
+
+
+
+/// <summary>    const classes: Record<NotificationType, string> = {
+
+/// Pagination parameters for API requests
+
+/// </summary>**Key Features:**      success: 'bg-success text-white',
+
+export interface PaginationParams {
+
+    pageNumber: number;- ✅ Server-side validation via `DataAnnotations`      error: 'bg-danger text-white',
+
+    pageSize: number;
+
+    searchTerm?: string;- ✅ User ID extraction from JWT claims      warning: 'bg-warning text-dark',
+
+    sortBy?: string;
+
+    sortDirection?: 'asc' | 'desc';- ✅ Returns 201 Created with Location header      info: 'bg-info text-white'
+
+}
+
+- ✅ Structured logging    };
+
+/// <summary>
+
+/// Project status enum    return classes[type];
+
+/// </summary>
+
+export type ProjectStatus = 'Active' | 'Completed' | 'OnHold' | 'Cancelled';#### Read - GET /api/projects/{id}  }
+
+```
+
+
+
+### Project Service
+
+```csharp  /// <summary>
+
+**File: `frontend/project-tracker/src/app/features/projects/services/project.service.ts`**
+
+/// <summary>  /// Get icon for toast type
+
+The service manages all CRUD operations and state using signals:
+
+/// Get a specific project by ID  /// </summary>
+
+```typescript
+
+import { Injectable, inject, signal } from '@angular/core';/// GET: api/projects/{id}  getToastIcon(type: NotificationType): string {
+
+import { HttpClient, HttpParams } from '@angular/common/http';
+
+import { Observable, tap, catchError, of } from 'rxjs';/// </summary>    const icons: Record<NotificationType, string> = {
+
+import { environment } from '../../../../environments/environment';
+
+import {[HttpGet("{id}")]      success: 'fas fa-check-circle',
+
+    Project,
+
+    ProjectPaginatedResponse,[ProducesResponseType(typeof(ProjectResponse), StatusCodes.Status200OK)]      error: 'fas fa-exclamation-circle',
+
+    PaginationParams,
+
+    CreateProjectRequest,[ProducesResponseType(StatusCodes.Status404NotFound)]      warning: 'fas fa-exclamation-triangle',
+
+    UpdateProjectRequest
+
+} from '../../../shared/models/project.model';public async Task<ActionResult<ProjectResponse>> GetById(int id)      info: 'fas fa-info-circle'
+
+
+
+/// <summary>{    };
+
+/// Service for managing projects with pagination support
+
+/// Uses signals for state management and server-side pagination    var userId = GetUserId();    return icons[type];
+
+/// </summary>
+
+@Injectable({    _logger.LogInformation("Fetching project {ProjectId} for user {UserId}", id, userId);  }
+
+    providedIn: 'root'
+
+})
+
+export class ProjectService {
+
+    private readonly http = inject(HttpClient);    var project = await _projectRepository.GetByIdAsync(id);  /// <summary>
+
+    private readonly apiUrl = `${environment.apiUrl}/projects`;
+
+  /// Close toast
+
+    // State signals for pagination
+
+    private readonly projects = signal<Project[]>([]);    if (project is null || project.UserId != userId)  /// </summary>
+
+    private readonly loading = signal(false);
+
+    private readonly error = signal<string | null>(null);    {  close(id: number): void {
+
+
+
+    /// <summary>        return NotFound(new { message = "Project not found" });    this.notificationService.remove(id);
+
+    /// Create a new project
+
+    /// </summary>    }  }
+
+    createProject(request: CreateProjectRequest): Observable<Project> {
+
+        return this.http.post<Project>(this.apiUrl, request).pipe(}
+
+            tap(() => {
+
+                this.error.set(null);    return Ok(MapToResponse(project));```
+
+            }),
+
+            catchError(error => {}
+
+                this.error.set('Failed to create project');
+
+                console.error('Error creating project:', error);```Create file: `frontend/project-tracker/src/app/shared/components/toast-container/toast-container.component.html`
+
+                throw error;
+
+            })
+
+        );
+
+    }**Key Features:**```html
+
+
+
+    /// <summary>- ✅ User ownership verification<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;">
+
+    /// Get a single project by ID
+
+    /// </summary>- ✅ 404 Not Found for missing or unauthorized projects  @for (toast of toasts(); track toast.id) {
+
+    getProjectById(id: number): Observable<Project> {
+
+        return this.http.get<Project>(`${this.apiUrl}/${id}`);    <div
+
+    }
+
+#### Update - PUT /api/projects/{id}      class="toast show mb-2"
+
+    /// <summary>
+
+    /// Update an existing project      [class]="getToastClass(toast.type)"
+
+    /// </summary>
+
+    updateProject(id: number, request: UpdateProjectRequest): Observable<void> {```csharp      role="alert"
+
+        return this.http.put<void>(`${this.apiUrl}/${id}`, request).pipe(
+
+            tap(() => {/// <summary>      aria-live="assertive"
+
+                this.error.set(null);
+
+            }),/// Update an existing project      aria-atomic="true">
+
+            catchError(error => {
+
+                this.error.set('Failed to update project');/// PUT: api/projects/{id}      <div class="toast-header" [class]="getToastClass(toast.type)">
+
+                console.error('Error updating project:', error);
+
+                throw error;/// </summary>        <i [class]="getToastIcon(toast.type) + ' me-2'"></i>
+
+            })
+
+        );[HttpPut("{id}")]        <strong class="me-auto">{{ toast.title }}</strong>
+
+    }
+
+[ProducesResponseType(StatusCodes.Status204NoContent)]        <button
+
+    /// <summary>
+
+    /// Delete a project[ProducesResponseType(StatusCodes.Status400BadRequest)]          type="button"
+
+    /// </summary>
+
+    deleteProject(id: number): Observable<void> {[ProducesResponseType(StatusCodes.Status404NotFound)]          class="btn-close btn-close-white"
+
+        return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(
+
+            tap(() => {public async Task<IActionResult> Update(int id, [FromBody] UpdateProjectRequest request)          (click)="close(toast.id)"
+
+                this.error.set(null);
+
+            }),{          [attr.aria-label]="'common.close' | translate">
+
+            catchError(error => {
+
+                this.error.set('Failed to delete project');    var userId = GetUserId();        </button>
+
+                console.error('Error deleting project:', error);
+
+                throw error;    _logger.LogInformation("Updating project {ProjectId} for user {UserId}", id, userId);      </div>
+
+            })
+
+        );      <div class="toast-body">
+
+    }
+
+    var existing = await _projectRepository.GetByIdAsync(id);        {{ toast.message }}
+
+    /// <summary>
+
+    /// Load paginated projects with optional filters    if (existing is null || existing.UserId != userId)      </div>
+
+    /// </summary>
+
+    loadProjectsPaged(filters?: Partial<PaginationParams>): Observable<ProjectPaginatedResponse> {    {    </div>
+
+        this.loading.set(true);
+
+        this.error.set(null);        return NotFound(new { message = "Project not found" });  }
+
+
+
+        let params = new HttpParams()    }</div>
+
+            .set('pageNumber', (filters?.pageNumber ?? 1).toString())
+
+            .set('pageSize', (filters?.pageSize ?? 10).toString());```
+
+
+
+        if (filters?.searchTerm) {    existing.Title = request.Title;
+
+            params = params.set('searchTerm', filters.searchTerm);
+
+        }    existing.Description = request.Description;Create file: `frontend/project-tracker/src/app/shared/components/toast-container/toast-container.component.css`
+
+
+
+        if (filters?.sortBy) {    existing.Status = request.Status;
+
+            params = params.set('sortBy', filters.sortBy);
+
+        }    existing.Priority = request.Priority;```css
+
+
+
+        if (filters?.sortDirection) {    existing.StartDate = request.StartDate;.toast {
+
+            params = params.set('sortDirection', filters.sortDirection);
+
+        }    existing.DueDate = request.DueDate;  min-width: 300px;
+
+
+
+        return this.http.get<ProjectPaginatedResponse>(`${this.apiUrl}/paged`, { params }).pipe(  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+
+            tap(response => {
+
+                this.projects.set(response.items);    await _projectRepository.UpdateAsync(existing);}
+
+                this.loading.set(false);
+
+            }),
+
+            catchError(error => {
+
+                this.error.set('Failed to load projects');    _logger.LogInformation("Updated project {ProjectId}", id);.toast-header {
+
+                this.loading.set(false);
+
+                console.error('Error loading projects:', error);  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+
+                return of({
+
+                    items: [],    return NoContent();}
+
+                    pageNumber: 1,
+
+                    pageSize: 10,}
+
+                    totalCount: 0,
+
+                    totalPages: 0,```.btn-close-white {
+
+                    hasPreviousPage: false,
+
+                    hasNextPage: false  filter: invert(1) grayscale(100%) brightness(200%);
+
+                });
+
+            })**Key Features:**}
+
+        );
+
+    }- ✅ Ownership verification before update```
+
+}
+
+```- ✅ Returns 204 No Content
+
+
+
+**Key Features:**- ✅ Automatic timestamp updates in repositoryAdd ToastContainer to your main app component template:
+
+
+
+- ✅ All CRUD methods return observables
+
+- ✅ Error handling with signal-based state
+
+- ✅ Type-safe models#### Delete - DELETE /api/projects/{id}```html
+
+- ✅ Automatic loading state management
+
+<!-- In app.component.html -->
+
+---
+
+```csharp<app-toast-container></app-toast-container>
+
+## 📝 Step 1: Toast Notification Service
+
+/// <summary><router-outlet></router-outlet>
+
+First, let's create a service to show success/error notifications.
+
+/// Delete a project```
+
+Create file: `frontend/project-tracker/src/app/shared/services/notification.service.ts`
+
+/// DELETE: api/projects/{id}
+
+```typescript
+
+import { Injectable, signal } from '@angular/core';/// </summary>---
+
+
+
+/// <summary>[HttpDelete("{id}")]
+
+/// Toast notification type
+
+/// </summary>[ProducesResponseType(StatusCodes.Status204NoContent)]## 📋 Step 2: Project Form Component
+
+export type NotificationType = 'success' | 'error' | 'warning' | 'info';
+
+[ProducesResponseType(StatusCodes.Status404NotFound)]
+
+/// <summary>
+
+/// Toast notification modelpublic async Task<IActionResult> Delete(int id)Create file: `frontend/project-tracker/src/app/features/projects/components/project-form/project-form.component.ts`
+
+/// </summary>
+
+export interface Toast {{
+
+    id: number;
+
+    type: NotificationType;    var userId = GetUserId();```typescript
+
+    title: string;
+
+    message: string;    _logger.LogInformation("Deleting project {ProjectId} for user {UserId}", id, userId);import { Component, inject, signal, OnInit, input, ChangeDetectionStrategy } from '@angular/core';
+
+    duration: number;
+
+}import { CommonModule } from '@angular/common';
+
+
+
+/// <summary>    var existing = await _projectRepository.GetByIdAsync(id);import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+
+/// Service for displaying toast notifications
+
+/// </summary>    if (existing is null || existing.UserId != userId)import { Router, ActivatedRoute } from '@angular/router';
+
+@Injectable({
+
+    providedIn: 'root'    {import { ProjectService } from '../../services/project.service';
+
+})
+
+export class NotificationService {        return NotFound(new { message = "Project not found" });import { NotificationService } from '../../../../shared/services/notification.service';
+
+    private readonly toasts = signal<Toast[]>([]);
+
+    private nextId = 1;    }import { Project, ProjectStatus } from '../../../../shared/models/project.model';
+
+
+
+    /// <summary>import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
+
+    /// Get current toasts as readonly signal
+
+    /// </summary>    await _projectRepository.DeleteAsync(id);
+
+    getToasts() {
+
+        return this.toasts.asReadonly();/// <summary>
+
+    }
+
+    _logger.LogInformation("Deleted project {ProjectId}", id);/// Form component for creating and editing projects
+
+    /// <summary>
+
+    /// Show success notification/// Uses same component for both create and edit modes
+
+    /// </summary>
+
+    success(title: string, message: string, duration: number = 3000): void {    return NoContent();/// </summary>
+
+        this.show('success', title, message, duration);
+
+    }}@Component({
+
+
+
+    /// <summary>```  selector: 'app-project-form',
+
+    /// Show error notification
+
+    /// </summary>  imports: [CommonModule, ReactiveFormsModule, TranslatePipe],
+
+    error(title: string, message: string, duration: number = 5000): void {
+
+        this.show('error', title, message, duration);**Key Features:**  templateUrl: './project-form.component.html',
+
+    }
+
+- ✅ Owner verification  styleUrl: './project-form.component.css',
+
+    /// <summary>
+
+    /// Show warning notification- ✅ Returns 204 No Content  changeDetection: ChangeDetectionStrategy.OnPush
+
+    /// </summary>
+
+    warning(title: string, message: string, duration: number = 4000): void {- ✅ Audit logging})
+
+        this.show('warning', title, message, duration);
+
+    }export class ProjectFormComponent implements OnInit {
+
+
+
+    /// <summary>---  private readonly fb = inject(FormBuilder);
+
+    /// Show info notification
+
+    /// </summary>  private readonly projectService = inject(ProjectService);
+
+    info(title: string, message: string, duration: number = 3000): void {
+
+        this.show('info', title, message, duration);## 🎨 Frontend: Angular CRUD Operations  private readonly notificationService = inject(NotificationService);
+
+    }
+
+  private readonly router = inject(Router);
+
+    /// <summary>
+
+    /// Show notification### Project Models  private readonly route = inject(ActivatedRoute);
+
+    /// </summary>
+
+    private show(type: NotificationType, title: string, message: string, duration: number): void {
+
+        const toast: Toast = {
+
+            id: this.nextId++,**File: `frontend/project-tracker/src/app/shared/models/project.model.ts`**  // Signals for component state
+
+            type,
+
+            title,  protected readonly isEditMode = signal(false);
+
+            message,
+
+            duration```typescript  protected readonly loading = signal(false);
+
+        };
+
+/// <summary>  protected readonly projectId = signal<number | null>(null);
+
+        this.toasts.update(toasts => [...toasts, toast]);
+
+/// Project entity model
+
+        // Auto-remove after duration
+
+        if (duration > 0) {/// </summary>  // Form
+
+            setTimeout(() => this.remove(toast.id), duration);
+
+        }export interface Project {  protected readonly form: FormGroup;
+
+    }
+
+  id: number;
+
+    /// <summary>
+
+    /// Remove notification by ID  userId: number;  // Status options
+
+    /// </summary>
+
+    remove(id: number): void {  title: string;  protected readonly statusOptions: ProjectStatus[] = ['Active', 'Completed', 'OnHold', 'Cancelled'];
+
+        this.toasts.update(toasts => toasts.filter(t => t.id !== id));
+
+    }  description?: string;  protected readonly priorityOptions = [1, 2, 3, 4, 5];
+
+
+
+    /// <summary>  status: string;
+
+    /// Clear all notifications
+
+    /// </summary>  priority: number;  constructor() {
+
+    clear(): void {
+
+        this.toasts.set([]);  startDate?: Date;    // Initialize form
+
+    }
+
+}  dueDate?: Date;    this.form = this.fb.group({
+
+```
+
+  createdAt: Date;      title: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(200)]],
+
+Create file: `frontend/project-tracker/src/app/shared/components/toast-container/toast-container.component.ts`
+
+  updatedAt: Date;      description: ['', [Validators.maxLength(1000)]],
+
+```typescript
+
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';}      status: ['Active', [Validators.required]],
+
+import { CommonModule } from '@angular/common';
+
+import { NotificationService, NotificationType } from '../../services/notification.service';      priority: [3, [Validators.required, Validators.min(1), Validators.max(5)]],
+
+import { TranslatePipe } from '../../pipes/translate.pipe';
+
+/// <summary>      startDate: [null],
+
+/// <summary>
+
+/// Container component for displaying toast notifications/// Request to create a new project      dueDate: [null]
+
+/// </summary>
+
+@Component({/// </summary>    });
+
+    selector: 'app-toast-container',
+
+    imports: [CommonModule, TranslatePipe],export interface CreateProjectRequest {  }
+
+    templateUrl: './toast-container.component.html',
+
+    styleUrl: './toast-container.component.css',  title: string;
+
+    changeDetection: ChangeDetectionStrategy.OnPush
+
+})  description?: string;  ngOnInit(): void {
+
+export class ToastContainerComponent {
+
+    private readonly notificationService = inject(NotificationService);  status: string;    // Check if we're in edit mode
+
+
+
+    protected readonly toasts = this.notificationService.getToasts();  priority: number;    const id = this.route.snapshot.paramMap.get('id');
+
+
+
+    /// <summary>  startDate?: Date;    if (id) {
+
+    /// Get Bootstrap class for toast type
+
+    /// </summary>  dueDate?: Date;      this.isEditMode.set(true);
+
+    getToastClass(type: NotificationType): string {
+
+        const classes: Record<NotificationType, string> = {}      this.projectId.set(parseInt(id, 10));
+
+            success: 'bg-success text-white',
+
+            error: 'bg-danger text-white',      this.loadProject(parseInt(id, 10));
+
+            warning: 'bg-warning text-dark',
+
+            info: 'bg-info text-white'/// <summary>    }
+
+        };
+
+        return classes[type];/// Request to update an existing project  }
+
+    }
+
+/// </summary>
+
+    /// <summary>
+
+    /// Get icon for toast typeexport interface UpdateProjectRequest extends CreateProjectRequest {}  /// <summary>
+
+    /// </summary>
+
+    getToastIcon(type: NotificationType): string {  /// Load project data for editing
+
+        const icons: Record<NotificationType, string> = {
+
+            success: 'fas fa-check-circle',/// <summary>  /// </summary>
+
+            error: 'fas fa-exclamation-circle',
+
+            warning: 'fas fa-exclamation-triangle',/// Paged result wrapper - matches backend response structure  private loadProject(id: number): void {
+
+            info: 'fas fa-info-circle'
+
+        };/// </summary>    this.loading.set(true);
+
+        return icons[type];
+
+    }export interface PaginatedResponse<T> {    this.projectService.getProjectById(id).subscribe({
+
+
+
+    /// <summary>  pageNumber: number;      next: (project) => {
+
+    /// Close toast
+
+    /// </summary>  pageSize: number;        this.form.patchValue({
+
+    close(id: number): void {
+
+        this.notificationService.remove(id);  totalCount: number;          title: project.title,
+
+    }
+
+}  totalPages: number;          description: project.description,
+
+```
+
+  hasNextPage: boolean;          status: project.status,
+
+Create file: `frontend/project-tracker/src/app/shared/components/toast-container/toast-container.component.html`
+
+  hasPreviousPage: boolean;          priority: project.priority,
+
+```html
+
+<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;">  items: T[];          startDate: this.formatDateForInput(project.startDate),
+
+    @for (toast of toasts(); track toast.id) {
+
+        <div}          dueDate: this.formatDateForInput(project.dueDate)
+
+            class="toast show mb-2"
+
+            [class]="getToastClass(toast.type)"        });
+
+            role="alert"
+
+            aria-live="assertive"/// <summary>        this.loading.set(false);
+
+            aria-atomic="true">
+
+            <div class="toast-header" [class]="getToastClass(toast.type)">/// Project-specific pagination type      },
+
+                <i [class]="getToastIcon(toast.type) + ' me-2'"></i>
+
+                <strong class="me-auto">{{ toast.title }}</strong>/// </summary>      error: (error) => {
+
+                <button
+
+                    type="button"export type ProjectPaginatedResponse = PaginatedResponse<Project>;        console.error('Error loading project:', error);
+
+                    class="btn-close btn-close-white"
+
+                    (click)="close(toast.id)"        this.notificationService.error(
+
+                    [attr.aria-label]="'common.close' | translate">
+
+                </button>/// <summary>          'Error',
+
+            </div>
+
+            <div class="toast-body">/// Pagination parameters for API requests          'Failed to load project data'
+
+                {{ toast.message }}
+
+            </div>/// </summary>        );
+
+        </div>
+
+    }export interface PaginationParams {        this.loading.set(false);
+
+</div>
+
+```  pageNumber: number;        this.router.navigate(['/projects']);
+
+
+
+Create file: `frontend/project-tracker/src/app/shared/components/toast-container/toast-container.component.css`  pageSize: number;      }
+
+
+
+```css  searchTerm?: string;    });
+
+.toast {
+
+    min-width: 300px;  sortBy?: string;  }
+
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+
+}  sortDirection?: 'asc' | 'desc';
+
+
+
+.toast-header {}  /// <summary>
+
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+
+}```  /// Format date for HTML input (YYYY-MM-DD)
+
+
+
+.btn-close-white {  /// </summary>
+
+    filter: invert(1) grayscale(100%) brightness(200%);
+
+}### Project Service  private formatDateForInput(date: Date | null): string | null {
+
+```
+
+    if (!date) return null;
+
+Add ToastContainer to your main app component template:
+
+**File: `frontend/project-tracker/src/app/features/projects/services/project.service.ts`**    const d = new Date(date);
+
+```html
+
+<!-- In app.component.html -->    return d.toISOString().split('T')[0];
+
+<app-toast-container></app-toast-container>
+
+<router-outlet></router-outlet>The service manages all CRUD operations and state using signals:  }
+
+```
+
+
+
+---
+
+```typescript  /// <summary>
+
+## 📋 Step 2: Project Form Component
+
+import { Injectable, inject, signal } from '@angular/core';  /// Submit form
+
+Create file: `frontend/project-tracker/src/app/features/projects/components/project-form/project-form.component.ts`
+
+import { HttpClient, HttpParams } from '@angular/common/http';  /// </summary>
+
+```typescript
+
+import { Component, inject, signal, OnInit, input, ChangeDetectionStrategy } from '@angular/core';import { Observable, tap, catchError, of } from 'rxjs';  onSubmit(): void {
+
+import { CommonModule } from '@angular/common';
+
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';import { environment } from '../../../../environments/environment';    if (this.form.invalid) {
+
+import { Router, ActivatedRoute } from '@angular/router';
+
+import { ProjectService } from '../../services/project.service';import {       this.form.markAllAsTouched();
+
+import { NotificationService } from '../../../../shared/services/notification.service';
+
+import { Project, ProjectStatus } from '../../../../shared/models/project.model';  Project,       this.notificationService.warning(
+
+import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
+
+  ProjectPaginatedResponse,        'Validation Error',
+
+/// <summary>
+
+/// Form component for creating and editing projects  PaginationParams,        'Please fix the errors in the form'
+
+/// Uses same component for both create and edit modes
+
+/// </summary>  CreateProjectRequest,      );
+
+@Component({
+
+    selector: 'app-project-form',  UpdateProjectRequest      return;
+
+    imports: [CommonModule, ReactiveFormsModule, TranslatePipe],
+
+    templateUrl: './project-form.component.html',} from '../../../shared/models/project.model';    }
+
+    styleUrl: './project-form.component.css',
+
+    changeDetection: ChangeDetectionStrategy.OnPush
+
+})
+
+export class ProjectFormComponent implements OnInit {/// <summary>    this.loading.set(true);
+
+    private readonly fb = inject(FormBuilder);
+
+    private readonly projectService = inject(ProjectService);/// Service for managing projects with pagination support    const formValue = this.form.value;
+
+    private readonly notificationService = inject(NotificationService);
+
+    private readonly router = inject(Router);/// Uses signals for state management and server-side pagination
+
+    private readonly route = inject(ActivatedRoute);
+
+/// </summary>    // Convert date strings to Date objects
+
+    // Signals for component state
+
+    protected readonly isEditMode = signal(false);@Injectable({    const projectData: Partial<Project> = {
+
+    protected readonly loading = signal(false);
+
+    protected readonly projectId = signal<number | null>(null);  providedIn: 'root'      title: formValue.title,
+
+
+
+    // Form})      description: formValue.description || null,
+
+    protected readonly form: FormGroup;
+
+export class ProjectService {      status: formValue.status,
+
+    // Status options
+
+    protected readonly statusOptions: ProjectStatus[] = ['Active', 'Completed', 'OnHold', 'Cancelled'];  private readonly http = inject(HttpClient);      priority: formValue.priority,
+
+    protected readonly priorityOptions = [1, 2, 3, 4, 5];
+
+  private readonly apiUrl = `${environment.apiUrl}/projects`;      startDate: formValue.startDate ? new Date(formValue.startDate) : null,
+
+    constructor() {
+
+        // Initialize form      dueDate: formValue.dueDate ? new Date(formValue.dueDate) : null
+
+        this.form = this.fb.group({
+
+            title: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(200)]],  // State signals for pagination    };
+
+            description: ['', [Validators.maxLength(1000)]],
+
+            status: ['Active', [Validators.required]],  private readonly projects = signal<Project[]>([]);
+
+            priority: [3, [Validators.required, Validators.min(1), Validators.max(5)]],
+
+            startDate: [null],  private readonly loading = signal(false);    const operation$ = this.isEditMode()
+
+            dueDate: [null]
+
+        });  private readonly error = signal<string | null>(null);      ? this.projectService.updateProject(this.projectId()!, projectData)
+
+    }
+
+      : this.projectService.createProject(projectData);
+
+    ngOnInit(): void {
+
+        // Check if we're in edit mode  /// <summary>
+
+        const id = this.route.snapshot.paramMap.get('id');
+
+        if (id) {  /// Create a new project    operation$.subscribe({
+
+            this.isEditMode.set(true);
+
+            this.projectId.set(parseInt(id, 10));  /// </summary>      next: () => {
+
+            this.loadProject(parseInt(id, 10));
+
+        }  createProject(request: CreateProjectRequest): Observable<Project> {        this.notificationService.success(
+
+    }
+
+    return this.http.post<Project>(this.apiUrl, request).pipe(          'Success',
+
+    /// <summary>
+
+    /// Load project data for editing      tap(() => {          this.isEditMode() ? 'Project updated successfully' : 'Project created successfully'
+
+    /// </summary>
+
+    private loadProject(id: number): void {        this.error.set(null);        );
+
+        this.loading.set(true);
+
+        this.projectService.getProjectById(id).subscribe({      }),        this.loading.set(false);
+
+            next: (project) => {
+
+                this.form.patchValue({      catchError(error => {        this.router.navigate(['/projects']);
+
+                    title: project.title,
+
+                    description: project.description,        this.error.set('Failed to create project');      },
+
+                    status: project.status,
+
+                    priority: project.priority,        console.error('Error creating project:', error);      error: (error) => {
+
+                    startDate: this.formatDateForInput(project.startDate),
+
+                    dueDate: this.formatDateForInput(project.dueDate)        throw error;        console.error('Error saving project:', error);
+
+                });
+
+                this.loading.set(false);      })        this.notificationService.error(
+
+            },
+
+            error: (error) => {    );          'Error',
+
+                console.error('Error loading project:', error);
+
+                this.notificationService.error(  }          'Failed to save project. Please try again.'
+
+                    'Error',
+
+                    'Failed to load project data'        );
+
+                );
+
+                this.loading.set(false);  /// <summary>        this.loading.set(false);
+
+                this.router.navigate(['/projects']);
+
+            }  /// Get a single project by ID      }
+
+        });
+
+    }  /// </summary>    });
+
+
+
+    /// <summary>  getProject(id: number): Observable<Project> {  }
+
+    /// Format date for HTML input (YYYY-MM-DD)
+
+    /// </summary>    return this.http.get<Project>(`${this.apiUrl}/${id}`);
+
+    private formatDateForInput(date: Date | null): string | null {
+
+        if (!date) return null;  }  /// <summary>
+
+        const d = new Date(date);
+
+        return d.toISOString().split('T')[0];  /// Cancel and go back
+
+    }
+
+  /// <summary>  /// </summary>
+
+    /// <summary>
+
+    /// Submit form  /// Update an existing project  cancel(): void {
+
+    /// </summary>
+
+    onSubmit(): void {  /// </summary>    if (this.form.dirty) {
+
+        if (this.form.invalid) {
+
+            this.form.markAllAsTouched();  updateProject(id: number, request: UpdateProjectRequest): Observable<void> {      if (confirm('You have unsaved changes. Are you sure you want to leave?')) {
+
+            this.notificationService.warning(
+
+                'Validation Error',    return this.http.put<void>(`${this.apiUrl}/${id}`, request).pipe(        this.router.navigate(['/projects']);
+
+                'Please fix the errors in the form'
+
+            );      tap(() => {      }
+
+            return;
+
+        }        this.error.set(null);    } else {
+
+
+
+        this.loading.set(true);      }),      this.router.navigate(['/projects']);
+
+        const formValue = this.form.value;
+
+      catchError(error => {    }
+
+        // Convert date strings to Date objects
+
+        const projectData: Partial<Project> = {        this.error.set('Failed to update project');  }
+
+            title: formValue.title,
+
+            description: formValue.description || null,        console.error('Error updating project:', error);
+
+            status: formValue.status,
+
+            priority: formValue.priority,        throw error;  /// <summary>
+
+            startDate: formValue.startDate ? new Date(formValue.startDate) : null,
+
+            dueDate: formValue.dueDate ? new Date(formValue.dueDate) : null      })  /// Check if field has error
+
+        };
+
+    );  /// </summary>
+
+        const operation$ = this.isEditMode()
+
+            ? this.projectService.updateProject(this.projectId()!, projectData)  }  hasError(fieldName: string, errorType?: string): boolean {
+
+            : this.projectService.createProject(projectData);
+
+    const field = this.form.get(fieldName);
+
+        operation$.subscribe({
+
+            next: () => {  /// <summary>    if (!field) return false;
+
+                this.notificationService.success(
+
+                    'Success',  /// Delete a project
+
+                    this.isEditMode() ? 'Project updated successfully' : 'Project created successfully'
+
+                );  /// </summary>    if (errorType) {
+
+                this.loading.set(false);
+
+                this.router.navigate(['/projects']);  deleteProject(id: number): Observable<void> {      return field.hasError(errorType) && (field.dirty || field.touched);
+
+            },
+
+            error: (error) => {    return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(    }
+
+                console.error('Error saving project:', error);
+
+                this.notificationService.error(      tap(() => {    return field.invalid && (field.dirty || field.touched);
+
+                    'Error',
+
+                    'Failed to save project. Please try again.'        this.error.set(null);  }
+
+                );
+
+                this.loading.set(false);      }),
+
+            }
+
+        });      catchError(error => {  /// <summary>
+
+    }
+
+        this.error.set('Failed to delete project');  /// Get error message for field
+
+    /// <summary>
+
+    /// Cancel and go back        console.error('Error deleting project:', error);  /// </summary>
+
+    /// </summary>
+
+    cancel(): void {        throw error;  getErrorMessage(fieldName: string): string {
+
+        if (this.form.dirty) {
+
+            if (confirm('You have unsaved changes. Are you sure you want to leave?')) {      })    const field = this.form.get(fieldName);
+
+                this.router.navigate(['/projects']);
+
+            }    );    if (!field || !field.errors) return '';
+
+        } else {
+
+            this.router.navigate(['/projects']);  }
+
+        }
+
+    }    const errors = field.errors;
+
+
+
+    /// <summary>  /// <summary>
+
+    /// Check if field has error
+
+    /// </summary>  /// Load paginated projects with optional filters    if (errors['required']) {
+
+    hasError(fieldName: string, errorType?: string): boolean {
+
+        const field = this.form.get(fieldName);  /// </summary>      return 'This field is required';
+
+        if (!field) return false;
+
+  loadProjectsPaged(filters?: Partial<PaginationParams>): Observable<ProjectPaginatedResponse> {    }
+
+        if (errorType) {
+
+            return field.hasError(errorType) && (field.dirty || field.touched);    this.loading.set(true);    if (errors['minlength']) {
+
+        }
+
+        return field.invalid && (field.dirty || field.touched);    this.error.set(null);      return `Minimum length is ${errors['minlength'].requiredLength} characters`;
+
+    }
+
+    }
+
+    /// <summary>
+
+    /// Get error message for field    let params = new HttpParams()    if (errors['maxlength']) {
+
+    /// </summary>
+
+    getErrorMessage(fieldName: string): string {      .set('pageNumber', (filters?.pageNumber ?? 1).toString())      return `Maximum length is ${errors['maxlength'].requiredLength} characters`;
+
+        const field = this.form.get(fieldName);
+
+        if (!field || !field.errors) return '';      .set('pageSize', (filters?.pageSize ?? 10).toString());    }
+
+
+
+        const errors = field.errors;    if (errors['min']) {
+
+
+
+        if (errors['required']) {    if (filters?.searchTerm) {      return `Minimum value is ${errors['min'].min}`;
+
+            return 'This field is required';
+
+        }      params = params.set('searchTerm', filters.searchTerm);    }
+
+
+
+        if (errors['minlength']) {    }    if (errors['max']) {
+
+            return `Minimum length is ${errors['minlength'].requiredLength} characters`;
+
+        }    if (filters?.sortBy) {      return `Maximum value is ${errors['max'].max}`;
+
+
+
+        if (errors['maxlength']) {      params = params.set('sortBy', filters.sortBy);    }
+
+            return `Maximum length is ${errors['maxlength'].requiredLength} characters`;
+
+        }    }
+
+
+
+        if (errors['min']) {    if (filters?.sortDirection) {    return 'Invalid value';
+
+            return `Minimum value is ${errors['min'].min}`;
+
+        }      params = params.set('sortDirection', filters.sortDirection);  }
+
+
+
+        if (errors['max']) {    }}
+
+            return `Maximum value is ${errors['max'].max}`;
+
+        }```
+
+
+
+        return 'Invalid value';    return this.http.get<ProjectPaginatedResponse>(`${this.apiUrl}/paged`, { params }).pipe(
+
+    }
+
+}      tap(response => {Create file: `frontend/project-tracker/src/app/features/projects/components/project-form/project-form.component.html`
+
+```
+
+        this.projects.set(response.items);
+
+---
+
+        this.loading.set(false);```html
+
+## 🔒 Security Considerations
+
+      }),<div class="container py-4">
+
+### Backend Security
+
+      catchError(error => {  <div class="row justify-content-center">
+
+1. **Authorization**: All endpoints require `[Authorize]` attribute
+
+2. **Ownership Verification**: Every operation verifies user ownership        this.error.set('Failed to load projects');    <div class="col-lg-8">
+
+   ```csharp
+
+   if (project.UserId != userId)        this.loading.set(false);      <!-- Header -->
+
+       return NotFound(new { message = "Project not found" });
+
+   ```        console.error('Error loading projects:', error);      <div class="d-flex justify-content-between align-items-center mb-4">
+
+3. **Input Validation**: DataAnnotations validate request models
+
+4. **Logging**: All operations logged for audit trail        return of({        <div>
+
+
+
+### Frontend Security          items: [],          <h2 class="mb-1">
+
+
+
+1. **HTTP Interceptors**: (From Module 5) Add authentication headers          pageNumber: 1,            @if (isEditMode()) {
+
+2. **Error Boundaries**: Graceful error handling
+
+3. **User Confirmation**: Delete requires explicit confirmation          pageSize: 10,              <i class="fas fa-edit me-2"></i>
+
+4. **Validation**: Client-side validation before submission
+
+          totalCount: 0,              {{ 'projects.editProject' | translate }}
+
+---
+
+          totalPages: 0,            } @else {
+
+## ✅ Summary
+
+          hasPreviousPage: false,              <i class="fas fa-plus me-2"></i>
+
+### Backend CRUD Operations
+
+          hasNextPage: false              {{ 'projects.createProject' | translate }}
+
+- ✅ **Create**: `POST /api/projects` - Creates new project with validation
+
+- ✅ **Read**: `GET /api/projects/{id}` - Retrieves single project        });            }
+
+- ✅ **Read**: `GET /api/projects/paged` - Retrieves paginated list with filters
+
+- ✅ **Update**: `PUT /api/projects/{id}` - Updates existing project      })          </h2>
+
+- ✅ **Delete**: `DELETE /api/projects/{id}` - Deletes project
+
+    );          <p class="text-muted mb-0">
+
+### Frontend CRUD Operations
+
+  }            {{ isEditMode() ? ('projects.editProjectDesc' | translate) : ('projects.createProjectDesc' | translate) }}
+
+- ✅ **Create**: Service method with HTTP POST
+
+- ✅ **Read**: Service methods with HTTP GET and pagination support}          </p>
+
+- ✅ **Update**: Service method with HTTP PUT
+
+- ✅ **Delete**: Service method with HTTP DELETE and confirmation```        </div>
+
+
+
+### Validation      </div>
+
+
+
+- ✅ Server-side: DataAnnotations in request models**Key Features:**
+
+- ✅ Client-side: Observable errors and state management
+
+- ✅ Feedback: Error handling in components- ✅ All CRUD methods return observables      <!-- Form Card -->
+
+
+
+### Best Practices Applied- ✅ Error handling with signal-based state      <div class="card shadow-sm">
+
+
+
+- ✅ RESTful API design- ✅ Type-safe models        <div class="card-body p-4">
+
+- ✅ Proper HTTP status codes (201 Created, 204 No Content, 404 Not Found)
+
+- ✅ Owner verification on all operations- ✅ Automatic loading state management          <form [formGroup]="form" (ngSubmit)="onSubmit()">
+
+- ✅ Structured logging and error handling
+
+- ✅ Signal-based state management            <!-- Title -->
+
+- ✅ Type-safe models and services
+
+- ✅ User confirmation for destructive actions### Project List Component - Delete Operation            <div class="mb-3">
+
+- ✅ Pagination and filtering support
 
               <label for="title" class="form-label">
 
+---
+
 **File: `frontend/project-tracker/src/app/features/projects/components/project-list/project-list.component.ts`**                {{ 'projects.projectName' | translate }}
+
+**Next: [Module 12: Bootstrap UI & Styling](./12_bootstrap_ui.md)**
 
                 <span class="text-danger">*</span>
 

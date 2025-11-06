@@ -2,11 +2,12 @@ import { Component, inject, signal, ChangeDetectionStrategy } from '@angular/cor
 import { RouterOutlet, RouterLink, Router } from '@angular/router';
 import { TranslatePipe } from './shared/pipes/translate.pipe';
 import { LanguageSelectorComponent } from './shared/components/language-selector.component';
+import { ToastContainerComponent } from './shared/components/toast-container/toast-container.component';
 import { AuthService } from './core/services/auth.service';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, RouterLink, TranslatePipe, LanguageSelectorComponent],
+  imports: [RouterOutlet, RouterLink, TranslatePipe, LanguageSelectorComponent, ToastContainerComponent],
   templateUrl: './app.html',
   styleUrl: './app.css',
   changeDetection: ChangeDetectionStrategy.OnPush

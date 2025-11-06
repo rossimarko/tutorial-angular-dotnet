@@ -3,9 +3,11 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormControl } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ProjectService } from '../../services/project.service';
+import { NotificationService } from '../../../../shared/services/notification.service';
 import { ExportService } from '../../../../shared/services/export.service';
 import { Project, PaginationParams } from '../../../../shared/models/project.model';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
+import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
 import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
@@ -18,6 +20,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
     CommonModule,
     ReactiveFormsModule,
     PaginationComponent,
+    ConfirmDialogComponent,
     TranslatePipe
   ],
   templateUrl: 'project-list.component.html',
@@ -26,6 +29,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 })
 export class ProjectListComponent implements OnInit {
   private readonly projectService = inject(ProjectService);
+  private readonly notificationService = inject(NotificationService);
   private readonly exportService = inject(ExportService);
   private readonly router = inject(Router);
 
@@ -55,6 +59,11 @@ export class ProjectListComponent implements OnInit {
     sortDirection: 'desc'
   });
 
+  // Delete confirmation state
+  protected readonly showDeleteConfirm = signal(false);
+  protected readonly projectToDelete = signal<Project | null>(null);
+  protected readonly deleting = signal(false);
+
   ngOnInit(): void {
     this.loadProjects();
 
@@ -79,7 +88,15 @@ export class ProjectListComponent implements OnInit {
   /// </summary>
   private loadProjects(): void {
     const filters = this.buildFilters();
-    this.projectService.loadProjectsPaged(filters).subscribe();
+    this.projectService.loadProjectsPaged(filters).subscribe({
+      next: () => {
+        // Data loaded, signals updated by service
+      },
+      error: (error: any) => {
+        console.error('Failed to load projects:', error);
+        this.notificationService.error('Error', 'Failed to load projects');
+      }
+    });
   }
 
   /// <summary>
@@ -232,15 +249,45 @@ export class ProjectListComponent implements OnInit {
   /// Delete project with confirmation
   /// </summary>
   deleteProject(project: Project): void {
-    if (confirm(`Are you sure you want to delete "${project.title}"?`)) {
-      this.projectService.deleteProject(project.id).subscribe({
-        next: () => {
-          this.loadProjects();
-        },
-        error: (error) => {
-          console.error('Delete failed:', error);
-        }
-      });
-    }
+    this.projectToDelete.set(project);
+    this.showDeleteConfirm.set(true);
+  }
+
+  /// <summary>
+  /// Confirm delete
+  /// </summary>
+  confirmDelete(): void {
+    const project = this.projectToDelete();
+    if (!project) return;
+
+    this.deleting.set(true);
+    this.projectService.deleteProject(project.id).subscribe({
+      next: () => {
+        this.notificationService.success(
+          'Success',
+          `Project "${project.title}" deleted successfully`
+        );
+        this.deleting.set(false);
+        this.showDeleteConfirm.set(false);
+        this.projectToDelete.set(null);
+        this.loadProjects();
+      },
+      error: (error: any) => {
+        console.error('Delete failed:', error);
+        this.notificationService.error(
+          'Error',
+          'Failed to delete project'
+        );
+        this.deleting.set(false);
+      }
+    });
+  }
+
+  /// <summary>
+  /// Cancel delete
+  /// </summary>
+  cancelDelete(): void {
+    this.showDeleteConfirm.set(false);
+    this.projectToDelete.set(null);
   }
 }

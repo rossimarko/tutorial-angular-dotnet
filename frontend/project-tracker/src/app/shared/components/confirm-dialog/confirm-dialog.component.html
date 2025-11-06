@@ -1,0 +1,55 @@
+@if (show()) {
+  <!-- Modal Backdrop -->
+  <div class="modal-backdrop fade show"></div>
+
+  <!-- Modal -->
+  <div class="modal fade show d-block" tabindex="-1" role="dialog" aria-modal="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <!-- Header -->
+        <div class="modal-header">
+          <h5 class="modal-title">
+            <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+            {{ title() }}
+          </h5>
+          @if (!loading()) {
+            <button
+              type="button"
+              class="btn-close"
+              (click)="cancel()"
+              aria-label="Close">
+            </button>
+          }
+        </div>
+
+        <!-- Body -->
+        <div class="modal-body">
+          <p class="mb-0">{{ message() }}</p>
+        </div>
+
+        <!-- Footer -->
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-outline-secondary"
+            (click)="cancel()"
+            [disabled]="loading()">
+            {{ cancelText() }}
+          </button>
+          <button
+            type="button"
+            [class]="'btn ' + confirmButtonClass()"
+            (click)="confirm()"
+            [disabled]="loading()">
+            @if (loading()) {
+              <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+              Processing...
+            } @else {
+              {{ confirmText() }}
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
