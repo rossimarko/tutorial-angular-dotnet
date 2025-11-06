@@ -21,12 +21,15 @@ export class ProjectService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = `${environment.apiUrl}/projects`;
 
+  // Default page size - must match component default
+  private readonly DEFAULT_PAGE_SIZE = 5;
+
   // State signals for pagination
   private readonly projects = signal<Project[]>([]);
   private readonly loading = signal(false);
   private readonly error = signal<string | null>(null);
   private readonly pageNumber = signal(1);
-  private readonly pageSize = signal(10);
+  private readonly pageSize = signal(this.DEFAULT_PAGE_SIZE);
   private readonly totalCount = signal(0);
   private readonly totalPages = signal(0);
 
@@ -40,7 +43,7 @@ export class ProjectService {
 
     // Extract and pre-set pagination parameters to ensure immediate signal updates
     const pageNumber = filters?.pageNumber ?? 1;
-    const pageSize = filters?.pageSize ?? 10;
+    const pageSize = filters?.pageSize ?? this.DEFAULT_PAGE_SIZE;
     
     // Pre-set signals immediately to ensure UI reflects current page/size state
     this.pageNumber.set(pageNumber);

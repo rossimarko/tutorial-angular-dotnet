@@ -51,10 +51,13 @@ export class ProjectListComponent implements OnInit {
   protected currentSortBy = 'CreatedAt';
   protected currentSortDirection: 'asc' | 'desc' = 'desc';
 
+  // Default page size - must match service default
+  private readonly DEFAULT_PAGE_SIZE = 5;
+
   // Track current pagination state
   private readonly currentPagination = signal<PaginationParams>({
     pageNumber: 1,
-    pageSize: 10,
+    pageSize: this.DEFAULT_PAGE_SIZE,
     sortBy: 'CreatedAt',
     sortDirection: 'desc'
   });
