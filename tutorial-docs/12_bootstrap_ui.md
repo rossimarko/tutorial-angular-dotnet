@@ -127,7 +127,7 @@ We'll import Bootstrap SCSS and Font Awesome directly in our `styles.scss` file.
 
 ## 🎨 Step 2: Customize Bootstrap Variables
 
-Create file: `frontend/project-tracker/src/_custom-bootstrap.scss`
+Create file: `frontend/project-tracker/src/styles-bootstrap-custom.scss`
 
 This file will contain your Bootstrap variable overrides:
 
@@ -253,7 +253,7 @@ Update file: `frontend/project-tracker/src/styles.scss`
 // -------------------------------------
 // 1. Import Custom Bootstrap Variables
 // -------------------------------------
-@import 'custom-bootstrap';
+@import 'styles-bootstrap-custom';
 
 // -------------------------------------
 // 2. Import Bootstrap SCSS
@@ -1229,7 +1229,7 @@ Open browser DevTools and check computed styles:
 ### **What We Built:**
 
 1. ✅ **Bootstrap SCSS Customization**
-   - Custom Bootstrap variables in `_custom-bootstrap.scss`
+   - Custom Bootstrap variables in `styles-bootstrap-custom.scss`
    - Proper Bootstrap SCSS import workflow
    - No custom theme files - using Bootstrap's native system
 
@@ -1319,7 +1319,7 @@ npm install --save bootstrap@latest
 ### Issue: Custom variables not applying
 
 **Solution**:
-- Ensure `_custom-bootstrap.scss` is imported BEFORE Bootstrap
+- Ensure `styles-bootstrap-custom.scss` is imported BEFORE Bootstrap in `styles.scss`
 - Clear browser cache and rebuild: `npm start`
 - Check SCSS syntax for errors
 
