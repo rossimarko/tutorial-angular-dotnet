@@ -91,7 +91,7 @@
     <!-- Table -->
     <div class="table-responsive">
       <table class="table table-hover mb-0">
-        <thead class="table-light">
+        <thead>
           <tr>
             <th style="cursor: pointer;" (click)="sortByColumn('Title')">
               {{ 'projects.title' | translate }}{{ getSortIndicator('Title') }}
@@ -176,7 +176,7 @@
     </div>
 
     <!-- Pagination Footer -->
-    <div class="card-footer bg-light">
+    <div class="card-footer">
       <app-pagination
         [currentPage]="pageNumber()"
         [totalPages]="totalPages()"

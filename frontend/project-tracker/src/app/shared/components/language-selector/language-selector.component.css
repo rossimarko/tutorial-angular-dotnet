@@ -16,13 +16,15 @@
 }
 
 .dropdown-item:hover {
-  background-color: var(--bs-light);
+  background-color: var(--bs-secondary-bg);
+  color: var(--bs-body-color);
   cursor: pointer;
 }
 
 .dropdown-item:focus {
   outline: none;
-  background-color: var(--bs-light);
+  background-color: var(--bs-secondary-bg);
+  color: var(--bs-body-color);
 }
 
 .spinner-border-sm {
