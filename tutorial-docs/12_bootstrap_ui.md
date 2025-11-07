@@ -1332,6 +1332,45 @@ The background will now use the theme's default background color.
 
 **Note**: The theme toggle component already uses the proper dropdown style (created in Step 5), so no additional changes are needed. It uses `btn-outline-light` which is visible in the navbar.
 
+### 10.5 Update Project Form Component
+
+The project form has hardcoded dark colors that make titles and labels invisible in dark mode.
+
+**Update file**: `frontend/project-tracker/src/app/features/projects/components/project-form/project-form.component.css`
+
+Find and update the following styles:
+
+```css
+/* BEFORE */
+.form-label {
+  font-weight: 500;
+  color: var(--bs-secondary);  /* This is dark/gray, poor contrast in dark mode */
+  margin-bottom: 0.5rem;
+}
+
+h2 {
+  font-weight: 600;
+  color: var(--bs-dark);  /* This is invisible in dark mode! */
+}
+
+/* AFTER */
+.form-label {
+  font-weight: 500;
+  color: var(--bs-body-color);  /* Adapts to theme */
+  margin-bottom: 0.5rem;
+}
+
+h2 {
+  font-weight: 600;
+  color: var(--bs-body-color);  /* Adapts to theme */
+}
+```
+
+**Key Changes**:
+- ❌ Removed `var(--bs-dark)` from h2 (invisible in dark mode)
+- ❌ Removed `var(--bs-secondary)` from labels (poor contrast)
+- ✅ Uses `var(--bs-body-color)` (automatically adapts to light/dark theme)
+
 ---
 
 ## 🎨 Bootstrap Dark Mode Best Practices
