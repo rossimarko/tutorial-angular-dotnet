@@ -1191,4 +1191,270 @@ Optional enhancements for production:
 
 ---
 
+## 🔍 Verification & Fixes
+
+After implementing the tutorial, verify your implementation and apply any needed fixes.
+
+### Backend Verification
+
+Check that all packages are installed:
+
+```bash
+cd backend/ProjectTracker.API
+# Verify Serilog packages
+grep -i "Serilog" ProjectTracker.API.csproj
+```
+
+You should see:
+- `Serilog.AspNetCore`
+- `Serilog.Enrichers.Environment`
+- `Serilog.Enrichers.Thread`
+- `Serilog.Sinks.Console`
+- `Serilog.Sinks.File`
+
+### Frontend Verification & Common Issues
+
+#### ⚠️ Issue 1: GlobalErrorHandler Not Registered
+
+**Problem:** The GlobalErrorHandler class exists but may not be registered in `app.config.ts`.
+
+**Check:** Open `frontend/project-tracker/src/app/app.config.ts` and verify this import and registration:
+
+```typescript
+import { ApplicationConfig, ErrorHandler, provideZoneChangeDetection } from '@angular/core';
+import { GlobalErrorHandler } from './shared/services/global-error-handler.service';
+
+export const appConfig: ApplicationConfig = {
+  providers: [
+    provideZoneChangeDetection({ eventCoalescing: true }),
+    provideRouter(routes),
+    provideHttpClient(withInterceptors([authHttpInterceptor, errorHttpInterceptor])),
+
+    // ⚠️ ADD THIS LINE if missing:
+    { provide: ErrorHandler, useClass: GlobalErrorHandler }
+  ]
+};
+```
+
+**Fix:** Add the ErrorHandler provider if it's missing from your app.config.ts.
+
+#### ⚠️ Issue 2: TrackBy Functions Missing
+
+**Problem:** Components using `*ngFor` should have `trackBy` functions for better performance.
+
+**Fix for project-list.component.ts:**
+
+Add the trackBy method to the component class:
+
+```typescript
+export class ProjectListComponent implements OnInit {
+  // ... existing code ...
+
+  /**
+   * TrackBy function for projects list
+   * Helps Angular track items by ID for better performance
+   */
+  trackByProjectId(index: number, project: Project): number {
+    return project.id;
+  }
+}
+```
+
+Update the template `project-list.component.html` - find the projects loop:
+
+```html
+<!-- BEFORE: -->
+<tr *ngFor="let project of projects()">
+
+<!-- AFTER: -->
+<tr *ngFor="let project of projects(); trackBy: trackByProjectId">
+```
+
+**Fix for pagination.component.ts:**
+
+Add the trackBy method:
+
+```typescript
+export class PaginationComponent {
+  // ... existing code ...
+
+  /**
+   * TrackBy function for pagination pages
+   */
+  trackByIndex(index: number): number {
+    return index;
+  }
+}
+```
+
+Update the template `pagination.component.html`:
+
+```html
+<!-- BEFORE: -->
+<li *ngFor="let page of pages" class="page-item">
+
+<!-- AFTER: -->
+<li *ngFor="let page of pages; trackBy: trackByIndex" class="page-item">
+```
+
+### Test Your Implementation
+
+#### 1. Test Backend Logging
+
+Start the backend and check logs:
+
+```bash
+cd backend/ProjectTracker.API
+# Check if log file is created
+ls logs/
+
+# View recent logs
+tail -f logs/app-*.txt
+```
+
+You should see structured logs with `[SourceContext]`, `RequestId`, `RequestPath`, etc.
+
+#### 2. Test Frontend Logging
+
+Open browser console (F12) and navigate the app. You should see:
+- Colored log entries with timestamps
+- Navigation timing metrics
+- Performance measurements (if using PerformanceService)
+
+Test the logger in console:
+
+```javascript
+// Get the LoggerService (in Angular DevTools or via component injection)
+logger.info('Test info message', { data: 'test' })
+logger.warning('Test warning')
+logger.error('Test error', new Error('Test'))
+```
+
+#### 3. Test Error Handling
+
+**Test HTTP error interceptor:**
+1. Stop the backend API
+2. Try to load projects in the frontend
+3. You should see:
+   - ✅ Styled error log in console
+   - ✅ User-friendly notification toast
+   - ✅ "Network Error" message
+
+**Test GlobalErrorHandler (if registered):**
+```typescript
+// In a component, temporarily add:
+throw new Error('Test global error handler');
+```
+
+You should see the error logged and handled gracefully.
+
+#### 4. Test Lazy Loading
+
+Build the app and check for code splitting:
+
+```bash
+cd frontend/project-tracker
+ng build --configuration=production
+
+# Check output bundles
+ls dist/project-tracker/browser/*.js
+```
+
+You should see separate chunk files like:
+- `chunk-*.js` files for lazy-loaded routes
+- Smaller `main-*.js` file
+
+#### 5. Test Response Caching
+
+Use browser DevTools Network tab:
+
+1. Load translations: `GET /api/translations/en-US`
+2. Check response headers - should include:
+   - `Cache-Control: public, max-age=60`
+3. Reload page - translations should come from cache (or be served quickly)
+
+### Performance Monitoring Usage
+
+To use the PerformanceService in your components:
+
+```typescript
+export class ProjectListComponent implements OnInit {
+  private readonly performanceService = inject(PerformanceService);
+
+  async ngOnInit() {
+    await this.performanceService.measure('load-projects-page', async () => {
+      await this.loadProjects();
+    });
+
+    // View metrics in console (development only)
+    console.log('Performance metrics:', this.performanceService.getMetrics()());
+  }
+}
+```
+
+Or in services:
+
+```typescript
+// Already implemented in ProjectService as an example
+loadProjectsPaged(filters?: Partial<PaginationParams>): Observable<ProjectPaginatedResponse> {
+  this.performanceService.startTimer('fetch-projects-paged');
+
+  // ... HTTP call ...
+
+  return this.http.get<ProjectPaginatedResponse>(url, { params }).pipe(
+    tap(() => this.performanceService.endTimer('fetch-projects-paged', 'http')),
+    // ... rest of the pipe
+  );
+}
+```
+
+### Common Issues & Solutions
+
+#### Issue: Logs not showing up
+
+**Solution:** Check that:
+1. `builder.Host.UseSerilog()` is called in Program.cs
+2. Middleware is registered in correct order
+3. Log level is set appropriately (not too high)
+
+#### Issue: Cache not working
+
+**Solution:** Verify:
+1. `app.UseResponseCaching()` is called BEFORE `app.UseAuthentication()`
+2. `[ResponseCache]` attribute is on GET endpoints only
+3. Check browser DevTools Network tab for `Cache-Control` headers
+
+#### Issue: Lazy loading not working
+
+**Solution:**
+1. Ensure routes use `loadChildren` or `loadComponent` with dynamic imports
+2. Check that you removed eager imports from `app.routes.ts`
+3. Build with production config to see chunks: `ng build --configuration=production`
+
+#### Issue: GlobalErrorHandler not catching errors
+
+**Solution:**
+1. Verify it's registered in `app.config.ts` with `{ provide: ErrorHandler, useClass: GlobalErrorHandler }`
+2. Import the class at the top of the file
+3. HTTP errors are handled by the interceptor, not GlobalErrorHandler
+
+---
+
+## 🎉 Congratulations!
+
+You've successfully implemented:
+- ✅ Structured logging with Serilog enrichment
+- ✅ Request/response logging with timing
+- ✅ Response caching for improved performance
+- ✅ Frontend logger service with styled console output
+- ✅ Global error handling (frontend + backend)
+- ✅ HTTP error interceptor with user-friendly messages
+- ✅ Lazy loading for faster initial page load
+- ✅ Performance monitoring service
+- ✅ Code splitting and optimization
+
+Your application now has production-grade logging, error handling, and performance monitoring!
+
+---
+
 **Next Module: [Module 14: Deployment](./14_deployment.md)**
