@@ -133,7 +133,7 @@
                 <td>
                   <span class="badge" [ngClass]="{
                     'bg-success': project.status === 'Active',
-                    'bg-warning': project.status === 'Pending',
+                    'bg-secondary': project.status === 'OnHold',
                     'bg-info': project.status === 'Completed',
                     'bg-danger': project.status === 'Cancelled'
                   }">

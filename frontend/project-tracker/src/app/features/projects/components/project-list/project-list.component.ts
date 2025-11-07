@@ -47,7 +47,7 @@ export class ProjectListComponent implements OnInit {
   // Form controls for search
   protected readonly searchControl = new FormControl('');
   protected readonly statusFilter = new FormControl('');
-  protected readonly statuses = ['Active', 'Pending', 'Completed', 'Cancelled'];
+  protected readonly statuses = ['Active', 'OnHold', 'Completed', 'Cancelled'];
 
   // Current sort state
   protected currentSortBy = 'CreatedAt';
