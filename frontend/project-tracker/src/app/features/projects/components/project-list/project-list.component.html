@@ -141,8 +141,8 @@
                   </span>
                 </td>
                 <td>{{ project.priority }}</td>
-                <td>{{ project.dueDate | date:'short' }}</td>
-                <td>{{ project.createdAt | date:'short' }}</td>
+                <td>{{ project.dueDate | localizedDate:'short' }}</td>
+                <td>{{ project.createdAt | localizedDate:'short' }}</td>
                 <td>
                   <div class="btn-group btn-group-sm" role="group">
                     <button

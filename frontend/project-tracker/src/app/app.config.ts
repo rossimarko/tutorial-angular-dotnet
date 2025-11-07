@@ -15,13 +15,6 @@ function initializeTranslations(translationService: TranslationService) {
   return () => translationService.initialize();
 }
 
-/// <summary>
-/// Factory function to provide current locale dynamically
-/// </summary>
-function localeIdFactory(translationService: TranslationService) {
-  return () => translationService.currentLanguage();
-}
-
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
