@@ -597,13 +597,14 @@ Create file: `frontend/project-tracker/src/app/shared/components/theme-toggle/th
   <button
     class="btn btn-outline-light btn-sm dropdown-toggle"
     type="button"
+    id="themeDropdown"
     data-bs-toggle="dropdown"
     aria-expanded="false"
     [attr.aria-label]="'settings.theme' | translate">
     <i [class]="getThemeIcon(currentTheme())"></i>
-    <span class="d-none d-lg-inline ms-2">{{ 'settings.theme' | translate }}</span>
+    <span class="d-none d-lg-inline ms-2">{{ getThemeLabel(currentTheme()) | translate }}</span>
   </button>
-  <ul class="dropdown-menu dropdown-menu-end">
+  <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="themeDropdown">
     @for (theme of themeOptions; track theme) {
       <li>
         <button
@@ -613,6 +614,9 @@ Create file: `frontend/project-tracker/src/app/shared/components/theme-toggle/th
           type="button">
           <i [class]="getThemeIcon(theme)" class="me-2"></i>
           {{ getThemeLabel(theme) | translate }}
+          @if (currentTheme() === theme) {
+            <i class="fas fa-check ms-2"></i>
+          }
         </button>
       </li>
     }
@@ -625,17 +629,20 @@ Create file: `frontend/project-tracker/src/app/shared/components/theme-toggle/th
 ```css
 .dropdown-menu {
   min-width: 10rem;
+  border: none;
+  box-shadow: var(--bs-box-shadow-lg);
+  margin-top: 0.5rem;
 }
 
 .dropdown-item {
+  border: none;
+  background: none;
+  padding: 0.5rem 1rem;
+  text-align: left;
+  width: 100%;
   transition: all 0.15s ease-in-out;
   border-radius: var(--bs-border-radius-sm);
   margin: 0.25rem 0.5rem;
-}
-
-.dropdown-item:hover {
-  background-color: var(--bs-secondary-bg);
-  color: var(--bs-body-color);
 }
 
 .dropdown-item.active {
@@ -647,7 +654,29 @@ Create file: `frontend/project-tracker/src/app/shared/components/theme-toggle/th
   background-color: var(--bs-primary);
   color: white;
 }
+
+.dropdown-item:hover {
+  background-color: var(--bs-secondary-bg);
+  color: var(--bs-body-color);
+  cursor: pointer;
+}
+
+.dropdown-item:focus {
+  outline: none;
+  background-color: var(--bs-secondary-bg);
+  color: var(--bs-body-color);
+}
 ```
+
+**Key Features**:
+- ✅ **Shows Current Theme**: Button displays the currently selected theme name (e.g., "Light", "Dark", "Auto")
+- ✅ **Dropdown Menu Style**: Matches the language selector pattern for consistency
+- ✅ **Navbar Visibility**: Uses `btn-outline-light` to be visible on dark navbar background
+- ✅ **Responsive Design**: Shows icon only on mobile (`d-none d-lg-inline`), icon + text on desktop
+- ✅ **Active State Indicator**: Current theme is highlighted with primary color and checkmark
+- ✅ **Dark Mode Compatible**: All hover/focus states use theme-aware Bootstrap variables
+
+**Note**: The actual directory name is `theme-toogle` (with double 'o' - a typo in the original setup). If creating from scratch, you may use `theme-toggle`, but ensure to update all import paths accordingly.
 
 ---
 
@@ -732,6 +761,8 @@ Create file: `frontend/project-tracker/src/app/shared/components/card/card.compo
 mkdir -p frontend/project-tracker/src/app/layouts/navbar
 ```
 
+**Note**: This component imports `ThemeToggleComponent` from `theme-toogle` directory (with double 'o'). Ensure your import paths match your actual directory structure.
+
 Create file: `frontend/project-tracker/src/app/layouts/navbar/navbar.component.ts`
 
 ```typescript
@@ -739,7 +770,7 @@ import { Component, inject, signal, ChangeDetectionStrategy } from '@angular/cor
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
-import { ThemeToggleComponent } from '../../shared/components/theme-toggle/theme-toggle.component';
+import { ThemeToggleComponent } from '../../shared/components/theme-toogle/theme-toogle.component';
 import { LanguageSelectorComponent } from '../../shared/components/language-selector/language-selector.component';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 
@@ -757,7 +788,7 @@ import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 export class NavbarComponent {
   private readonly authService = inject(AuthService);
 
-  protected readonly isAuthenticated = this.authService.isAuthenticated;
+  protected readonly isAuthenticated = this.authService.isAuthenticated$();
   protected readonly currentUser = this.authService.currentUser;
   protected readonly isCollapsed = signal(true);
 
