@@ -966,55 +966,51 @@ export class ProjectService {
 
 ---
 
-## 🎨 Step 8: Optimize List Rendering with TrackBy
+## 🎨 Step 8: Optimize List Rendering with Modern @for Tracking
 
-Lists should use `trackBy` functions to optimize re-rendering.
+Angular 17+ introduced a new control flow syntax that includes built-in tracking. This is more concise and performant than the old `*ngFor` with `trackBy` approach.
 
-**Update file: `frontend/project-tracker/src/app/features/projects/components/project-list/project-list.component.ts`:**
+**Use the modern `@for` syntax with `track` keyword:**
 
-Add trackBy function:
+**In `project-list.component.html`:**
 
-```typescript
-export class ProjectListComponent implements OnInit {
-  // ... existing code ...
-
-  /**
-   * TrackBy function for projects list
-   * Helps Angular track items by ID for better performance
-   */
-  trackByProjectId(index: number, project: Project): number {
-    return project.id;
-  }
+```html
+<!-- Projects table - track by project ID -->
+@for (project of projects(); track project.id) {
+  <tr>
+    <td>{{ project.title }}</td>
+    <td>{{ project.status }}</td>
+    <!-- ... other cells ... -->
+  </tr>
 }
 ```
 
-**Update the template: `project-list.component.html`:**
-
-Find the `*ngFor` loop and add `trackBy`:
+**In `pagination.component.html`:**
 
 ```html
-<tr *ngFor="let project of projects(); trackBy: trackByProjectId">
-  <!-- table cells -->
-</tr>
-```
+<!-- Page size options - track by size value -->
+@for (size of pageSizeOptions(); track size) {
+  <option [value]="size">{{ size }}</option>
+}
 
-**Similarly, add trackBy to pagination component:**
-
-In `frontend/project-tracker/src/app/shared/components/pagination/pagination.component.ts`:
-
-```typescript
-trackByIndex(index: number): number {
-  return index;
+<!-- Page numbers - track by page number -->
+@for (page of pageNumbers(); track page) {
+  <li class="page-item" [class.active]="page === currentPage()">
+    <button type="button" class="page-link" (click)="goToPage(page)">
+      {{ page }}
+    </button>
+  </li>
 }
 ```
 
-And update the template:
+**Benefits of modern `@for` syntax:**
+- ✅ No need for separate `trackBy` functions in component class
+- ✅ More concise and readable
+- ✅ Better performance (compiled more efficiently)
+- ✅ Inline tracking expression
+- ✅ Works seamlessly with signals
 
-```html
-<li *ngFor="let page of pages; trackBy: trackByIndex" class="page-item">
-  <!-- pagination item -->
-</li>
-```
+**Note:** If you're still using the old `*ngFor` syntax, you'll need separate `trackBy` functions in your component. The modern `@for` syntax is recommended for new Angular applications.
 
 ---
 
@@ -1138,7 +1134,7 @@ throw new Error('Test error');
 3. ✅ HTTP Error Interceptor with status-specific handling
 4. ✅ Lazy loading for all route modules
 5. ✅ PerformanceService for monitoring operations
-6. ✅ TrackBy functions for list optimization
+6. ✅ Modern @for tracking for list optimization
 7. ✅ NotFoundComponent for 404 errors
 
 ### 📈 Performance Improvements
@@ -1146,7 +1142,7 @@ throw new Error('Test error');
 - **Lazy Loading**: Reduces initial bundle size by 40-60%
 - **Response Caching**: Reduces API calls for static data
 - **OnPush Detection**: Already implemented, reduces change detection cycles
-- **TrackBy Functions**: Reduces unnecessary DOM updates
+- **@for Tracking**: Modern control flow with built-in tracking reduces unnecessary DOM updates
 - **Code Splitting**: Enables parallel chunk downloads
 
 ### 🎯 Best Practices Applied
@@ -1238,64 +1234,37 @@ export const appConfig: ApplicationConfig = {
 
 **Fix:** Add the ErrorHandler provider if it's missing from your app.config.ts.
 
-#### ⚠️ Issue 2: TrackBy Functions Missing
+#### ✅ Tracking Already Implemented with Modern @for Syntax
 
-**Problem:** Components using `*ngFor` should have `trackBy` functions for better performance.
+**Great news!** If you're using the modern Angular 17+ control flow syntax (`@for` instead of `*ngFor`), tracking is already built-in using the `track` keyword.
 
-**Fix for project-list.component.ts:**
+**Verify your templates have proper tracking:**
 
-Add the trackBy method to the component class:
+```html
+<!-- Projects list - should track by project.id -->
+@for (project of projects(); track project.id) {
+  <tr>
+    <td>{{ project.title }}</td>
+    <!-- ... -->
+  </tr>
+}
 
-```typescript
-export class ProjectListComponent implements OnInit {
-  // ... existing code ...
+<!-- Pagination - should track by page number -->
+@for (page of pageNumbers(); track page) {
+  <li class="page-item">
+    <!-- ... -->
+  </li>
+}
 
-  /**
-   * TrackBy function for projects list
-   * Helps Angular track items by ID for better performance
-   */
-  trackByProjectId(index: number, project: Project): number {
-    return project.id;
-  }
+<!-- Status filter - should track by status value -->
+@for (status of statuses; track status) {
+  <option [value]="status">{{ status }}</option>
 }
 ```
 
-Update the template `project-list.component.html` - find the projects loop:
+**No additional trackBy functions needed!** The modern `@for` syntax with `track` is more concise and performant than the old `*ngFor` with `trackBy` approach.
 
-```html
-<!-- BEFORE: -->
-<tr *ngFor="let project of projects()">
-
-<!-- AFTER: -->
-<tr *ngFor="let project of projects(); trackBy: trackByProjectId">
-```
-
-**Fix for pagination.component.ts:**
-
-Add the trackBy method:
-
-```typescript
-export class PaginationComponent {
-  // ... existing code ...
-
-  /**
-   * TrackBy function for pagination pages
-   */
-  trackByIndex(index: number): number {
-    return index;
-  }
-}
-```
-
-Update the template `pagination.component.html`:
-
-```html
-<!-- BEFORE: -->
-<li *ngFor="let page of pages" class="page-item">
-
-<!-- AFTER: -->
-<li *ngFor="let page of pages; trackBy: trackByIndex" class="page-item">
-```
+**Note:** If you're still using `*ngFor` (legacy syntax), you would need separate trackBy functions in the component class. The modern `@for` syntax is recommended for new projects.
 
 ### Test Your Implementation
 
