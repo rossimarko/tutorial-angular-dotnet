@@ -1106,11 +1106,11 @@ import { SkipLinkDirective } from './shared/directives/skip-link.directive';
 
 ## 🧪 Step 10: Add Translation Keys
 
-Add these translation keys to your translation files:
+Translations in this application are served from the backend API, not frontend JSON files. Add these keys to your backend translation files.
 
-### Update: `frontend/project-tracker/src/assets/i18n/en.json`
+### Update: `backend/ProjectTracker.API/Resources/Translations/en-US.json`
 
-Add these keys (merge with existing JSON):
+Add these keys to the existing JSON structure (merge with what's already there):
 
 ```json
 {
@@ -1132,9 +1132,11 @@ Add these keys (merge with existing JSON):
 }
 ```
 
-### Update: `frontend/project-tracker/src/assets/i18n/it.json`
+**Note**: Some of these keys may already exist (like `nav.projects`, `nav.login`, `nav.logout`). Only add the missing ones.
 
-Add these keys (merge with existing JSON):
+### Update: `backend/ProjectTracker.API/Resources/Translations/it-IT.json`
+
+Add these keys to the existing JSON structure (merge with what's already there):
 
 ```json
 {
@@ -1154,6 +1156,24 @@ Add these keys (merge with existing JSON):
     "skipToContent": "Vai al contenuto principale"
   }
 }
+```
+
+**Note**: Some of these keys may already exist. Only add the missing ones.
+
+### Why Backend Translations?
+
+This application uses **server-side translations** loaded via API:
+- ✅ Translations are centralized in the backend
+- ✅ Can be updated without redeploying frontend
+- ✅ Single source of truth for all languages
+- ✅ Easier to manage for multiple applications
+
+After updating the translation files, **restart your backend** to reload the translations:
+
+```bash
+# If backend is running, stop it (Ctrl+C) and restart
+cd backend/ProjectTracker.API
+dotnet run
 ```
 
 ---
