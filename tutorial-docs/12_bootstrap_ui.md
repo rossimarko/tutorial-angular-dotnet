@@ -676,8 +676,6 @@ Create file: `frontend/project-tracker/src/app/shared/components/theme-toggle/th
 - ✅ **Active State Indicator**: Current theme is highlighted with primary color and checkmark
 - ✅ **Dark Mode Compatible**: All hover/focus states use theme-aware Bootstrap variables
 
-**Note**: The actual directory name is `theme-toogle` (with double 'o' - a typo in the original setup). If creating from scratch, you may use `theme-toggle`, but ensure to update all import paths accordingly.
-
 ---
 
 ## 🎴 Step 6: Reusable Card Component
@@ -761,8 +759,6 @@ Create file: `frontend/project-tracker/src/app/shared/components/card/card.compo
 mkdir -p frontend/project-tracker/src/app/layouts/navbar
 ```
 
-**Note**: This component imports `ThemeToggleComponent` from `theme-toogle` directory (with double 'o'). Ensure your import paths match your actual directory structure.
-
 Create file: `frontend/project-tracker/src/app/layouts/navbar/navbar.component.ts`
 
 ```typescript
@@ -770,7 +766,7 @@ import { Component, inject, signal, ChangeDetectionStrategy } from '@angular/cor
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
-import { ThemeToggleComponent } from '../../shared/components/theme-toogle/theme-toogle.component';
+import { ThemeToggleComponent } from '../../shared/components/theme-toggle/theme-toggle.component';
 import { LanguageSelectorComponent } from '../../shared/components/language-selector/language-selector.component';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 

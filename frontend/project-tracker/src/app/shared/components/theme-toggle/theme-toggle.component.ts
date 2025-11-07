@@ -10,8 +10,8 @@ import { TranslatePipe } from '../../pipes/translate.pipe';
 @Component({
   selector: 'app-theme-toggle',
   imports: [CommonModule, TranslatePipe],
-  templateUrl: './theme-toogle.component.html',
-  styleUrl: './theme-toogle.component.css',
+  templateUrl: './theme-toggle.component.html',
+  styleUrl: './theme-toggle.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ThemeToggleComponent {
