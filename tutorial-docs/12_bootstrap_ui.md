@@ -3,13 +3,12 @@
 ## 🎯 Objectives
 
 By the end of this module, you will:
-- ✅ Create a custom CSS variables system for theming
-- ✅ Implement dark mode with auto-detection
+- ✅ Customize Bootstrap using SCSS variables (proper Bootstrap workflow)
+- ✅ Implement dark mode using Bootstrap's built-in color modes
 - ✅ Build a theme toggle component
 - ✅ Create a reusable card component
 - ✅ Extract and enhance the navigation bar
 - ✅ Add accessibility directives
-- ✅ Implement custom utility classes
 - ✅ Apply best practices for responsive design
 
 ---
@@ -53,190 +52,285 @@ In this module, we'll **add** the following new features to your existing applic
 3. **CardComponent** - Reusable card wrapper
 4. **NavbarComponent** - Extract navbar from app.html into separate component
 
-### New Files & Styles:
-5. **theme.css** - CSS variables for consistent theming
-6. **utilities.css** - Custom utility classes
-7. **FocusTrapDirective** - Accessibility for modals
-8. **SkipLinkDirective** - Keyboard navigation support
+### What We'll Customize:
+5. **Bootstrap SCSS Variables** - Customize colors, spacing, fonts using Bootstrap's native system
+6. **Dark Mode Support** - Use Bootstrap 5.3's built-in `data-bs-theme` attribute
+7. **Accessibility Directives** - FocusTrap and SkipLink
 
 ### What We'll Modify:
+- Convert `styles.css` to `styles.scss`
+- Customize Bootstrap variables before importing
 - Extract inline navbar from `app.html` into `NavbarComponent`
-- Update `styles.css` with imports
 - Integrate theme toggle into navigation
 
 ---
 
-## 📋 What is Bootstrap?
+## 📋 Why Bootstrap SCSS Customization?
 
-**Bootstrap** is the world's most popular CSS framework for building responsive, mobile-first websites. It provides:
+Instead of creating custom CSS files, we'll use **Bootstrap's recommended approach**:
 
-- **Grid System**: 12-column responsive layout
-- **Components**: Pre-built UI elements (buttons, cards, modals)
-- **Utilities**: Spacing, colors, display, flex helpers
-- **JavaScript**: Interactive components (dropdowns, modals, tooltips)
+✅ **Customize Bootstrap variables** (colors, spacing, fonts, etc.)
+✅ **Import Bootstrap SCSS** (not pre-compiled CSS)
+✅ **Let Bootstrap compile** with your custom values
+✅ **Use Bootstrap's native dark mode** (no custom theme files needed)
 
-### Why Bootstrap 5?
-
-- ✅ No jQuery dependency (pure JavaScript)
-- ✅ Improved grid with CSS Grid support
-- ✅ Custom CSS properties (variables)
-- ✅ Reduced file size
-- ✅ Enhanced accessibility
-
-You already installed Bootstrap in **Module 6** - we'll now enhance it with custom theming!
+This approach:
+- Keeps your styles maintainable
+- Uses Bootstrap's design system properly
+- Avoids CSS conflicts and specificity issues
+- Makes upgrades easier
 
 ---
 
-## 🎨 Step 1: Create Styles Directory & CSS Variables
+## 🎨 Step 1: Setup SCSS and Bootstrap Source
 
-First, let's create a dedicated directory for our custom styles.
-
-### Create the styles directory:
+### 1.1 Install Bootstrap SCSS (if using source)
 
 ```bash
-mkdir frontend/project-tracker/src/styles
+cd frontend/project-tracker
+# Bootstrap is already installed, but ensure we have the SCSS source
+npm list bootstrap
 ```
 
-### Create Custom Theme System
+### 1.2 Rename styles.css to styles.scss
 
-Create file: `frontend/project-tracker/src/styles/theme.css`
+```bash
+# Rename the main styles file
+mv src/styles.css src/styles.scss
+```
 
-```css
-/**
- * Custom theme using CSS variables
- * Extends Bootstrap 5 with custom colors and spacing
- */
+### 1.3 Update angular.json
 
-:root {
-  /* Primary Color Palette */
-  --color-primary: #0d6efd;
-  --color-primary-dark: #0b5ed7;
-  --color-primary-light: #6ea8fe;
-  --color-primary-rgb: 13, 110, 253;
+Update file: `frontend/project-tracker/angular.json`
 
-  /* Secondary Colors */
-  --color-secondary: #6c757d;
-  --color-success: #198754;
-  --color-danger: #dc3545;
-  --color-warning: #ffc107;
-  --color-info: #0dcaf0;
+Find the `styles` array in both `build` and `test` sections and update:
 
-  /* Neutral Colors */
-  --color-light: #f8f9fa;
-  --color-dark: #212529;
-  --color-white: #ffffff;
-  --color-black: #000000;
+**Before:**
+```json
+"styles": [
+  "node_modules/bootstrap/dist/css/bootstrap.min.css",
+  "node_modules/@fortawesome/fontawesome-free/css/all.min.css",
+  "src/styles.css"
+]
+```
 
-  /* Background Colors */
-  --bg-body: #ffffff;
-  --bg-surface: #f8f9fa;
-  --bg-overlay: rgba(0, 0, 0, 0.5);
+**After:**
+```json
+"styles": [
+  "src/styles.scss"
+]
+```
 
-  /* Text Colors */
-  --text-primary: #212529;
-  --text-secondary: #6c757d;
-  --text-muted: #6c757d;
-  --text-disabled: #adb5bd;
+We'll import Bootstrap SCSS and Font Awesome directly in our `styles.scss` file.
 
-  /* Border */
-  --border-color: #dee2e6;
-  --border-radius: 0.375rem;
-  --border-radius-lg: 0.5rem;
-  --border-radius-sm: 0.25rem;
+---
 
-  /* Shadows */
-  --shadow-sm: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-  --shadow-md: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-  --shadow-lg: 0 1rem 3rem rgba(0, 0, 0, 0.175);
+## 🎨 Step 2: Customize Bootstrap Variables
 
-  /* Spacing */
-  --spacing-xs: 0.25rem;
-  --spacing-sm: 0.5rem;
-  --spacing-md: 1rem;
-  --spacing-lg: 1.5rem;
-  --spacing-xl: 3rem;
+Create file: `frontend/project-tracker/src/_custom-bootstrap.scss`
 
-  /* Typography */
-  --font-family-base: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-family-monospace: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-  --font-size-base: 1rem;
-  --font-size-sm: 0.875rem;
-  --font-size-lg: 1.25rem;
-  --font-weight-normal: 400;
-  --font-weight-medium: 500;
-  --font-weight-bold: 700;
+This file will contain your Bootstrap variable overrides:
 
-  /* Transitions */
-  --transition-base: all 0.3s ease-in-out;
-  --transition-fast: all 0.15s ease-in-out;
-}
+```scss
+// ====================================
+// Custom Bootstrap Variable Overrides
+// ====================================
+// Place this BEFORE importing Bootstrap
 
-/* Dark Mode Theme */
-[data-bs-theme="dark"] {
-  --bg-body: #212529;
-  --bg-surface: #343a40;
-  --bg-overlay: rgba(0, 0, 0, 0.7);
+// -------------------------------------
+// Color System
+// -------------------------------------
+$primary: #0d6efd;
+$secondary: #6c757d;
+$success: #198754;
+$info: #0dcaf0;
+$warning: #ffc107;
+$danger: #dc3545;
+$light: #f8f9fa;
+$dark: #212529;
 
-  --text-primary: #f8f9fa;
-  --text-secondary: #adb5bd;
-  --text-muted: #6c757d;
-  --text-disabled: #495057;
+// -------------------------------------
+// Spacing
+// -------------------------------------
+$spacer: 1rem;
+$spacers: (
+  0: 0,
+  1: $spacer * .25,
+  2: $spacer * .5,
+  3: $spacer,
+  4: $spacer * 1.5,
+  5: $spacer * 3,
+  6: $spacer * 4,
+  7: $spacer * 5
+);
 
-  --border-color: #495057;
+// -------------------------------------
+// Typography
+// -------------------------------------
+$font-family-sans-serif: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+$font-family-monospace: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 
-  --color-primary: #0d6efd;
-  --color-primary-dark: #0a58ca;
-  --color-primary-light: #6ea8fe;
-}
+$font-size-base: 1rem;
+$font-size-sm: $font-size-base * .875;
+$font-size-lg: $font-size-base * 1.25;
 
-/* Apply theme variables to body */
-body {
-  background-color: var(--bg-body);
-  color: var(--text-primary);
-  font-family: var(--font-family-base);
-  transition: var(--transition-base);
-}
+$font-weight-normal: 400;
+$font-weight-medium: 500;
+$font-weight-bold: 700;
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
-}
+$line-height-base: 1.5;
 
-::-webkit-scrollbar-track {
-  background: var(--bg-surface);
-}
+// -------------------------------------
+// Border Radius
+// -------------------------------------
+$border-radius: .375rem;
+$border-radius-sm: .25rem;
+$border-radius-lg: .5rem;
+$border-radius-xl: 1rem;
 
-::-webkit-scrollbar-thumb {
-  background: var(--color-secondary);
-  border-radius: var(--border-radius);
-}
+// -------------------------------------
+// Shadows
+// -------------------------------------
+$box-shadow-sm: 0 .125rem .25rem rgba(0, 0, 0, .075);
+$box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .15);
+$box-shadow-lg: 0 1rem 3rem rgba(0, 0, 0, .175);
 
-::-webkit-scrollbar-thumb:hover {
-  background: var(--color-primary);
-}
+// -------------------------------------
+// Components
+// -------------------------------------
+$border-width: 1px;
+$border-color: #dee2e6;
+
+$component-active-bg: $primary;
+$component-active-color: #fff;
+
+// -------------------------------------
+// Navbar
+// -------------------------------------
+$navbar-dark-color: rgba(255, 255, 255, .75);
+$navbar-dark-hover-color: rgba(255, 255, 255, .9);
+$navbar-dark-active-color: #fff;
+
+// -------------------------------------
+// Cards
+// -------------------------------------
+$card-border-radius: $border-radius;
+$card-border-color: rgba(0, 0, 0, .125);
+$card-cap-bg: rgba(0, 0, 0, .03);
+
+// -------------------------------------
+// Transitions
+// -------------------------------------
+$transition-base: all .3s ease-in-out;
+$transition-fade: opacity .15s linear;
+$transition-collapse: height .35s ease;
+
+// -------------------------------------
+// Enable/Disable Features
+// -------------------------------------
+$enable-shadows: false;
+$enable-gradients: false;
+$enable-transitions: true;
+$enable-reduced-motion: true;
+$enable-smooth-scroll: true;
+$enable-grid-classes: true;
+$enable-container-classes: true;
+$enable-negative-margins: true;
+$enable-dark-mode: true; // Enable Bootstrap's native dark mode
 ```
 
 ---
 
-## 📱 Step 2: Create Custom Utility Classes
+## 📱 Step 3: Update Main Styles File
 
-Create file: `frontend/project-tracker/src/styles/utilities.css`
+Update file: `frontend/project-tracker/src/styles.scss`
 
-```css
-/**
- * Custom utility classes
- * Extends Bootstrap utilities
- */
+```scss
+// ====================================
+// Main Styles - Project Tracker
+// ====================================
 
-/* Spacing Utilities */
-.gap-xs { gap: var(--spacing-xs) !important; }
-.gap-sm { gap: var(--spacing-sm) !important; }
-.gap-md { gap: var(--spacing-md) !important; }
-.gap-lg { gap: var(--spacing-lg) !important; }
-.gap-xl { gap: var(--spacing-xl) !important; }
+// -------------------------------------
+// 1. Import Custom Bootstrap Variables
+// -------------------------------------
+@import 'custom-bootstrap';
 
-/* Text Utilities */
+// -------------------------------------
+// 2. Import Bootstrap SCSS
+// -------------------------------------
+// Import Bootstrap's source SCSS files
+// This will use our custom variables from above
+@import 'bootstrap/scss/bootstrap';
+
+// -------------------------------------
+// 3. Import Font Awesome
+// -------------------------------------
+@import '@fortawesome/fontawesome-free/css/all.min.css';
+
+// ====================================
+// 4. Global Styles
+// ====================================
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+// -------------------------------------
+// Smooth Scroll
+// -------------------------------------
+html {
+  scroll-behavior: smooth;
+}
+
+// -------------------------------------
+// Focus Styles for Accessibility
+// -------------------------------------
+*:focus-visible {
+  outline: 2px solid $primary;
+  outline-offset: 2px;
+  border-radius: $border-radius-sm;
+}
+
+// -------------------------------------
+// Skip to Content Link (Accessibility)
+// -------------------------------------
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: $primary;
+  color: white;
+  padding: 8px 16px;
+  text-decoration: none;
+  border-radius: 0 0 4px 0;
+  z-index: 10000;
+
+  &:focus {
+    top: 0;
+  }
+}
+
+// -------------------------------------
+// Selection Color
+// -------------------------------------
+::selection {
+  background-color: rgba($primary, 0.3);
+  color: $dark;
+}
+
+// ====================================
+// 5. Custom Utility Classes
+// ====================================
+// Only add utilities that Bootstrap doesn't provide
+
+// Text utilities
 .text-ellipsis {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -257,119 +351,68 @@ Create file: `frontend/project-tracker/src/styles/utilities.css`
   overflow: hidden;
 }
 
-/* Background Utilities */
-.bg-gradient-primary {
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
-}
-
-.bg-gradient-success {
-  background: linear-gradient(135deg, var(--color-success) 0%, #145c3a 100%);
-}
-
-.bg-glass {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-/* Animation Utilities */
-.animate-fade-in {
-  animation: fadeIn 0.3s ease-in-out;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-slide-in-left {
-  animation: slideInLeft 0.3s ease-in-out;
-}
-
-@keyframes slideInLeft {
-  from {
-    opacity: 0;
-    transform: translateX(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-/* Hover Effects */
+// Hover effects
 .hover-lift {
-  transition: var(--transition-fast);
-}
+  transition: transform 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 
-.hover-lift:hover {
-  transform: translateY(-5px);
-  box-shadow: var(--shadow-lg);
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: $box-shadow-lg;
+  }
 }
 
 .hover-scale {
-  transition: var(--transition-fast);
+  transition: transform 0.15s ease-in-out;
+
+  &:hover {
+    transform: scale(1.02);
+  }
 }
 
-.hover-scale:hover {
-  transform: scale(1.05);
-}
-
-/* Focus Visible (Accessibility) */
-.focus-ring:focus-visible {
-  outline: 2px solid var(--color-primary);
-  outline-offset: 2px;
-  border-radius: var(--border-radius-sm);
-}
-
-/* Skeleton Loader */
+// Loading skeleton
 .skeleton {
   background: linear-gradient(
     90deg,
-    var(--bg-surface) 25%,
-    var(--border-color) 50%,
-    var(--bg-surface) 75%
+    var(--bs-gray-200) 25%,
+    var(--bs-gray-300) 50%,
+    var(--bs-gray-200) 75%
   );
   background-size: 200% 100%;
   animation: loading 1.5s infinite;
-  border-radius: var(--border-radius);
+  border-radius: $border-radius;
 }
 
 @keyframes loading {
-  0% {
-    background-position: 200% 0;
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+// ====================================
+// 6. Dark Mode Customizations
+// ====================================
+// Bootstrap handles most dark mode via data-bs-theme="dark"
+// Add only specific customizations here if needed
+
+[data-bs-theme="dark"] {
+  .skip-link {
+    background: var(--bs-primary);
   }
-  100% {
-    background-position: -200% 0;
+
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      var(--bs-gray-800) 25%,
+      var(--bs-gray-700) 50%,
+      var(--bs-gray-800) 75%
+    );
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
   }
 }
 
-/* Responsive Utilities */
-@media (max-width: 575.98px) {
-  .hide-on-mobile {
-    display: none !important;
-  }
-}
-
-@media (min-width: 576px) and (max-width: 991.98px) {
-  .hide-on-tablet {
-    display: none !important;
-  }
-}
-
-@media (min-width: 992px) {
-  .hide-on-desktop {
-    display: none !important;
-  }
-}
-
-/* Print Utilities */
+// ====================================
+// 7. Print Styles
+// ====================================
 @media print {
   .no-print {
     display: none !important;
@@ -379,68 +422,10 @@ Create file: `frontend/project-tracker/src/styles/utilities.css`
     color: #000;
     background: #fff;
   }
-}
-```
 
----
-
-## 📚 Step 3: Update Global Styles
-
-Update file: `frontend/project-tracker/src/styles.css`
-
-```css
-/* Import Bootstrap */
-@import 'bootstrap/dist/css/bootstrap.min.css';
-@import '@fortawesome/fontawesome-free/css/all.min.css';
-
-/* Import Custom Styles */
-@import './styles/theme.css';
-@import './styles/utilities.css';
-
-/* Global Styles */
-* {
-  box-sizing: border-box;
-}
-
-html,
-body {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-}
-
-/* Focus visible for keyboard navigation */
-*:focus-visible {
-  outline: 2px solid var(--color-primary);
-  outline-offset: 2px;
-}
-
-/* Skip to content link (accessibility) */
-.skip-link {
-  position: absolute;
-  top: -40px;
-  left: 0;
-  background: var(--color-primary);
-  color: white;
-  padding: 8px 16px;
-  text-decoration: none;
-  border-radius: 0 0 4px 0;
-  z-index: 10000;
-}
-
-.skip-link:focus {
-  top: 0;
-}
-
-/* Smooth scroll */
-html {
-  scroll-behavior: smooth;
-}
-
-/* Selection color */
-::selection {
-  background-color: rgba(var(--color-primary-rgb), 0.3);
-  color: var(--text-primary);
+  a[href]:after {
+    content: " (" attr(href) ")";
+  }
 }
 ```
 
@@ -448,18 +433,21 @@ html {
 
 ## 🌓 Step 4: Dark Mode Service
 
+Bootstrap 5.3+ has built-in dark mode support via the `data-bs-theme` attribute. Our ThemeService will toggle this attribute.
+
 Create file: `frontend/project-tracker/src/app/shared/services/theme.service.ts`
 
 ```typescript
 import { Injectable, signal, effect } from '@angular/core';
 
 /// <summary>
-/// Theme types supported
+/// Theme types supported by Bootstrap 5.3+
 /// </summary>
 export type Theme = 'light' | 'dark' | 'auto';
 
 /// <summary>
-/// Service for managing application theme (light/dark mode)
+/// Service for managing application theme using Bootstrap's native dark mode
+/// Sets data-bs-theme attribute on <html> element
 /// </summary>
 @Injectable({
   providedIn: 'root'
@@ -486,7 +474,7 @@ export class ThemeService {
   }
 
   /// <summary>
-  /// Set theme
+  /// Set theme and persist to localStorage
   /// </summary>
   setTheme(theme: Theme): void {
     this.theme.set(theme);
@@ -503,7 +491,7 @@ export class ThemeService {
   }
 
   /// <summary>
-  /// Get initial theme from localStorage or system preference
+  /// Get initial theme from localStorage or default to auto
   /// </summary>
   private getInitialTheme(): Theme {
     const stored = localStorage.getItem(this.THEME_KEY) as Theme;
@@ -514,17 +502,19 @@ export class ThemeService {
   }
 
   /// <summary>
-  /// Apply theme to document
+  /// Apply theme to document using Bootstrap's data-bs-theme attribute
   /// </summary>
   private applyTheme(theme: Theme): void {
     let actualTheme: 'light' | 'dark';
 
     if (theme === 'auto') {
+      // Use system preference
       actualTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     } else {
       actualTheme = theme;
     }
 
+    // Set Bootstrap's data-bs-theme attribute
     document.documentElement.setAttribute('data-bs-theme', actualTheme);
   }
 
@@ -534,7 +524,7 @@ export class ThemeService {
   private watchSystemTheme(): void {
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
-    mediaQuery.addEventListener('change', (e) => {
+    mediaQuery.addEventListener('change', () => {
       if (this.theme() === 'auto') {
         this.applyTheme('auto');
       }
@@ -557,6 +547,7 @@ import { TranslatePipe } from '../../pipes/translate.pipe';
 
 /// <summary>
 /// Theme toggle button component
+/// Allows users to switch between light, dark, and auto themes
 /// </summary>
 @Component({
   selector: 'app-theme-toggle',
@@ -579,7 +570,7 @@ export class ThemeToggleComponent {
   }
 
   /// <summary>
-  /// Get icon for theme
+  /// Get Font Awesome icon for theme
   /// </summary>
   getThemeIcon(theme: Theme): string {
     const icons: Record<Theme, string> = {
@@ -591,7 +582,7 @@ export class ThemeToggleComponent {
   }
 
   /// <summary>
-  /// Get label for theme
+  /// Get translation key for theme label
   /// </summary>
   getThemeLabel(theme: Theme): string {
     return `theme.${theme}`;
@@ -611,6 +602,7 @@ Create file: `frontend/project-tracker/src/app/shared/components/theme-toggle/th
       [class.btn-outline-secondary]="currentTheme() !== theme"
       (click)="setTheme(theme)"
       [attr.aria-label]="getThemeLabel(theme) | translate"
+      [attr.aria-pressed]="currentTheme() === theme"
       [title]="getThemeLabel(theme) | translate">
       <i [class]="getThemeIcon(theme)"></i>
       <span class="d-none d-md-inline ms-2">
@@ -625,15 +617,15 @@ Create file: `frontend/project-tracker/src/app/shared/components/theme-toggle/th
 
 ```css
 .btn-group {
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--bs-box-shadow-sm);
 }
 
 .btn {
-  transition: var(--transition-fast);
+  transition: all 0.15s ease-in-out;
 }
 
-.btn:focus {
-  box-shadow: 0 0 0 0.25rem rgba(var(--color-primary-rgb), 0.25);
+.btn:focus-visible {
+  box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25);
 }
 ```
 
@@ -648,7 +640,8 @@ import { Component, input, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 /// <summary>
-/// Reusable card component with header, body, and footer slots
+/// Reusable card component wrapper
+/// Uses Bootstrap's card classes with customizable slots
 /// </summary>
 @Component({
   selector: 'app-card',
@@ -662,7 +655,6 @@ export class CardComponent {
   readonly subtitle = input<string>();
   readonly headerClass = input<string>('');
   readonly bodyClass = input<string>('');
-  readonly footerClass = input<string>('');
   readonly shadow = input<boolean>(true);
   readonly border = input<boolean>(true);
 }
@@ -681,7 +673,7 @@ Create file: `frontend/project-tracker/src/app/shared/components/card/card.compo
     <div class="card-header" [class]="headerClass()">
       <h5 class="card-title mb-0">{{ title() }}</h5>
       @if (subtitle()) {
-        <small class="text-muted">{{ subtitle() }}</small>
+        <small class="text-body-secondary">{{ subtitle() }}</small>
       }
       <ng-content select="[cardHeaderActions]"></ng-content>
     </div>
@@ -701,28 +693,12 @@ Create file: `frontend/project-tracker/src/app/shared/components/card/card.compo
 
 ```css
 .card {
-  border-radius: var(--border-radius);
-  transition: var(--transition-base);
+  transition: transform 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 
 .card:hover {
   transform: translateY(-2px);
-  box-shadow: var(--shadow-md) !important;
-}
-
-.card-header {
-  background-color: var(--bg-surface);
-  border-bottom: 1px solid var(--border-color);
-  padding: 1rem 1.25rem;
-}
-
-.card-title {
-  font-weight: var(--font-weight-bold);
-  color: var(--text-primary);
-}
-
-.card-body {
-  padding: 1.25rem;
+  box-shadow: var(--bs-box-shadow) !important;
 }
 ```
 
@@ -749,6 +725,7 @@ import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 
 /// <summary>
 /// Main navigation bar component
+/// Responsive navbar with theme toggle and language selector
 /// </summary>
 @Component({
   selector: 'app-navbar',
@@ -791,7 +768,7 @@ export class NavbarComponent {
 Create file: `frontend/project-tracker/src/app/layouts/navbar/navbar.component.html`
 
 ```html
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm sticky-top">
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
   <div class="container-fluid">
     <!-- Brand -->
     <a class="navbar-brand d-flex align-items-center" routerLink="/">
@@ -834,7 +811,7 @@ Create file: `frontend/project-tracker/src/app/layouts/navbar/navbar.component.h
           <!-- Language Selector -->
           <app-language-selector></app-language-selector>
 
-          <!-- User Info -->
+          <!-- User Dropdown -->
           <div class="dropdown">
             <button
               class="btn btn-outline-light btn-sm dropdown-toggle"
@@ -847,7 +824,7 @@ Create file: `frontend/project-tracker/src/app/layouts/navbar/navbar.component.h
             <ul class="dropdown-menu dropdown-menu-end">
               <li>
                 <span class="dropdown-item-text">
-                  <small class="text-muted">{{ 'nav.signedInAs' | translate }}</small><br>
+                  <small class="text-body-secondary">{{ 'nav.signedInAs' | translate }}</small><br>
                   <strong>{{ currentUser()?.username }}</strong>
                 </span>
               </li>
@@ -863,7 +840,7 @@ Create file: `frontend/project-tracker/src/app/layouts/navbar/navbar.component.h
         </div>
       } @else {
         <!-- Guest Menu -->
-        <ul class="navbar-nav ms-auto">
+        <ul class="navbar-nav ms-auto gap-2">
           <li class="nav-item">
             <a class="nav-link" routerLink="/auth/login" (click)="closeMenu()">
               <i class="fas fa-sign-in-alt me-1"></i>
@@ -871,7 +848,7 @@ Create file: `frontend/project-tracker/src/app/layouts/navbar/navbar.component.h
             </a>
           </li>
           <li class="nav-item">
-            <a class="btn btn-outline-light btn-sm ms-2" routerLink="/auth/register" (click)="closeMenu()">
+            <a class="btn btn-outline-light btn-sm" routerLink="/auth/register" (click)="closeMenu()">
               <i class="fas fa-user-plus me-1"></i>
               {{ 'nav.register' | translate }}
             </a>
@@ -887,12 +864,12 @@ Create file: `frontend/project-tracker/src/app/layouts/navbar/navbar.component.c
 
 ```css
 .navbar {
-  transition: var(--transition-base);
+  box-shadow: var(--bs-box-shadow-sm);
 }
 
 .navbar-brand {
   font-size: 1.25rem;
-  transition: var(--transition-fast);
+  transition: transform 0.15s ease-in-out;
 }
 
 .navbar-brand:hover {
@@ -900,8 +877,8 @@ Create file: `frontend/project-tracker/src/app/layouts/navbar/navbar.component.c
 }
 
 .nav-link {
-  transition: var(--transition-fast);
-  border-radius: var(--border-radius-sm);
+  transition: all 0.15s ease-in-out;
+  border-radius: var(--bs-border-radius-sm);
   margin: 0 0.25rem;
 }
 
@@ -911,29 +888,17 @@ Create file: `frontend/project-tracker/src/app/layouts/navbar/navbar.component.c
 
 .nav-link.active {
   background-color: rgba(255, 255, 255, 0.2);
-  font-weight: var(--font-weight-medium);
+  font-weight: 500;
 }
 
 .dropdown-menu {
-  border-radius: var(--border-radius);
-  box-shadow: var(--shadow-lg);
   border: none;
+  box-shadow: var(--bs-box-shadow-lg);
   margin-top: 0.5rem;
 }
 
 .dropdown-item {
-  transition: var(--transition-fast);
-  border-radius: var(--border-radius-sm);
-  margin: 0.25rem 0.5rem;
-}
-
-.dropdown-item:hover {
-  background-color: var(--color-primary);
-  color: var(--color-white);
-}
-
-.dropdown-divider {
-  margin: 0.5rem 0;
+  transition: all 0.15s ease-in-out;
 }
 
 @media (max-width: 991.98px) {
@@ -941,22 +906,18 @@ Create file: `frontend/project-tracker/src/app/layouts/navbar/navbar.component.c
     margin-top: 1rem;
   }
 
-  .navbar-nav {
-    gap: 0.5rem;
-  }
-
   .d-flex.gap-3 {
     margin-top: 1rem;
-    flex-wrap: wrap;
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 1rem !important;
   }
 }
 ```
 
 ---
 
-## 🔄 Step 8: Update App Component to Use New Navbar
-
-Now let's update your main app component to use the new NavbarComponent.
+## 🔄 Step 8: Update App Component
 
 ### Update file: `frontend/project-tracker/src/app/app.ts`
 
@@ -1021,6 +982,7 @@ import { Directive, ElementRef, OnInit, OnDestroy, inject } from '@angular/core'
 
 /// <summary>
 /// Directive to trap focus within an element (useful for modals)
+/// Implements WCAG 2.1 keyboard navigation guidelines
 /// </summary>
 @Directive({
   selector: '[appFocusTrap]',
@@ -1030,25 +992,30 @@ export class FocusTrapDirective implements OnInit, OnDestroy {
   private readonly el = inject(ElementRef);
   private firstFocusableElement: HTMLElement | null = null;
   private lastFocusableElement: HTMLElement | null = null;
+  private boundHandleKeyDown: (event: KeyboardEvent) => void;
+
+  constructor() {
+    this.boundHandleKeyDown = this.handleKeyDown.bind(this);
+  }
 
   ngOnInit(): void {
     this.setupFocusTrap();
   }
 
   ngOnDestroy(): void {
-    // Cleanup if needed
+    this.el.nativeElement.removeEventListener('keydown', this.boundHandleKeyDown);
   }
 
   private setupFocusTrap(): void {
     const focusableElements = this.el.nativeElement.querySelectorAll(
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
     );
 
     if (focusableElements.length > 0) {
       this.firstFocusableElement = focusableElements[0] as HTMLElement;
       this.lastFocusableElement = focusableElements[focusableElements.length - 1] as HTMLElement;
 
-      this.el.nativeElement.addEventListener('keydown', this.handleKeyDown.bind(this));
+      this.el.nativeElement.addEventListener('keydown', this.boundHandleKeyDown);
 
       // Focus first element
       setTimeout(() => this.firstFocusableElement?.focus(), 100);
@@ -1082,6 +1049,7 @@ import { Directive, HostListener, ElementRef, inject } from '@angular/core';
 
 /// <summary>
 /// Directive for skip-to-content links (accessibility)
+/// Allows keyboard users to bypass navigation
 /// </summary>
 @Directive({
   selector: '[appSkipLink]',
@@ -1097,12 +1065,41 @@ export class SkipLinkDirective {
     if (targetId) {
       const target = document.getElementById(targetId);
       if (target) {
+        target.setAttribute('tabindex', '-1');
         target.focus();
         target.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     }
   }
 }
+```
+
+### Update app.html to use skip link directive
+
+Update the skip link in `app.html`:
+
+```html
+<a href="#main-content" class="skip-link" appSkipLink>
+  {{ 'common.skipToContent' | translate }}
+</a>
+```
+
+And update `app.ts` to import the directive:
+
+```typescript
+import { SkipLinkDirective } from './shared/directives/skip-link.directive';
+
+@Component({
+  selector: 'app-root',
+  imports: [
+    CommonModule,
+    RouterOutlet,
+    NavbarComponent,
+    ToastContainerComponent,
+    SkipLinkDirective  // Add this
+  ],
+  // ...
+})
 ```
 
 ---
@@ -1112,6 +1109,8 @@ export class SkipLinkDirective {
 Add these translation keys to your translation files:
 
 ### Update: `frontend/project-tracker/src/assets/i18n/en.json`
+
+Add these keys (merge with existing JSON):
 
 ```json
 {
@@ -1134,6 +1133,8 @@ Add these translation keys to your translation files:
 ```
 
 ### Update: `frontend/project-tracker/src/assets/i18n/it.json`
+
+Add these keys (merge with existing JSON):
 
 ```json
 {
@@ -1159,50 +1160,67 @@ Add these translation keys to your translation files:
 
 ## ✅ Testing Your Implementation
 
-### Visual Tests:
+### 1. Build and Serve
 
-1. **Start your application:**
-   ```bash
-   cd frontend/project-tracker
-   npm start
-   ```
+```bash
+cd frontend/project-tracker
+npm start
+```
 
-2. **Test Dark Mode:**
-   - Click the theme toggle buttons in the navbar
-   - Switch between Light, Dark, and Auto
-   - Reload the page - theme should persist
-   - Change system theme (OS settings) with Auto selected
+The SCSS will be compiled automatically by Angular.
 
-3. **Test Responsive Design:**
-   - Resize browser window to mobile size
-   - Verify navbar collapses correctly
-   - Test theme toggle works on mobile
+### 2. Visual Tests
 
-4. **Test Navigation:**
-   - Click all navigation links
-   - Verify active link highlighting
-   - Test logout functionality
+**Test Dark Mode:**
+- Click the theme toggle buttons in the navbar
+- Switch between Light, Dark, and Auto
+- Reload the page - theme should persist
+- Change system theme (OS settings) with Auto selected
+- Verify Bootstrap components change color appropriately
 
-### Accessibility Tests:
+**Test Responsive Design:**
+- Resize browser window to mobile size (< 992px)
+- Verify navbar collapses correctly
+- Test theme toggle works on mobile
+- Check all dropdowns work properly
 
-5. **Keyboard Navigation:**
-   - Press Tab key repeatedly
-   - Verify focus moves through all interactive elements
-   - Check visible focus indicators
-   - Press Tab on page load to test skip-to-content link
+**Test Navigation:**
+- Click all navigation links
+- Verify active link highlighting
+- Test logout functionality
+- Verify all Bootstrap components use theme colors
 
-6. **Screen Reader (Optional):**
-   - Use NVDA or JAWS (Windows) or VoiceOver (Mac)
-   - Verify ARIA labels are announced
-   - Test theme toggle button descriptions
+### 3. Accessibility Tests
 
-### Functional Tests:
+**Keyboard Navigation:**
+- Press Tab key repeatedly
+- Verify focus moves through all interactive elements
+- Check visible focus indicators (should have outline)
+- Press Tab on page load to test skip-to-content link
+- Verify skip link appears and works
 
-7. **Verify Existing Features Still Work:**
-   - Toast notifications (from Module 11)
-   - Confirm dialogs (from Module 11)
-   - Project list and pagination (from Module 10)
-   - Language switching (from Module 7)
+**Screen Reader (Optional):**
+- Use NVDA or JAWS (Windows) or VoiceOver (Mac)
+- Verify ARIA labels are announced
+- Test theme toggle button descriptions
+- Verify landmark regions (nav, main)
+
+### 4. Functional Tests
+
+**Verify Existing Features Still Work:**
+- Toast notifications (from Module 11)
+- Confirm dialogs (from Module 11)
+- Project list and pagination (from Module 10)
+- Language switching (from Module 7)
+- All Bootstrap components (cards, buttons, forms)
+
+### 5. Bootstrap Variable Verification
+
+Open browser DevTools and check computed styles:
+- Verify custom colors are applied
+- Check spacing values match your SCSS variables
+- Confirm border radius is using your values
+- Verify dark mode uses Bootstrap's CSS variables
 
 ---
 
@@ -1210,14 +1228,13 @@ Add these translation keys to your translation files:
 
 ### **What We Built:**
 
-1. ✅ **Custom Theme System**
-   - CSS variables for colors, spacing, typography
-   - Dark mode support with data-bs-theme attribute
-   - Smooth transitions between themes
-   - Custom scrollbar styling
+1. ✅ **Bootstrap SCSS Customization**
+   - Custom Bootstrap variables in `_custom-bootstrap.scss`
+   - Proper Bootstrap SCSS import workflow
+   - No custom theme files - using Bootstrap's native system
 
-2. ✅ **Dark Mode Service**
-   - ThemeService with signal-based state
+2. ✅ **Dark Mode with Bootstrap 5.3**
+   - ThemeService using `data-bs-theme` attribute
    - localStorage persistence
    - Auto-detect system preference
    - Watch for system theme changes
@@ -1232,64 +1249,94 @@ Add these translation keys to your translation files:
    - Mobile-friendly collapsible menu
 
 4. ✅ **Reusable Components**
-   - CardComponent with slots
+   - CardComponent using Bootstrap classes
    - ThemeToggleComponent
-   - Hover effects and animations
 
 5. ✅ **Accessibility Features**
    - Focus trap directive for modals
-   - Skip-to-content link
+   - Skip-to-content link with directive
    - Keyboard navigation support
    - ARIA labels throughout
-   - Focus-visible styles
+   - Bootstrap's built-in accessibility
 
-6. ✅ **Custom Utilities**
-   - Text ellipsis and line clamp
-   - Animation classes (fade-in, slide-in)
-   - Hover effects (lift, scale)
-   - Skeleton loaders
-   - Responsive helpers
-   - Print styles
+6. ✅ **Proper SCSS Structure**
+   - Single `styles.scss` file
+   - Bootstrap variable overrides
+   - Custom utilities only when needed
+   - No duplicate CSS files
 
 ### **Best Practices Applied:**
-- ✅ CSS custom properties for theming
-- ✅ Bootstrap 5 utilities extended
+
+- ✅ Using Bootstrap SCSS source (not compiled CSS)
+- ✅ Customizing via SCSS variables (Bootstrap's recommended way)
+- ✅ Using Bootstrap's native dark mode system
 - ✅ Mobile-first responsive design
 - ✅ Accessibility (WCAG 2.1 Level AA)
-- ✅ Signal-based theme management
+- ✅ Signal-based state management
 - ✅ System preference detection
-- ✅ Smooth transitions and animations
-- ✅ Print-friendly styles
-- ✅ Keyboard navigation support
+- ✅ Semantic HTML and Bootstrap classes
 
-### **Production Tips:**
-- Use PurgeCSS to remove unused Bootstrap classes
-- Lazy load Font Awesome icons
-- Test with screen readers (NVDA, JAWS)
-- Verify color contrast meets WCAG standards
-- Add prefers-reduced-motion media query for accessibility
-- Consider CDN for Bootstrap in production
+### **Why This Approach is Better:**
+
+1. **Maintainability**: All Bootstrap customization in one place
+2. **Upgradability**: Easy to update Bootstrap versions
+3. **Consistency**: Using Bootstrap's design system properly
+4. **Performance**: Single compiled CSS file
+5. **No Conflicts**: Bootstrap handles specificity and cascading
+6. **Dark Mode**: Bootstrap's native implementation is robust
 
 ---
 
 ## 🐛 Troubleshooting
 
+### Issue: SCSS compilation errors
+
+**Solution**: Ensure Bootstrap is installed and check import paths:
+```bash
+npm list bootstrap
+npm install --save bootstrap@latest
+```
+
 ### Issue: Theme doesn't persist on reload
-**Solution**: Check browser localStorage - it should contain `app-theme` key
+
+**Solution**: Check browser localStorage - it should contain `app-theme` key. Check browser console for errors.
 
 ### Issue: Dropdown menus don't work
-**Solution**: Ensure Bootstrap JavaScript is loaded. Check browser console for errors.
+
+**Solution**: Verify Bootstrap JavaScript is loaded in `angular.json`:
+```json
+"scripts": [
+  "node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"
+]
+```
 
 ### Issue: Dark mode colors look wrong
-**Solution**: Verify `data-bs-theme` attribute is set on `<html>` element using browser DevTools
 
-### Issue: Skip-to-content link doesn't work
-**Solution**: Verify `#main-content` ID exists on your main element
+**Solution**:
+- Verify `data-bs-theme` attribute is set on `<html>` element using browser DevTools
+- Check that you're using Bootstrap CSS variables (`var(--bs-primary)`) not hardcoded colors
+
+### Issue: Custom variables not applying
+
+**Solution**:
+- Ensure `_custom-bootstrap.scss` is imported BEFORE Bootstrap
+- Clear browser cache and rebuild: `npm start`
+- Check SCSS syntax for errors
 
 ### Issue: AuthService methods not found
-**Solution**: Check your AuthService implementation. You may need to adjust:
+
+**Solution**: Check your AuthService implementation. Adjust the navbar component:
 - Change `isAuthenticated` to match your actual signal/method name
 - Change `currentUser` to match your actual signal/method name
+
+---
+
+## 📚 Additional Resources
+
+- [Bootstrap 5.3 Documentation](https://getbootstrap.com/docs/5.3/)
+- [Bootstrap SCSS Customization](https://getbootstrap.com/docs/5.3/customize/sass/)
+- [Bootstrap Color Modes (Dark Mode)](https://getbootstrap.com/docs/5.3/customize/color-modes/)
+- [WCAG 2.1 Guidelines](https://www.w3.org/WAI/WCAG21/quickref/)
 
 ---
 
