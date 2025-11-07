@@ -215,63 +215,22 @@ public static WebApplication UseApplicationMiddleware(this WebApplication app)
 }
 ```
 
-### 2.3 Create Cache Attribute
+### 2.3 Apply Response Caching to Controllers
 
-Create file: `backend/ProjectTracker.API/Attributes/CacheAttribute.cs`
-
-```csharp
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Filters;
-
-namespace ProjectTracker.API.Attributes;
-
-/// <summary>
-/// Attribute to enable response caching on controller actions
-/// Use only on GET endpoints that return cacheable data
-/// </summary>
-[AttributeUsage(AttributeTargets.Method)]
-public class CacheAttribute : ActionFilterAttribute
-{
-    private readonly int _durationInSeconds;
-    private readonly bool _varyByQueryKeys;
-
-    public CacheAttribute(int durationInSeconds = 60, bool varyByQueryKeys = false)
-    {
-        _durationInSeconds = durationInSeconds;
-        _varyByQueryKeys = varyByQueryKeys;
-    }
-
-    public override void OnActionExecuted(ActionExecutedContext context)
-    {
-        if (context.HttpContext.Request.Method == HttpMethods.Get)
-        {
-            context.HttpContext.Response.Headers["Cache-Control"] =
-                $"public, max-age={_durationInSeconds}";
-
-            if (_varyByQueryKeys)
-            {
-                // Vary by all query parameters
-                context.HttpContext.Response.Headers["Vary"] = "Accept";
-            }
-        }
-
-        base.OnActionExecuted(context);
-    }
-}
-```
-
-### 2.4 Apply Caching to Controller
+ASP.NET Core provides the built-in `[ResponseCache]` attribute. Use it instead of creating custom caching logic.
 
 **Example usage in `backend/ProjectTracker.API/Controllers/TranslationsController.cs`:**
 
 ```csharp
+using Microsoft.AspNetCore.Mvc;
+
 /// <summary>
 /// Get translations for a specific culture
 /// Cached for 5 minutes since translations rarely change
 /// </summary>
 [HttpGet("{culture}")]
 [AllowAnonymous]
-[Cache(300)] // Cache for 5 minutes
+[ResponseCache(Duration = 300)] // Cache for 5 minutes (300 seconds)
 public async Task<ActionResult<IEnumerable<TranslationDto>>> GetTranslations(string culture)
 {
     _logger.LogInformation("Getting translations for culture: {Culture}", culture);
@@ -280,6 +239,32 @@ public async Task<ActionResult<IEnumerable<TranslationDto>>> GetTranslations(str
     return Ok(translations);
 }
 ```
+
+**Common ResponseCache configurations:**
+
+```csharp
+// Cache for 1 minute
+[ResponseCache(Duration = 60)]
+
+// Cache for 5 minutes, vary by culture parameter
+[ResponseCache(Duration = 300, VaryByQueryKeys = new[] { "culture" })]
+
+// Cache for 10 minutes, vary by Authorization header (user-specific)
+[ResponseCache(Duration = 600, VaryByHeader = "Authorization")]
+
+// Cache on client only
+[ResponseCache(Duration = 300, Location = ResponseCacheLocation.Client)]
+
+// Disable caching
+[ResponseCache(NoStore = true, Duration = 0)]
+```
+
+**Best practices:**
+- Only cache GET endpoints
+- Don't cache authenticated user-specific data (unless using VaryByHeader)
+- Use shorter durations for frequently changing data
+- Use longer durations for static/reference data (translations, lookups)
+- Consider cache invalidation strategy
 
 ---
 
@@ -1144,7 +1129,7 @@ throw new Error('Test error');
 1. ✅ Enhanced Serilog with enrichment (environment, thread, machine)
 2. ✅ Request context logging middleware
 3. ✅ Response caching configuration and middleware
-4. ✅ Cache attribute for controller actions
+4. ✅ Built-in [ResponseCache] attribute for controller actions
 5. ✅ Memory cache for application-level caching
 
 **Frontend:**
