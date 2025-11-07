@@ -593,39 +593,59 @@ export class ThemeToggleComponent {
 Create file: `frontend/project-tracker/src/app/shared/components/theme-toggle/theme-toggle.component.html`
 
 ```html
-<div class="btn-group" role="group" aria-label="Theme selector">
-  @for (theme of themeOptions; track theme) {
-    <button
-      type="button"
-      class="btn btn-sm"
-      [class.btn-primary]="currentTheme() === theme"
-      [class.btn-outline-secondary]="currentTheme() !== theme"
-      (click)="setTheme(theme)"
-      [attr.aria-label]="getThemeLabel(theme) | translate"
-      [attr.aria-pressed]="currentTheme() === theme"
-      [title]="getThemeLabel(theme) | translate">
-      <i [class]="getThemeIcon(theme)"></i>
-      <span class="d-none d-md-inline ms-2">
-        {{ getThemeLabel(theme) | translate }}
-      </span>
-    </button>
-  }
+<div class="dropdown">
+  <button
+    class="btn btn-outline-light btn-sm dropdown-toggle"
+    type="button"
+    data-bs-toggle="dropdown"
+    aria-expanded="false"
+    [attr.aria-label]="'settings.theme' | translate">
+    <i [class]="getThemeIcon(currentTheme())"></i>
+    <span class="d-none d-lg-inline ms-2">{{ 'settings.theme' | translate }}</span>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    @for (theme of themeOptions; track theme) {
+      <li>
+        <button
+          class="dropdown-item"
+          [class.active]="currentTheme() === theme"
+          (click)="setTheme(theme)"
+          type="button">
+          <i [class]="getThemeIcon(theme)" class="me-2"></i>
+          {{ getThemeLabel(theme) | translate }}
+        </button>
+      </li>
+    }
+  </ul>
 </div>
 ```
 
 Create file: `frontend/project-tracker/src/app/shared/components/theme-toggle/theme-toggle.component.css`
 
 ```css
-.btn-group {
-  box-shadow: var(--bs-box-shadow-sm);
+.dropdown-menu {
+  min-width: 10rem;
 }
 
-.btn {
+.dropdown-item {
   transition: all 0.15s ease-in-out;
+  border-radius: var(--bs-border-radius-sm);
+  margin: 0.25rem 0.5rem;
 }
 
-.btn:focus-visible {
-  box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25);
+.dropdown-item:hover {
+  background-color: var(--bs-secondary-bg);
+  color: var(--bs-body-color);
+}
+
+.dropdown-item.active {
+  background-color: var(--bs-primary);
+  color: white;
+}
+
+.dropdown-item.active:hover {
+  background-color: var(--bs-primary);
+  color: white;
 }
 ```
 
@@ -1203,24 +1223,94 @@ Replace the entire file content with:
 
 ### 10.3 Update Language Selector Component
 
+The language selector needs better visibility in the navbar and improved dropdown styling.
+
+**Update file**: `frontend/project-tracker/src/app/shared/components/language-selector/language-selector.component.html`
+
+Find the button element (around line 3-4) and update the classes:
+
+```html
+<!-- BEFORE -->
+<button
+  class="btn btn-outline-secondary dropdown-toggle"
+
+<!-- AFTER -->
+<button
+  class="btn btn-outline-light btn-sm dropdown-toggle"
+```
+
+Also update the button content to hide text on smaller screens (around line 13-14):
+
+```html
+<!-- BEFORE -->
+{{ currentCulture()?.name || 'Language' }}
+
+<!-- AFTER -->
+<span class="d-none d-lg-inline">{{ currentCulture()?.name || 'Language' }}</span>
+```
+
 **Update file**: `frontend/project-tracker/src/app/shared/components/language-selector/language-selector.component.css`
 
-Find and update the hover/focus styles:
+Update the entire file to improve dropdown styling:
 
 ```css
-/* BEFORE */
-.dropdown-item:hover,
-.dropdown-item:focus {
-  background-color: var(--bs-light);
+.language-selector {
+  display: inline-block;
 }
 
-/* AFTER */
-.dropdown-item:hover,
+.dropdown-menu {
+  min-width: 10rem;
+  border: none;
+  box-shadow: var(--bs-box-shadow-lg);
+  margin-top: 0.5rem;
+}
+
+.dropdown-item {
+  border: none;
+  background: none;
+  padding: 0.5rem 1rem;
+  text-align: left;
+  width: 100%;
+  transition: all 0.15s ease-in-out;
+  border-radius: var(--bs-border-radius-sm);
+  margin: 0.25rem 0.5rem;
+}
+
+.dropdown-item.active {
+  background-color: var(--bs-primary);
+  color: white;
+}
+
+.dropdown-item.active:hover {
+  background-color: var(--bs-primary);
+  color: white;
+}
+
+.dropdown-item:hover {
+  background-color: var(--bs-secondary-bg);
+  color: var(--bs-body-color);
+  cursor: pointer;
+}
+
 .dropdown-item:focus {
+  outline: none;
   background-color: var(--bs-secondary-bg);
   color: var(--bs-body-color);
 }
+
+.spinner-border-sm {
+  width: 1rem;
+  height: 1rem;
+  border-width: 0.15em;
+}
 ```
+
+**Key Changes**:
+- ✅ Changed `btn-outline-secondary` to `btn-outline-light` for navbar visibility
+- ✅ Added `btn-sm` for consistent button sizing
+- ✅ Hide text on small screens to show only the globe icon
+- ✅ Enhanced dropdown menu styling
+- ✅ Uses theme-aware Bootstrap variables
 
 ### 10.4 Update Login Component (if exists)
 
@@ -1240,36 +1330,7 @@ Find and change:
 
 The background will now use the theme's default background color.
 
-### 10.5 Theme Toggle Button Visibility
-
-Update the theme toggle to use outline buttons for better visibility in the navbar.
-
-**Update file**: `frontend/project-tracker/src/app/shared/components/theme-toggle/theme-toggle.component.html`
-
-```html
-<div class="btn-group" role="group" aria-label="Theme selector">
-  @for (theme of themeOptions; track theme) {
-    <button
-      type="button"
-      class="btn btn-sm"
-      [class.btn-light]="currentTheme() === theme"
-      [class.btn-outline-light]="currentTheme() !== theme"
-      (click)="setTheme(theme)"
-      [attr.aria-label]="getThemeLabel(theme) | translate"
-      [attr.aria-pressed]="currentTheme() === theme"
-      [title]="getThemeLabel(theme) | translate">
-      <i [class]="getThemeIcon(theme)"></i>
-      <span class="d-none d-md-inline ms-2">
-        {{ getThemeLabel(theme) | translate }}
-      </span>
-    </button>
-  }
-</div>
-```
-
-**Changes**:
-- ✅ Active button: `btn-light` (stands out in dark navbar)
-- ✅ Inactive buttons: `btn-outline-light` (visible but subtle)
+**Note**: The theme toggle component already uses the proper dropdown style (created in Step 5), so no additional changes are needed. It uses `btn-outline-light` which is visible in the navbar.
 
 ---
 
