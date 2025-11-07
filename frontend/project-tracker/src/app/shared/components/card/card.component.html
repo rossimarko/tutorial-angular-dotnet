@@ -1,0 +1,24 @@
+<div
+  class="card"
+  [class.shadow-sm]="shadow()"
+  [class.border-0]="!border()">
+
+  <!-- Header (optional) -->
+  @if (title()) {
+    <div class="card-header" [class]="headerClass()">
+      <h5 class="card-title mb-0">{{ title() }}</h5>
+      @if (subtitle()) {
+        <small class="text-body-secondary">{{ subtitle() }}</small>
+      }
+      <ng-content select="[cardHeaderActions]"></ng-content>
+    </div>
+  }
+
+  <!-- Body -->
+  <div class="card-body" [class]="bodyClass()">
+    <ng-content></ng-content>
+  </div>
+
+  <!-- Footer (optional) -->
+  <ng-content select="[cardFooter]"></ng-content>
+</div>

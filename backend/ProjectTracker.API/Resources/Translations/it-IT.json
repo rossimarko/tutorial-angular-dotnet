@@ -116,7 +116,8 @@
     "priority_2": "Bassa-Media",
     "priority_3": "Media",
     "priority_4": "Media-Alta",
-    "priority_5": "Alta"
+    "priority_5": "Alta",
+    "skipToContent": "Vai al contenuto principale"
   },
   "navigation": {
     "home": "Home",
@@ -133,5 +134,20 @@
     "selectLanguage": "Seleziona Lingua",
     "theme": "Tema",
     "notifications": "Notifiche"
+  },
+  "theme": {
+    "light": "Chiaro",
+    "dark": "Scuro",
+    "auto": "Automatico"
+  },
+  "nav": {
+    "projects": "Progetti",
+    "signedInAs": "Connesso come",
+    "logout": "Esci",
+    "login": "Accedi",
+    "register": "Registrati"
+  },
+  "app": {
+    "title": "ProjectTracker"
   }
 }

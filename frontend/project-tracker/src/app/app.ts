@@ -1,13 +1,14 @@
 import { Component, inject, signal, ChangeDetectionStrategy } from '@angular/core';
-import { RouterOutlet, RouterLink, Router } from '@angular/router';
+import { RouterOutlet, Router } from '@angular/router';
 import { TranslatePipe } from './shared/pipes/translate.pipe';
-import { LanguageSelectorComponent } from './shared/components/language-selector.component';
 import { ToastContainerComponent } from './shared/components/toast-container/toast-container.component';
 import { AuthService } from './core/services/auth.service';
+import { NavbarComponent } from './layouts/navbar/navbar.component';
+import { SkipLinkDirective } from './shared/directives/skip-link.directive';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, RouterLink, TranslatePipe, LanguageSelectorComponent, ToastContainerComponent],
+  imports: [RouterOutlet, TranslatePipe, ToastContainerComponent, NavbarComponent, SkipLinkDirective],
   templateUrl: './app.html',
   styleUrl: './app.css',
   changeDetection: ChangeDetectionStrategy.OnPush

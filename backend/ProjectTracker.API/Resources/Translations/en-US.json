@@ -1,5 +1,5 @@
 {
-  "common": {
+  "common": {    
     "save": "Save",
     "cancel": "Cancel",
     "delete": "Delete",
@@ -116,7 +116,8 @@
     "priority_2": "Low-Medium",
     "priority_3": "Medium",
     "priority_4": "Medium-High",
-    "priority_5": "High"
+    "priority_5": "High",
+    "skipToContent": "Skip to main content"
   },
   "navigation": {
     "home": "Home",
@@ -133,5 +134,20 @@
     "selectLanguage": "Select Language",
     "theme": "Theme",
     "notifications": "Notifications"
-  }
+  },
+  "theme": {
+    "light": "Light",
+    "dark": "Dark",
+    "auto": "Auto"
+  },
+  "nav": {
+    "projects": "Projects",
+    "signedInAs": "Signed in as",
+    "logout": "Logout",
+    "login": "Login",
+    "register": "Register"
+  },
+  "app": {
+    "title": "ProjectTracker"
+  }  
 }

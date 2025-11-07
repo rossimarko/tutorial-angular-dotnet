@@ -1,0 +1,29 @@
+<div class="dropdown">
+  <button
+    class="btn btn-outline-light btn-sm dropdown-toggle"
+    type="button"
+    id="themeDropdown"
+    data-bs-toggle="dropdown"
+    aria-expanded="false"
+    [attr.aria-label]="'settings.theme' | translate">
+    <i [class]="getThemeIcon(currentTheme())"></i>
+    <span class="d-none d-lg-inline ms-2">{{ getThemeLabel(currentTheme()) | translate }}</span>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="themeDropdown">
+    @for (theme of themeOptions; track theme) {
+      <li>
+        <button
+          class="dropdown-item"
+          [class.active]="currentTheme() === theme"
+          (click)="setTheme(theme)"
+          type="button">
+          <i [class]="getThemeIcon(theme)" class="me-2"></i>
+          {{ getThemeLabel(theme) | translate }}
+          @if (currentTheme() === theme) {
+            <i class="fas fa-check ms-2"></i>
+          }
+        </button>
+      </li>
+    }
+  </ul>
+</div>

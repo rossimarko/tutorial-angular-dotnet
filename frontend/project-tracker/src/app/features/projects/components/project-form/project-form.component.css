@@ -4,7 +4,7 @@
 
 .form-label {
   font-weight: 500;
-  color: var(--bs-secondary);
+  color: var(--bs-body-color);
   margin-bottom: 0.5rem;
 }
 
@@ -25,5 +25,5 @@
 
 h2 {
   font-weight: 600;
-  color: var(--bs-dark);
+  color: var(--bs-body-color);
 }

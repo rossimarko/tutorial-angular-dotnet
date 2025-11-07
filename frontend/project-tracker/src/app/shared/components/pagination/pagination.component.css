@@ -1,41 +1,48 @@
-.pagination {
-  margin: 0;
-  flex-wrap: nowrap;
+/* Pagination Component - Dark Mode Compatible */
+
+.pagination-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
 }
 
-.page-link {
-  color: var(--bs-primary);
+.page-item .page-link {
+  transition: all 0.15s ease-in-out;
+}
+
+.page-item .page-link:hover {
+  background-color: var(--bs-secondary-bg);
   border-color: var(--bs-border-color);
-  padding: 0.375rem 0.75rem;
-  font-size: 0.875rem;
-  cursor: pointer;
-  user-select: none;
 }
 
-.page-link:hover:not(:disabled) {
-  background-color: var(--bs-light);
-  border-color: var(--bs-primary);
-  color: var(--bs-primary);
+.page-item .page-link:focus {
+  box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25);
 }
 
 .page-item.active .page-link {
   background-color: var(--bs-primary);
   border-color: var(--bs-primary);
-  color: white;
 }
 
 .page-item.disabled .page-link {
-  color: var(--bs-secondary);
-  pointer-events: none;
-  background-color: var(--bs-light);
-  cursor: not-allowed;
+  background-color: var(--bs-secondary-bg);
+  border-color: var(--bs-border-color);
+  color: var(--bs-secondary-color);
 }
 
-.form-select-sm {
-  padding: 0.25rem 2rem 0.25rem 0.5rem;
-  font-size: 0.875rem;
+.page-size-select {
+  max-width: 200px;
 }
 
-nav {
-  border-top: 1px solid var(--bs-border-color);
+@media (max-width: 767.98px) {
+  .pagination-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .page-size-select {
+    max-width: 100%;
+  }
 }
