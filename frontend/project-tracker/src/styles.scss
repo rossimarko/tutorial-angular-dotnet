@@ -1,0 +1,181 @@
+// ====================================
+// Main Styles - Project Tracker
+// ====================================
+
+// -------------------------------------
+// 1. Import Custom Bootstrap Variables
+// -------------------------------------
+@import 'styles-bootstrap-custom';
+
+// -------------------------------------
+// 2. Import Bootstrap SCSS
+// -------------------------------------
+// Import Bootstrap's source SCSS files
+// This will use our custom variables from above
+@import 'bootstrap/scss/bootstrap';
+
+// -------------------------------------
+// 3. Import Font Awesome
+// -------------------------------------
+@import '@fortawesome/fontawesome-free/css/all.min.css';
+
+// ====================================
+// 4. Global Styles
+// ====================================
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+// -------------------------------------
+// Smooth Scroll
+// -------------------------------------
+html {
+  scroll-behavior: smooth;
+}
+
+// -------------------------------------
+// Focus Styles for Accessibility
+// -------------------------------------
+*:focus-visible {
+  outline: 2px solid $primary;
+  outline-offset: 2px;
+  border-radius: $border-radius-sm;
+}
+
+// -------------------------------------
+// Skip to Content Link (Accessibility)
+// -------------------------------------
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: $primary;
+  color: white;
+  padding: 8px 16px;
+  text-decoration: none;
+  border-radius: 0 0 4px 0;
+  z-index: 10000;
+
+  &:focus {
+    top: 0;
+  }
+}
+
+// -------------------------------------
+// Selection Color
+// -------------------------------------
+::selection {
+  background-color: rgba($primary, 0.3);
+  color: $dark;
+}
+
+// ====================================
+// 5. Custom Utility Classes
+// ====================================
+// Only add utilities that Bootstrap doesn't provide
+
+// Text utilities
+.text-ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.text-line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.text-line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+// Hover effects
+.hover-lift {
+  transition: transform 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: $box-shadow-lg;
+  }
+}
+
+.hover-scale {
+  transition: transform 0.15s ease-in-out;
+
+  &:hover {
+    transform: scale(1.02);
+  }
+}
+
+// Loading skeleton
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--bs-gray-200) 25%,
+    var(--bs-gray-300) 50%,
+    var(--bs-gray-200) 75%
+  );
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+  border-radius: $border-radius;
+}
+
+@keyframes loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+// ====================================
+// 6. Dark Mode Customizations
+// ====================================
+// Bootstrap handles most dark mode via data-bs-theme="dark"
+// Add only specific customizations here if needed
+
+[data-bs-theme="dark"] {
+  .skip-link {
+    background: var(--bs-primary);
+  }
+
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      var(--bs-gray-800) 25%,
+      var(--bs-gray-700) 50%,
+      var(--bs-gray-800) 75%
+    );
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+  }
+}
+
+// ====================================
+// 7. Print Styles
+// ====================================
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    color: #000;
+    background: #fff;
+  }
+
+  a[href]:after {
+    content: " (" attr(href) ")";
+  }
+}

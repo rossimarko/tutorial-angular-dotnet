@@ -1,51 +1,15 @@
-<!-- Toast Notifications Container -->
-<app-toast-container></app-toast-container>
+<!-- Skip to content link for accessibility -->
+<a href="#main-content" class="skip-link" appSkipLink>
+  {{ 'common.skipToContent' | translate }}
+</a>
 
-<!-- Navigation Bar -->
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
-  <div class="container-fluid">
-    <a class="navbar-brand" href="#">
-      {{ 'navigation.home' | translate }}
-    </a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarNav">
-      <ul class="navbar-nav ms-auto me-3">
-        <!-- Projects link - show only when authenticated -->
-        @if (isAuthenticated()) {
-          <li class="nav-item">
-            <a class="nav-link" routerLink="/projects">{{ 'navigation.projects' | translate }}</a>
-          </li>
-        }
-        
-        <!-- Login link - show only when NOT authenticated -->
-        @if (!isAuthenticated()) {
-          <li class="nav-item">
-            <a class="nav-link" routerLink="/auth/login">{{ 'navigation.login' | translate }}</a>
-          </li>
-        }
-        
-        <!-- Logout button - show only when authenticated -->
-        @if (isAuthenticated()) {
-          <li class="nav-item">
-            <button 
-              class="nav-link btn btn-link" 
-              (click)="onLogout()"
-              [attr.aria-label]="'navigation.logout' | translate"
-              style="text-decoration: none; border: none; cursor: pointer;">
-              {{ 'navigation.logout' | translate }}
-            </button>
-          </li>
-        }
-      </ul>
-      <!-- Language selector -->
-      <app-language-selector></app-language-selector>
-    </div>
-  </div>
-</nav>
+<!-- Use new NavbarComponent -->
+<app-navbar></app-navbar>
 
-<!-- Main Content Area -->
-<div class="container-fluid" style="margin-top: 2rem;">
+<!-- Main content -->
+<main id="main-content" class="container-fluid py-3" tabindex="-1">
   <router-outlet></router-outlet>
-</div>
+</main>
+
+<!-- Toast notifications (already implemented in Module 11) -->
+<app-toast-container></app-toast-container>

@@ -1,6 +1,6 @@
 import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { TranslationService } from '../services/translation.service';
+import { TranslationService } from '../../services/translation.service';
 
 /// <summary>
 /// Component for selecting application language

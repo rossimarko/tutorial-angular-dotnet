@@ -2,6 +2,13 @@ import { Injectable, inject, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { BehaviorSubject } from 'rxjs';
+import { jwtDecode } from 'jwt-decode';
+
+export interface User {
+  name: string;
+  email: string;
+  role: string;
+}
 
 export interface LoginRequest {
   email: string;
@@ -32,6 +39,7 @@ export class AuthService {
   private readonly accessToken = signal<string | null>(null);
   private readonly isAuthenticated = computed(() => this.accessToken() !== null);
   private readonly tokenSubject = new BehaviorSubject<string | null>(null);
+  readonly currentUser = signal<User | null>(null);
 
   constructor() {
     // Initialize from localStorage
@@ -39,6 +47,9 @@ export class AuthService {
     console.log('AuthService: Constructor called, initializing from localStorage:', { hasToken: !!storedToken });
     this.accessToken.set(storedToken);
     this.tokenSubject.next(storedToken);
+    if (storedToken) {
+      this.decodeAndSetUser(storedToken);
+    }
   }
 
   /**
@@ -64,6 +75,7 @@ export class AuthService {
     localStorage.setItem('refreshToken', refreshToken);
     this.accessToken.set(token);
     this.tokenSubject.next(token);
+    this.decodeAndSetUser(token);
     console.debug('AuthService: Tokens stored, isAuthenticated:', this.isAuthenticated());
   }
 
@@ -101,6 +113,7 @@ export class AuthService {
     localStorage.removeItem('refreshToken');
     this.accessToken.set(null);
     this.tokenSubject.next(null);
+    this.currentUser.set(null);
   }
 
   /**
@@ -111,5 +124,23 @@ export class AuthService {
       return localStorage.getItem('accessToken');
     }
     return null;
+  }
+
+  /**
+   * Decode token and set user signal
+   */
+  private decodeAndSetUser(token: string) {
+    try {
+      const decodedToken: any = jwtDecode(token);
+      this.currentUser.set({
+        name: decodedToken.name,
+        email: decodedToken.email,
+        role: decodedToken.role
+      });
+      console.log('AuthService: User decoded and set', this.currentUser());
+    } catch (error) {
+      console.error('AuthService: Failed to decode token', error);
+      this.currentUser.set(null);
+    }
   }
 }

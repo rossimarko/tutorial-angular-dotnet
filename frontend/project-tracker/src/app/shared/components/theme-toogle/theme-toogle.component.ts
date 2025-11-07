@@ -1,0 +1,48 @@
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ThemeService, Theme } from '../../services/theme.service';
+import { TranslatePipe } from '../../pipes/translate.pipe';
+
+/// <summary>
+/// Theme toggle button component
+/// Allows users to switch between light, dark, and auto themes
+/// </summary>
+@Component({
+  selector: 'app-theme-toggle',
+  imports: [CommonModule, TranslatePipe],
+  templateUrl: './theme-toogle.component.html',
+  styleUrl: './theme-toogle.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush
+})
+export class ThemeToggleComponent {
+  private readonly themeService = inject(ThemeService);
+
+  protected readonly currentTheme = this.themeService.getTheme();
+  protected readonly themeOptions: Theme[] = ['light', 'dark', 'auto'];
+
+  /// <summary>
+  /// Set theme
+  /// </summary>
+  setTheme(theme: Theme): void {
+    this.themeService.setTheme(theme);
+  }
+
+  /// <summary>
+  /// Get Font Awesome icon for theme
+  /// </summary>
+  getThemeIcon(theme: Theme): string {
+    const icons: Record<Theme, string> = {
+      light: 'fas fa-sun',
+      dark: 'fas fa-moon',
+      auto: 'fas fa-circle-half-stroke'
+    };
+    return icons[theme];
+  }
+
+  /// <summary>
+  /// Get translation key for theme label
+  /// </summary>
+  getThemeLabel(theme: Theme): string {
+    return `theme.${theme}`;
+  }
+}

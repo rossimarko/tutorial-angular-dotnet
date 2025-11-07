@@ -33,7 +33,7 @@
             "styles": [
               "node_modules/bootstrap/dist/css/bootstrap.min.css",
               "node_modules/@fortawesome/fontawesome-free/css/all.min.css",
-              "src/styles.css"
+              "src/styles.scss"
             ]
           },
           "configurations": {
@@ -89,10 +89,8 @@
                 "input": "public"
               }
             ],
-            "styles": [
-              "node_modules/bootstrap/dist/css/bootstrap.min.css",
-              "node_modules/@fortawesome/fontawesome-free/css/all.min.css",
-              "src/styles.css"
+            "styles": [              
+              "src/styles.scss"
             ]
           }
         }
