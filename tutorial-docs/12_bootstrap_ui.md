@@ -1,59 +1,103 @@
-# Module 12: Bootstrap UI & Advanced Styling# Module 12: UI/UX with Bootstrap 5
+# Module 12: Bootstrap UI & Advanced Styling
 
+## 🎯 Objectives
 
-
-## 🎯 Objectives## 🎯 Objectives
-
-
-
-By the end of this module, you will:- ✅ Bootstrap integration
-
-- ✅ Master Bootstrap 5 responsive grid system- ✅ Responsive layouts
-
-- ✅ Create custom CSS variables for theming- ✅ Form styling
-
-- ✅ Implement dark mode toggle- ✅ Modal dialogs
-
-- ✅ Build accessible UI components- ✅ Accessibility
-
-- ✅ Use Bootstrap utilities effectively
-
-- ✅ Create responsive navigation## 📌 Status: Framework Ready
-
-- ✅ Implement modals, tooltips, and popovers
-
-- ✅ Optimize CSS for productionImplement:
-
-- [ ] Bootstrap responsive grid
-
-## 📋 What is Bootstrap?- [ ] Navigation bar styling
-
-- [ ] Form component styling
-
-**Bootstrap** is the world's most popular CSS framework for building responsive, mobile-first websites. It provides:- [ ] Modal dialogs
-
-- **Grid System**: 12-column responsive layout- [ ] Toast notifications
-
-- **Components**: Pre-built UI elements (buttons, cards, modals)- [ ] Accessibility attributes
-
-- **Utilities**: Spacing, colors, display, flex helpers- [ ] Dark mode support (optional)
-
-- **JavaScript**: Interactive components (dropdowns, modals, tooltips)
+By the end of this module, you will:
+- ✅ Create a custom CSS variables system for theming
+- ✅ Implement dark mode with auto-detection
+- ✅ Build a theme toggle component
+- ✅ Create a reusable card component
+- ✅ Extract and enhance the navigation bar
+- ✅ Add accessibility directives
+- ✅ Implement custom utility classes
+- ✅ Apply best practices for responsive design
 
 ---
 
+## 📋 Prerequisites
+
+Before starting this module, ensure you have completed:
+
+- ✅ **Module 11**: CRUD Operations (ToastContainer, ConfirmDialog, NotificationService)
+- ✅ **Module 10**: Pagination & Export
+- ✅ **Module 7**: Internationalization (Language Selector)
+- ✅ **Module 6**: Angular Setup (Bootstrap 5 & Font Awesome installed)
+
+### Verify Existing Components
+
+Run these checks to ensure you're ready:
+
+```bash
+# Check that these files exist:
+ls frontend/project-tracker/src/app/shared/services/notification.service.ts
+ls frontend/project-tracker/src/app/shared/components/toast-container/
+ls frontend/project-tracker/src/app/shared/components/confirm-dialog/
+ls frontend/project-tracker/src/app/shared/components/pagination/
+ls frontend/project-tracker/src/app/shared/components/language-selector/
+
+# Check Bootstrap and Font Awesome are in package.json
+grep -E "(bootstrap|fontawesome)" frontend/project-tracker/package.json
+```
+
+If any of these are missing, please complete the prerequisite modules first.
+
+---
+
+## 📌 What We'll Build in This Module
+
+In this module, we'll **add** the following new features to your existing application:
+
+### New Components & Services:
+1. **ThemeService** - Manage light/dark mode with localStorage persistence
+2. **ThemeToggleComponent** - UI for switching themes
+3. **CardComponent** - Reusable card wrapper
+4. **NavbarComponent** - Extract navbar from app.html into separate component
+
+### New Files & Styles:
+5. **theme.css** - CSS variables for consistent theming
+6. **utilities.css** - Custom utility classes
+7. **FocusTrapDirective** - Accessibility for modals
+8. **SkipLinkDirective** - Keyboard navigation support
+
+### What We'll Modify:
+- Extract inline navbar from `app.html` into `NavbarComponent`
+- Update `styles.css` with imports
+- Integrate theme toggle into navigation
+
+---
+
+## 📋 What is Bootstrap?
+
+**Bootstrap** is the world's most popular CSS framework for building responsive, mobile-first websites. It provides:
+
+- **Grid System**: 12-column responsive layout
+- **Components**: Pre-built UI elements (buttons, cards, modals)
+- **Utilities**: Spacing, colors, display, flex helpers
+- **JavaScript**: Interactive components (dropdowns, modals, tooltips)
+
 ### Why Bootstrap 5?
 
-- ✅ No jQuery dependency (pure JavaScript)**Next: [Module 13: Logging & Performance](./13_logging_performance.md)**
-
+- ✅ No jQuery dependency (pure JavaScript)
 - ✅ Improved grid with CSS Grid support
 - ✅ Custom CSS properties (variables)
 - ✅ Reduced file size
 - ✅ Enhanced accessibility
 
+You already installed Bootstrap in **Module 6** - we'll now enhance it with custom theming!
+
 ---
 
-## 🎨 Step 1: Custom Theme with CSS Variables
+## 🎨 Step 1: Create Styles Directory & CSS Variables
+
+First, let's create a dedicated directory for our custom styles.
+
+### Create the styles directory:
+
+```bash
+mkdir frontend/project-tracker/src/styles
+```
+
+### Create Custom Theme System
 
 Create file: `frontend/project-tracker/src/styles/theme.css`
 
@@ -175,650 +219,7 @@ body {
 
 ---
 
-## 🌓 Step 2: Dark Mode Service
-
-Create file: `frontend/project-tracker/src/app/shared/services/theme.service.ts`
-
-```typescript
-import { Injectable, signal, effect } from '@angular/core';
-
-/// <summary>
-/// Theme types supported
-/// </summary>
-export type Theme = 'light' | 'dark' | 'auto';
-
-/// <summary>
-/// Service for managing application theme (light/dark mode)
-/// </summary>
-@Injectable({
-  providedIn: 'root'
-})
-export class ThemeService {
-  private readonly THEME_KEY = 'app-theme';
-  private readonly theme = signal<Theme>(this.getInitialTheme());
-
-  constructor() {
-    // Apply theme whenever it changes
-    effect(() => {
-      this.applyTheme(this.theme());
-    });
-
-    // Listen for system theme changes
-    this.watchSystemTheme();
-  }
-
-  /// <summary>
-  /// Get current theme as readonly signal
-  /// </summary>
-  getTheme() {
-    return this.theme.asReadonly();
-  }
-
-  /// <summary>
-  /// Set theme
-  /// </summary>
-  setTheme(theme: Theme): void {
-    this.theme.set(theme);
-    localStorage.setItem(this.THEME_KEY, theme);
-  }
-
-  /// <summary>
-  /// Toggle between light and dark
-  /// </summary>
-  toggleTheme(): void {
-    const current = this.theme();
-    const next: Theme = current === 'light' ? 'dark' : 'light';
-    this.setTheme(next);
-  }
-
-  /// <summary>
-  /// Get initial theme from localStorage or system preference
-  /// </summary>
-  private getInitialTheme(): Theme {
-    const stored = localStorage.getItem(this.THEME_KEY) as Theme;
-    if (stored && ['light', 'dark', 'auto'].includes(stored)) {
-      return stored;
-    }
-    return 'auto';
-  }
-
-  /// <summary>
-  /// Apply theme to document
-  /// </summary>
-  private applyTheme(theme: Theme): void {
-    let actualTheme: 'light' | 'dark';
-
-    if (theme === 'auto') {
-      actualTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    } else {
-      actualTheme = theme;
-    }
-
-    document.documentElement.setAttribute('data-bs-theme', actualTheme);
-  }
-
-  /// <summary>
-  /// Watch for system theme changes when in auto mode
-  /// </summary>
-  private watchSystemTheme(): void {
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    
-    mediaQuery.addEventListener('change', (e) => {
-      if (this.theme() === 'auto') {
-        this.applyTheme('auto');
-      }
-    });
-  }
-}
-```
-
----
-
-## 🔘 Step 3: Theme Toggle Component
-
-Create file: `frontend/project-tracker/src/app/shared/components/theme-toggle/theme-toggle.component.ts`
-
-```typescript
-import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { ThemeService, Theme } from '../../services/theme.service';
-import { TranslatePipe } from '../../pipes/translate.pipe';
-
-/// <summary>
-/// Theme toggle button component
-/// </summary>
-@Component({
-  selector: 'app-theme-toggle',
-  imports: [CommonModule, TranslatePipe],
-  templateUrl: './theme-toggle.component.html',
-  styleUrl: './theme-toggle.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush
-})
-export class ThemeToggleComponent {
-  private readonly themeService = inject(ThemeService);
-  
-  protected readonly currentTheme = this.themeService.getTheme();
-  protected readonly themeOptions: Theme[] = ['light', 'dark', 'auto'];
-
-  /// <summary>
-  /// Set theme
-  /// </summary>
-  setTheme(theme: Theme): void {
-    this.themeService.setTheme(theme);
-  }
-
-  /// <summary>
-  /// Get icon for theme
-  /// </summary>
-  getThemeIcon(theme: Theme): string {
-    const icons: Record<Theme, string> = {
-      light: 'fas fa-sun',
-      dark: 'fas fa-moon',
-      auto: 'fas fa-circle-half-stroke'
-    };
-    return icons[theme];
-  }
-
-  /// <summary>
-  /// Get label for theme
-  /// </summary>
-  getThemeLabel(theme: Theme): string {
-    return `theme.${theme}`;
-  }
-}
-```
-
-Create file: `frontend/project-tracker/src/app/shared/components/theme-toggle/theme-toggle.component.html`
-
-```html
-<div class="btn-group" role="group" aria-label="Theme selector">
-  @for (theme of themeOptions; track theme) {
-    <button
-      type="button"
-      class="btn btn-sm"
-      [class.btn-primary]="currentTheme() === theme"
-      [class.btn-outline-secondary]="currentTheme() !== theme"
-      (click)="setTheme(theme)"
-      [attr.aria-label]="getThemeLabel(theme) | translate"
-      [title]="getThemeLabel(theme) | translate">
-      <i [class]="getThemeIcon(theme)"></i>
-      <span class="d-none d-md-inline ms-2">
-        {{ getThemeLabel(theme) | translate }}
-      </span>
-    </button>
-  }
-</div>
-```
-
-Create file: `frontend/project-tracker/src/app/shared/components/theme-toggle/theme-toggle.component.css`
-
-```css
-.btn-group {
-  box-shadow: var(--shadow-sm);
-}
-
-.btn {
-  transition: var(--transition-fast);
-}
-
-.btn:focus {
-  box-shadow: 0 0 0 0.25rem rgba(var(--color-primary-rgb), 0.25);
-}
-```
-
----
-
-## 🧭 Step 4: Enhanced Navigation Bar
-
-Create file: `frontend/project-tracker/src/app/layouts/navbar/navbar.component.ts`
-
-```typescript
-import { Component, inject, signal, ChangeDetectionStrategy } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
-import { AuthService } from '../../features/auth/services/auth.service';
-import { ThemeToggleComponent } from '../../shared/components/theme-toggle/theme-toggle.component';
-import { LanguageSelectorComponent } from '../../shared/components/language-selector/language-selector.component';
-import { TranslatePipe } from '../../shared/pipes/translate.pipe';
-
-/// <summary>
-/// Main navigation bar component
-/// </summary>
-@Component({
-  selector: 'app-navbar',
-  imports: [CommonModule, RouterModule, ThemeToggleComponent, LanguageSelectorComponent, TranslatePipe],
-  templateUrl: './navbar.component.html',
-  styleUrl: './navbar.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush
-})
-export class NavbarComponent {
-  private readonly authService = inject(AuthService);
-  
-  protected readonly isAuthenticated = this.authService.isAuthenticatedSignal();
-  protected readonly currentUser = this.authService.getCurrentUserSignal();
-  protected readonly isCollapsed = signal(true);
-
-  /// <summary>
-  /// Toggle mobile menu
-  /// </summary>
-  toggleMenu(): void {
-    this.isCollapsed.update(collapsed => !collapsed);
-  }
-
-  /// <summary>
-  /// Close menu (after navigation on mobile)
-  /// </summary>
-  closeMenu(): void {
-    this.isCollapsed.set(true);
-  }
-
-  /// <summary>
-  /// Logout user
-  /// </summary>
-  logout(): void {
-    this.authService.logout();
-    this.closeMenu();
-  }
-}
-```
-
-Create file: `frontend/project-tracker/src/app/layouts/navbar/navbar.component.html`
-
-```html
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm sticky-top">
-  <div class="container-fluid">
-    <!-- Brand -->
-    <a class="navbar-brand d-flex align-items-center" routerLink="/">
-      <i class="fas fa-project-diagram me-2"></i>
-      <span class="fw-bold">{{ 'app.title' | translate }}</span>
-    </a>
-
-    <!-- Mobile Toggle -->
-    <button
-      class="navbar-toggler"
-      type="button"
-      (click)="toggleMenu()"
-      [attr.aria-expanded]="!isCollapsed()"
-      aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-
-    <!-- Navbar Content -->
-    <div class="collapse navbar-collapse" [class.show]="!isCollapsed()">
-      @if (isAuthenticated()) {
-        <!-- Authenticated Menu -->
-        <ul class="navbar-nav me-auto">
-          <li class="nav-item">
-            <a
-              class="nav-link"
-              routerLink="/dashboard"
-              routerLinkActive="active"
-              (click)="closeMenu()">
-              <i class="fas fa-home me-1"></i>
-              {{ 'nav.dashboard' | translate }}
-            </a>
-          </li>
-          <li class="nav-item">
-            <a
-              class="nav-link"
-              routerLink="/projects"
-              routerLinkActive="active"
-              (click)="closeMenu()">
-              <i class="fas fa-folder me-1"></i>
-              {{ 'nav.projects' | translate }}
-            </a>
-          </li>
-          <li class="nav-item dropdown">
-            <a
-              class="nav-link dropdown-toggle"
-              href="#"
-              role="button"
-              data-bs-toggle="dropdown"
-              aria-expanded="false">
-              <i class="fas fa-cog me-1"></i>
-              {{ 'nav.settings' | translate }}
-            </a>
-            <ul class="dropdown-menu">
-              <li>
-                <a class="dropdown-item" routerLink="/profile" (click)="closeMenu()">
-                  <i class="fas fa-user me-2"></i>
-                  {{ 'nav.profile' | translate }}
-                </a>
-              </li>
-              <li>
-                <a class="dropdown-item" routerLink="/settings" (click)="closeMenu()">
-                  <i class="fas fa-sliders-h me-2"></i>
-                  {{ 'nav.preferences' | translate }}
-                </a>
-              </li>
-              <li><hr class="dropdown-divider"></li>
-              <li>
-                <button class="dropdown-item text-danger" (click)="logout()">
-                  <i class="fas fa-sign-out-alt me-2"></i>
-                  {{ 'nav.logout' | translate }}
-                </button>
-              </li>
-            </ul>
-          </li>
-        </ul>
-
-        <!-- Right Side Tools -->
-        <div class="d-flex align-items-center gap-3">
-          <!-- Theme Toggle -->
-          <app-theme-toggle></app-theme-toggle>
-
-          <!-- Language Selector -->
-          <app-language-selector></app-language-selector>
-
-          <!-- User Info -->
-          <div class="dropdown">
-            <button
-              class="btn btn-outline-light btn-sm dropdown-toggle"
-              type="button"
-              data-bs-toggle="dropdown"
-              aria-expanded="false">
-              <i class="fas fa-user-circle me-1"></i>
-              <span class="d-none d-lg-inline">{{ currentUser()?.username || 'User' }}</span>
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end">
-              <li>
-                <span class="dropdown-item-text">
-                  <small class="text-muted">{{ 'nav.signedInAs' | translate }}</small><br>
-                  <strong>{{ currentUser()?.username }}</strong>
-                </span>
-              </li>
-              <li><hr class="dropdown-divider"></li>
-              <li>
-                <a class="dropdown-item" routerLink="/profile">
-                  <i class="fas fa-user me-2"></i>
-                  {{ 'nav.myProfile' | translate }}
-                </a>
-              </li>
-              <li>
-                <button class="dropdown-item text-danger" (click)="logout()">
-                  <i class="fas fa-sign-out-alt me-2"></i>
-                  {{ 'nav.logout' | translate }}
-                </button>
-              </li>
-            </ul>
-          </div>
-        </div>
-      } @else {
-        <!-- Guest Menu -->
-        <ul class="navbar-nav ms-auto">
-          <li class="nav-item">
-            <a class="nav-link" routerLink="/auth/login" (click)="closeMenu()">
-              <i class="fas fa-sign-in-alt me-1"></i>
-              {{ 'nav.login' | translate }}
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="btn btn-outline-light btn-sm ms-2" routerLink="/auth/register" (click)="closeMenu()">
-              <i class="fas fa-user-plus me-1"></i>
-              {{ 'nav.register' | translate }}
-            </a>
-          </li>
-        </ul>
-      }
-    </div>
-  </div>
-</nav>
-```
-
-Create file: `frontend/project-tracker/src/app/layouts/navbar/navbar.component.css`
-
-```css
-.navbar {
-  transition: var(--transition-base);
-}
-
-.navbar-brand {
-  font-size: 1.25rem;
-  transition: var(--transition-fast);
-}
-
-.navbar-brand:hover {
-  transform: scale(1.05);
-}
-
-.nav-link {
-  transition: var(--transition-fast);
-  border-radius: var(--border-radius-sm);
-  margin: 0 0.25rem;
-}
-
-.nav-link:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-}
-
-.nav-link.active {
-  background-color: rgba(255, 255, 255, 0.2);
-  font-weight: var(--font-weight-medium);
-}
-
-.dropdown-menu {
-  border-radius: var(--border-radius);
-  box-shadow: var(--shadow-lg);
-  border: none;
-  margin-top: 0.5rem;
-}
-
-.dropdown-item {
-  transition: var(--transition-fast);
-  border-radius: var(--border-radius-sm);
-  margin: 0.25rem 0.5rem;
-}
-
-.dropdown-item:hover {
-  background-color: var(--color-primary);
-  color: var(--color-white);
-}
-
-.dropdown-divider {
-  margin: 0.5rem 0;
-}
-
-@media (max-width: 991.98px) {
-  .navbar-collapse {
-    margin-top: 1rem;
-  }
-
-  .navbar-nav {
-    gap: 0.5rem;
-  }
-
-  .d-flex.gap-3 {
-    margin-top: 1rem;
-    flex-wrap: wrap;
-  }
-}
-```
-
----
-
-## 🎴 Step 5: Reusable Card Component
-
-Create file: `frontend/project-tracker/src/app/shared/components/card/card.component.ts`
-
-```typescript
-import { Component, input, ChangeDetectionStrategy } from '@angular/core';
-import { CommonModule } from '@angular/common';
-
-/// <summary>
-/// Reusable card component with header, body, and footer slots
-/// </summary>
-@Component({
-  selector: 'app-card',
-  imports: [CommonModule],
-  templateUrl: './card.component.html',
-  styleUrl: './card.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush
-})
-export class CardComponent {
-  readonly title = input<string>();
-  readonly subtitle = input<string>();
-  readonly headerClass = input<string>('');
-  readonly bodyClass = input<string>('');
-  readonly footerClass = input<string>('');
-  readonly shadow = input<boolean>(true);
-  readonly border = input<boolean>(true);
-}
-```
-
-Create file: `frontend/project-tracker/src/app/shared/components/card/card.component.html`
-
-```html
-<div
-  class="card"
-  [class.shadow-sm]="shadow()"
-  [class.border-0]="!border()">
-  
-  <!-- Header (optional) -->
-  @if (title()) {
-    <div class="card-header" [class]="headerClass()">
-      <h5 class="card-title mb-0">{{ title() }}</h5>
-      @if (subtitle()) {
-        <small class="text-muted">{{ subtitle() }}</small>
-      }
-      <ng-content select="[cardHeaderActions]"></ng-content>
-    </div>
-  }
-
-  <!-- Body -->
-  <div class="card-body" [class]="bodyClass()">
-    <ng-content></ng-content>
-  </div>
-
-  <!-- Footer (optional) -->
-  <ng-content select="[cardFooter]"></ng-content>
-</div>
-```
-
-Create file: `frontend/project-tracker/src/app/shared/components/card/card.component.css`
-
-```css
-.card {
-  border-radius: var(--border-radius);
-  transition: var(--transition-base);
-}
-
-.card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md) !important;
-}
-
-.card-header {
-  background-color: var(--bg-surface);
-  border-bottom: 1px solid var(--border-color);
-  padding: 1rem 1.25rem;
-}
-
-.card-title {
-  font-weight: var(--font-weight-bold);
-  color: var(--text-primary);
-}
-
-.card-body {
-  padding: 1.25rem;
-}
-```
-
----
-
-## 🎯 Step 6: Accessibility Utilities
-
-Create file: `frontend/project-tracker/src/app/shared/directives/focus-trap.directive.ts`
-
-```typescript
-import { Directive, ElementRef, OnInit, OnDestroy, inject } from '@angular/core';
-
-/// <summary>
-/// Directive to trap focus within an element (useful for modals)
-/// </summary>
-@Directive({
-  selector: '[appFocusTrap]'
-})
-export class FocusTrapDirective implements OnInit, OnDestroy {
-  private readonly el = inject(ElementRef);
-  private firstFocusableElement: HTMLElement | null = null;
-  private lastFocusableElement: HTMLElement | null = null;
-
-  ngOnInit(): void {
-    this.setupFocusTrap();
-  }
-
-  ngOnDestroy(): void {
-    // Cleanup if needed
-  }
-
-  private setupFocusTrap(): void {
-    const focusableElements = this.el.nativeElement.querySelectorAll(
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-    );
-
-    if (focusableElements.length > 0) {
-      this.firstFocusableElement = focusableElements[0] as HTMLElement;
-      this.lastFocusableElement = focusableElements[focusableElements.length - 1] as HTMLElement;
-
-      this.el.nativeElement.addEventListener('keydown', this.handleKeyDown.bind(this));
-      
-      // Focus first element
-      setTimeout(() => this.firstFocusableElement?.focus(), 100);
-    }
-  }
-
-  private handleKeyDown(event: KeyboardEvent): void {
-    if (event.key !== 'Tab') return;
-
-    if (event.shiftKey) {
-      // Shift + Tab
-      if (document.activeElement === this.firstFocusableElement) {
-        event.preventDefault();
-        this.lastFocusableElement?.focus();
-      }
-    } else {
-      // Tab
-      if (document.activeElement === this.lastFocusableElement) {
-        event.preventDefault();
-        this.firstFocusableElement?.focus();
-      }
-    }
-  }
-}
-```
-
-Create file: `frontend/project-tracker/src/app/shared/directives/skip-link.directive.ts`
-
-```typescript
-import { Directive, HostListener, ElementRef, inject } from '@angular/core';
-
-/// <summary>
-/// Directive for skip-to-content links (accessibility)
-/// </summary>
-@Directive({
-  selector: '[appSkipLink]'
-})
-export class SkipLinkDirective {
-  private readonly el = inject(ElementRef);
-
-  @HostListener('click', ['$event'])
-  onClick(event: Event): void {
-    event.preventDefault();
-    const targetId = this.el.nativeElement.getAttribute('href')?.substring(1);
-    if (targetId) {
-      const target = document.getElementById(targetId);
-      if (target) {
-        target.focus();
-        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-    }
-  }
-}
-```
-
----
-
-## 📱 Step 7: Responsive Utility Classes
+## 📱 Step 2: Create Custom Utility Classes
 
 Create file: `frontend/project-tracker/src/styles/utilities.css`
 
@@ -832,7 +233,7 @@ Create file: `frontend/project-tracker/src/styles/utilities.css`
 .gap-xs { gap: var(--spacing-xs) !important; }
 .gap-sm { gap: var(--spacing-sm) !important; }
 .gap-md { gap: var(--spacing-md) !important; }
-.gap-lg { gap: var--spacing-lg) !important; }
+.gap-lg { gap: var(--spacing-lg) !important; }
 .gap-xl { gap: var(--spacing-xl) !important; }
 
 /* Text Utilities */
@@ -983,7 +384,7 @@ Create file: `frontend/project-tracker/src/styles/utilities.css`
 
 ---
 
-## 📚 Step 8: Import Styles in Main CSS
+## 📚 Step 3: Update Global Styles
 
 Update file: `frontend/project-tracker/src/styles.css`
 
@@ -1045,6 +446,766 @@ html {
 
 ---
 
+## 🌓 Step 4: Dark Mode Service
+
+Create file: `frontend/project-tracker/src/app/shared/services/theme.service.ts`
+
+```typescript
+import { Injectable, signal, effect } from '@angular/core';
+
+/// <summary>
+/// Theme types supported
+/// </summary>
+export type Theme = 'light' | 'dark' | 'auto';
+
+/// <summary>
+/// Service for managing application theme (light/dark mode)
+/// </summary>
+@Injectable({
+  providedIn: 'root'
+})
+export class ThemeService {
+  private readonly THEME_KEY = 'app-theme';
+  private readonly theme = signal<Theme>(this.getInitialTheme());
+
+  constructor() {
+    // Apply theme whenever it changes
+    effect(() => {
+      this.applyTheme(this.theme());
+    });
+
+    // Listen for system theme changes
+    this.watchSystemTheme();
+  }
+
+  /// <summary>
+  /// Get current theme as readonly signal
+  /// </summary>
+  getTheme() {
+    return this.theme.asReadonly();
+  }
+
+  /// <summary>
+  /// Set theme
+  /// </summary>
+  setTheme(theme: Theme): void {
+    this.theme.set(theme);
+    localStorage.setItem(this.THEME_KEY, theme);
+  }
+
+  /// <summary>
+  /// Toggle between light and dark
+  /// </summary>
+  toggleTheme(): void {
+    const current = this.theme();
+    const next: Theme = current === 'light' ? 'dark' : 'light';
+    this.setTheme(next);
+  }
+
+  /// <summary>
+  /// Get initial theme from localStorage or system preference
+  /// </summary>
+  private getInitialTheme(): Theme {
+    const stored = localStorage.getItem(this.THEME_KEY) as Theme;
+    if (stored && ['light', 'dark', 'auto'].includes(stored)) {
+      return stored;
+    }
+    return 'auto';
+  }
+
+  /// <summary>
+  /// Apply theme to document
+  /// </summary>
+  private applyTheme(theme: Theme): void {
+    let actualTheme: 'light' | 'dark';
+
+    if (theme === 'auto') {
+      actualTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    } else {
+      actualTheme = theme;
+    }
+
+    document.documentElement.setAttribute('data-bs-theme', actualTheme);
+  }
+
+  /// <summary>
+  /// Watch for system theme changes when in auto mode
+  /// </summary>
+  private watchSystemTheme(): void {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+    mediaQuery.addEventListener('change', (e) => {
+      if (this.theme() === 'auto') {
+        this.applyTheme('auto');
+      }
+    });
+  }
+}
+```
+
+---
+
+## 🔘 Step 5: Theme Toggle Component
+
+Create file: `frontend/project-tracker/src/app/shared/components/theme-toggle/theme-toggle.component.ts`
+
+```typescript
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ThemeService, Theme } from '../../services/theme.service';
+import { TranslatePipe } from '../../pipes/translate.pipe';
+
+/// <summary>
+/// Theme toggle button component
+/// </summary>
+@Component({
+  selector: 'app-theme-toggle',
+  imports: [CommonModule, TranslatePipe],
+  templateUrl: './theme-toggle.component.html',
+  styleUrl: './theme-toggle.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush
+})
+export class ThemeToggleComponent {
+  private readonly themeService = inject(ThemeService);
+
+  protected readonly currentTheme = this.themeService.getTheme();
+  protected readonly themeOptions: Theme[] = ['light', 'dark', 'auto'];
+
+  /// <summary>
+  /// Set theme
+  /// </summary>
+  setTheme(theme: Theme): void {
+    this.themeService.setTheme(theme);
+  }
+
+  /// <summary>
+  /// Get icon for theme
+  /// </summary>
+  getThemeIcon(theme: Theme): string {
+    const icons: Record<Theme, string> = {
+      light: 'fas fa-sun',
+      dark: 'fas fa-moon',
+      auto: 'fas fa-circle-half-stroke'
+    };
+    return icons[theme];
+  }
+
+  /// <summary>
+  /// Get label for theme
+  /// </summary>
+  getThemeLabel(theme: Theme): string {
+    return `theme.${theme}`;
+  }
+}
+```
+
+Create file: `frontend/project-tracker/src/app/shared/components/theme-toggle/theme-toggle.component.html`
+
+```html
+<div class="btn-group" role="group" aria-label="Theme selector">
+  @for (theme of themeOptions; track theme) {
+    <button
+      type="button"
+      class="btn btn-sm"
+      [class.btn-primary]="currentTheme() === theme"
+      [class.btn-outline-secondary]="currentTheme() !== theme"
+      (click)="setTheme(theme)"
+      [attr.aria-label]="getThemeLabel(theme) | translate"
+      [title]="getThemeLabel(theme) | translate">
+      <i [class]="getThemeIcon(theme)"></i>
+      <span class="d-none d-md-inline ms-2">
+        {{ getThemeLabel(theme) | translate }}
+      </span>
+    </button>
+  }
+</div>
+```
+
+Create file: `frontend/project-tracker/src/app/shared/components/theme-toggle/theme-toggle.component.css`
+
+```css
+.btn-group {
+  box-shadow: var(--shadow-sm);
+}
+
+.btn {
+  transition: var(--transition-fast);
+}
+
+.btn:focus {
+  box-shadow: 0 0 0 0.25rem rgba(var(--color-primary-rgb), 0.25);
+}
+```
+
+---
+
+## 🎴 Step 6: Reusable Card Component
+
+Create file: `frontend/project-tracker/src/app/shared/components/card/card.component.ts`
+
+```typescript
+import { Component, input, ChangeDetectionStrategy } from '@angular/core';
+import { CommonModule } from '@angular/common';
+
+/// <summary>
+/// Reusable card component with header, body, and footer slots
+/// </summary>
+@Component({
+  selector: 'app-card',
+  imports: [CommonModule],
+  templateUrl: './card.component.html',
+  styleUrl: './card.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush
+})
+export class CardComponent {
+  readonly title = input<string>();
+  readonly subtitle = input<string>();
+  readonly headerClass = input<string>('');
+  readonly bodyClass = input<string>('');
+  readonly footerClass = input<string>('');
+  readonly shadow = input<boolean>(true);
+  readonly border = input<boolean>(true);
+}
+```
+
+Create file: `frontend/project-tracker/src/app/shared/components/card/card.component.html`
+
+```html
+<div
+  class="card"
+  [class.shadow-sm]="shadow()"
+  [class.border-0]="!border()">
+
+  <!-- Header (optional) -->
+  @if (title()) {
+    <div class="card-header" [class]="headerClass()">
+      <h5 class="card-title mb-0">{{ title() }}</h5>
+      @if (subtitle()) {
+        <small class="text-muted">{{ subtitle() }}</small>
+      }
+      <ng-content select="[cardHeaderActions]"></ng-content>
+    </div>
+  }
+
+  <!-- Body -->
+  <div class="card-body" [class]="bodyClass()">
+    <ng-content></ng-content>
+  </div>
+
+  <!-- Footer (optional) -->
+  <ng-content select="[cardFooter]"></ng-content>
+</div>
+```
+
+Create file: `frontend/project-tracker/src/app/shared/components/card/card.component.css`
+
+```css
+.card {
+  border-radius: var(--border-radius);
+  transition: var(--transition-base);
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md) !important;
+}
+
+.card-header {
+  background-color: var(--bg-surface);
+  border-bottom: 1px solid var(--border-color);
+  padding: 1rem 1.25rem;
+}
+
+.card-title {
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+}
+
+.card-body {
+  padding: 1.25rem;
+}
+```
+
+---
+
+## 🧭 Step 7: Enhanced Navigation Bar Component
+
+### First, create the layouts directory:
+
+```bash
+mkdir -p frontend/project-tracker/src/app/layouts/navbar
+```
+
+Create file: `frontend/project-tracker/src/app/layouts/navbar/navbar.component.ts`
+
+```typescript
+import { Component, inject, signal, ChangeDetectionStrategy } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
+import { AuthService } from '../../core/services/auth.service';
+import { ThemeToggleComponent } from '../../shared/components/theme-toggle/theme-toggle.component';
+import { LanguageSelectorComponent } from '../../shared/components/language-selector/language-selector.component';
+import { TranslatePipe } from '../../shared/pipes/translate.pipe';
+
+/// <summary>
+/// Main navigation bar component
+/// </summary>
+@Component({
+  selector: 'app-navbar',
+  imports: [CommonModule, RouterModule, ThemeToggleComponent, LanguageSelectorComponent, TranslatePipe],
+  templateUrl: './navbar.component.html',
+  styleUrl: './navbar.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush
+})
+export class NavbarComponent {
+  private readonly authService = inject(AuthService);
+
+  protected readonly isAuthenticated = this.authService.isAuthenticated;
+  protected readonly currentUser = this.authService.currentUser;
+  protected readonly isCollapsed = signal(true);
+
+  /// <summary>
+  /// Toggle mobile menu
+  /// </summary>
+  toggleMenu(): void {
+    this.isCollapsed.update(collapsed => !collapsed);
+  }
+
+  /// <summary>
+  /// Close menu (after navigation on mobile)
+  /// </summary>
+  closeMenu(): void {
+    this.isCollapsed.set(true);
+  }
+
+  /// <summary>
+  /// Logout user
+  /// </summary>
+  logout(): void {
+    this.authService.logout();
+    this.closeMenu();
+  }
+}
+```
+
+Create file: `frontend/project-tracker/src/app/layouts/navbar/navbar.component.html`
+
+```html
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm sticky-top">
+  <div class="container-fluid">
+    <!-- Brand -->
+    <a class="navbar-brand d-flex align-items-center" routerLink="/">
+      <i class="fas fa-project-diagram me-2"></i>
+      <span class="fw-bold">{{ 'app.title' | translate }}</span>
+    </a>
+
+    <!-- Mobile Toggle -->
+    <button
+      class="navbar-toggler"
+      type="button"
+      (click)="toggleMenu()"
+      [attr.aria-expanded]="!isCollapsed()"
+      aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <!-- Navbar Content -->
+    <div class="collapse navbar-collapse" [class.show]="!isCollapsed()">
+      @if (isAuthenticated()) {
+        <!-- Authenticated Menu -->
+        <ul class="navbar-nav me-auto">
+          <li class="nav-item">
+            <a
+              class="nav-link"
+              routerLink="/projects"
+              routerLinkActive="active"
+              (click)="closeMenu()">
+              <i class="fas fa-folder me-1"></i>
+              {{ 'nav.projects' | translate }}
+            </a>
+          </li>
+        </ul>
+
+        <!-- Right Side Tools -->
+        <div class="d-flex align-items-center gap-3">
+          <!-- Theme Toggle -->
+          <app-theme-toggle></app-theme-toggle>
+
+          <!-- Language Selector -->
+          <app-language-selector></app-language-selector>
+
+          <!-- User Info -->
+          <div class="dropdown">
+            <button
+              class="btn btn-outline-light btn-sm dropdown-toggle"
+              type="button"
+              data-bs-toggle="dropdown"
+              aria-expanded="false">
+              <i class="fas fa-user-circle me-1"></i>
+              <span class="d-none d-lg-inline">{{ currentUser()?.username || 'User' }}</span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li>
+                <span class="dropdown-item-text">
+                  <small class="text-muted">{{ 'nav.signedInAs' | translate }}</small><br>
+                  <strong>{{ currentUser()?.username }}</strong>
+                </span>
+              </li>
+              <li><hr class="dropdown-divider"></li>
+              <li>
+                <button class="dropdown-item text-danger" (click)="logout()">
+                  <i class="fas fa-sign-out-alt me-2"></i>
+                  {{ 'nav.logout' | translate }}
+                </button>
+              </li>
+            </ul>
+          </div>
+        </div>
+      } @else {
+        <!-- Guest Menu -->
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/auth/login" (click)="closeMenu()">
+              <i class="fas fa-sign-in-alt me-1"></i>
+              {{ 'nav.login' | translate }}
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="btn btn-outline-light btn-sm ms-2" routerLink="/auth/register" (click)="closeMenu()">
+              <i class="fas fa-user-plus me-1"></i>
+              {{ 'nav.register' | translate }}
+            </a>
+          </li>
+        </ul>
+      }
+    </div>
+  </div>
+</nav>
+```
+
+Create file: `frontend/project-tracker/src/app/layouts/navbar/navbar.component.css`
+
+```css
+.navbar {
+  transition: var(--transition-base);
+}
+
+.navbar-brand {
+  font-size: 1.25rem;
+  transition: var(--transition-fast);
+}
+
+.navbar-brand:hover {
+  transform: scale(1.05);
+}
+
+.nav-link {
+  transition: var(--transition-fast);
+  border-radius: var(--border-radius-sm);
+  margin: 0 0.25rem;
+}
+
+.nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.nav-link.active {
+  background-color: rgba(255, 255, 255, 0.2);
+  font-weight: var(--font-weight-medium);
+}
+
+.dropdown-menu {
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-lg);
+  border: none;
+  margin-top: 0.5rem;
+}
+
+.dropdown-item {
+  transition: var(--transition-fast);
+  border-radius: var(--border-radius-sm);
+  margin: 0.25rem 0.5rem;
+}
+
+.dropdown-item:hover {
+  background-color: var(--color-primary);
+  color: var(--color-white);
+}
+
+.dropdown-divider {
+  margin: 0.5rem 0;
+}
+
+@media (max-width: 991.98px) {
+  .navbar-collapse {
+    margin-top: 1rem;
+  }
+
+  .navbar-nav {
+    gap: 0.5rem;
+  }
+
+  .d-flex.gap-3 {
+    margin-top: 1rem;
+    flex-wrap: wrap;
+  }
+}
+```
+
+---
+
+## 🔄 Step 8: Update App Component to Use New Navbar
+
+Now let's update your main app component to use the new NavbarComponent.
+
+### Update file: `frontend/project-tracker/src/app/app.ts`
+
+Add the import at the top:
+
+```typescript
+import { NavbarComponent } from './layouts/navbar/navbar.component';
+```
+
+Update the `@Component` decorator imports array:
+
+```typescript
+@Component({
+  selector: 'app-root',
+  imports: [
+    CommonModule,
+    RouterOutlet,
+    NavbarComponent,  // Add this
+    ToastContainerComponent
+  ],
+  templateUrl: './app.html',
+  styleUrl: './app.css'
+})
+```
+
+### Update file: `frontend/project-tracker/src/app/app.html`
+
+Replace the inline navbar with the component:
+
+```html
+<!-- Skip to content link for accessibility -->
+<a href="#main-content" class="skip-link">
+  {{ 'common.skipToContent' | translate }}
+</a>
+
+<!-- Use new NavbarComponent -->
+<app-navbar></app-navbar>
+
+<!-- Main content -->
+<main id="main-content" class="container-fluid py-3" tabindex="-1">
+  <router-outlet></router-outlet>
+</main>
+
+<!-- Toast notifications (already implemented in Module 11) -->
+<app-toast-container></app-toast-container>
+```
+
+---
+
+## 🎯 Step 9: Accessibility Directives
+
+### Create directives directory:
+
+```bash
+mkdir -p frontend/project-tracker/src/app/shared/directives
+```
+
+Create file: `frontend/project-tracker/src/app/shared/directives/focus-trap.directive.ts`
+
+```typescript
+import { Directive, ElementRef, OnInit, OnDestroy, inject } from '@angular/core';
+
+/// <summary>
+/// Directive to trap focus within an element (useful for modals)
+/// </summary>
+@Directive({
+  selector: '[appFocusTrap]',
+  standalone: true
+})
+export class FocusTrapDirective implements OnInit, OnDestroy {
+  private readonly el = inject(ElementRef);
+  private firstFocusableElement: HTMLElement | null = null;
+  private lastFocusableElement: HTMLElement | null = null;
+
+  ngOnInit(): void {
+    this.setupFocusTrap();
+  }
+
+  ngOnDestroy(): void {
+    // Cleanup if needed
+  }
+
+  private setupFocusTrap(): void {
+    const focusableElements = this.el.nativeElement.querySelectorAll(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    );
+
+    if (focusableElements.length > 0) {
+      this.firstFocusableElement = focusableElements[0] as HTMLElement;
+      this.lastFocusableElement = focusableElements[focusableElements.length - 1] as HTMLElement;
+
+      this.el.nativeElement.addEventListener('keydown', this.handleKeyDown.bind(this));
+
+      // Focus first element
+      setTimeout(() => this.firstFocusableElement?.focus(), 100);
+    }
+  }
+
+  private handleKeyDown(event: KeyboardEvent): void {
+    if (event.key !== 'Tab') return;
+
+    if (event.shiftKey) {
+      // Shift + Tab
+      if (document.activeElement === this.firstFocusableElement) {
+        event.preventDefault();
+        this.lastFocusableElement?.focus();
+      }
+    } else {
+      // Tab
+      if (document.activeElement === this.lastFocusableElement) {
+        event.preventDefault();
+        this.firstFocusableElement?.focus();
+      }
+    }
+  }
+}
+```
+
+Create file: `frontend/project-tracker/src/app/shared/directives/skip-link.directive.ts`
+
+```typescript
+import { Directive, HostListener, ElementRef, inject } from '@angular/core';
+
+/// <summary>
+/// Directive for skip-to-content links (accessibility)
+/// </summary>
+@Directive({
+  selector: '[appSkipLink]',
+  standalone: true
+})
+export class SkipLinkDirective {
+  private readonly el = inject(ElementRef);
+
+  @HostListener('click', ['$event'])
+  onClick(event: Event): void {
+    event.preventDefault();
+    const targetId = this.el.nativeElement.getAttribute('href')?.substring(1);
+    if (targetId) {
+      const target = document.getElementById(targetId);
+      if (target) {
+        target.focus();
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+  }
+}
+```
+
+---
+
+## 🧪 Step 10: Add Translation Keys
+
+Add these translation keys to your translation files:
+
+### Update: `frontend/project-tracker/src/assets/i18n/en.json`
+
+```json
+{
+  "theme": {
+    "light": "Light",
+    "dark": "Dark",
+    "auto": "Auto"
+  },
+  "nav": {
+    "projects": "Projects",
+    "signedInAs": "Signed in as",
+    "logout": "Logout",
+    "login": "Login",
+    "register": "Register"
+  },
+  "common": {
+    "skipToContent": "Skip to main content"
+  }
+}
+```
+
+### Update: `frontend/project-tracker/src/assets/i18n/it.json`
+
+```json
+{
+  "theme": {
+    "light": "Chiaro",
+    "dark": "Scuro",
+    "auto": "Automatico"
+  },
+  "nav": {
+    "projects": "Progetti",
+    "signedInAs": "Connesso come",
+    "logout": "Esci",
+    "login": "Accedi",
+    "register": "Registrati"
+  },
+  "common": {
+    "skipToContent": "Vai al contenuto principale"
+  }
+}
+```
+
+---
+
+## ✅ Testing Your Implementation
+
+### Visual Tests:
+
+1. **Start your application:**
+   ```bash
+   cd frontend/project-tracker
+   npm start
+   ```
+
+2. **Test Dark Mode:**
+   - Click the theme toggle buttons in the navbar
+   - Switch between Light, Dark, and Auto
+   - Reload the page - theme should persist
+   - Change system theme (OS settings) with Auto selected
+
+3. **Test Responsive Design:**
+   - Resize browser window to mobile size
+   - Verify navbar collapses correctly
+   - Test theme toggle works on mobile
+
+4. **Test Navigation:**
+   - Click all navigation links
+   - Verify active link highlighting
+   - Test logout functionality
+
+### Accessibility Tests:
+
+5. **Keyboard Navigation:**
+   - Press Tab key repeatedly
+   - Verify focus moves through all interactive elements
+   - Check visible focus indicators
+   - Press Tab on page load to test skip-to-content link
+
+6. **Screen Reader (Optional):**
+   - Use NVDA or JAWS (Windows) or VoiceOver (Mac)
+   - Verify ARIA labels are announced
+   - Test theme toggle button descriptions
+
+### Functional Tests:
+
+7. **Verify Existing Features Still Work:**
+   - Toast notifications (from Module 11)
+   - Confirm dialogs (from Module 11)
+   - Project list and pagination (from Module 10)
+   - Language switching (from Module 7)
+
+---
+
 ## ✅ Summary
 
 ### **What We Built:**
@@ -1063,12 +1224,12 @@ html {
    - Light/Dark/Auto modes
 
 3. ✅ **Enhanced Navigation**
-   - Responsive navbar with mobile toggle
-   - Dropdown menus
+   - Responsive navbar component
    - Theme toggle integration
-   - Language selector integration
+   - Language selector integration (existing)
    - User profile dropdown
    - Active link highlighting
+   - Mobile-friendly collapsible menu
 
 4. ✅ **Reusable Components**
    - CardComponent with slots
@@ -1077,7 +1238,7 @@ html {
 
 5. ✅ **Accessibility Features**
    - Focus trap directive for modals
-   - Skip-to-content links
+   - Skip-to-content link
    - Keyboard navigation support
    - ARIA labels throughout
    - Focus-visible styles
@@ -1104,10 +1265,31 @@ html {
 ### **Production Tips:**
 - Use PurgeCSS to remove unused Bootstrap classes
 - Lazy load Font Awesome icons
-- Implement CSS-in-JS for component-specific styles
-- Use CSS Grid for complex layouts
-- Add prefers-reduced-motion media query
 - Test with screen readers (NVDA, JAWS)
+- Verify color contrast meets WCAG standards
+- Add prefers-reduced-motion media query for accessibility
+- Consider CDN for Bootstrap in production
+
+---
+
+## 🐛 Troubleshooting
+
+### Issue: Theme doesn't persist on reload
+**Solution**: Check browser localStorage - it should contain `app-theme` key
+
+### Issue: Dropdown menus don't work
+**Solution**: Ensure Bootstrap JavaScript is loaded. Check browser console for errors.
+
+### Issue: Dark mode colors look wrong
+**Solution**: Verify `data-bs-theme` attribute is set on `<html>` element using browser DevTools
+
+### Issue: Skip-to-content link doesn't work
+**Solution**: Verify `#main-content` ID exists on your main element
+
+### Issue: AuthService methods not found
+**Solution**: Check your AuthService implementation. You may need to adjust:
+- Change `isAuthenticated` to match your actual signal/method name
+- Change `currentUser` to match your actual signal/method name
 
 ---
 
