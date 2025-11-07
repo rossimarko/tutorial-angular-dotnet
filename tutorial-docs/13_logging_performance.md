@@ -1,84 +1,61 @@
-# Module 13: Logging, Error Handling & Performance Optimization# Module 13: Logging, Error Handling & Performance
+# Module 13: Logging, Error Handling & Performance Optimization
 
+## 🎯 Objectives
 
+By the end of this module, you will:
+- ✅ Enhance existing Serilog logging with enrichment
+- ✅ Add response caching to improve performance
+- ✅ Build a frontend logging service
+- ✅ Implement a global error handler
+- ✅ Create a comprehensive HTTP error interceptor
+- ✅ Enable lazy loading for better initial load performance
+- ✅ Add performance monitoring capabilities
+- ✅ Optimize change detection (already using OnPush)
 
-## 🎯 Objectives## 🎯 Objectives
+---
 
+## 📌 Current Implementation Status
 
+### ✅ Already Implemented (Great Start!)
 
-By the end of this module, you will:- ✅ Structured logging
+**Backend:**
+- ✅ Serilog logging (console + rolling file) - `backend/ProjectTracker.API/Program.cs:13-21`
+- ✅ ErrorHandlingMiddleware - `backend/ProjectTracker.API/Middleware/ErrorHandlingMiddleware.cs`
+- ✅ LoggingMiddleware (request timing) - `backend/ProjectTracker.API/Middleware/LoggingMiddleware.cs`
+- ✅ Proper middleware pipeline ordering
 
-- ✅ Implement structured logging with Serilog (.NET)- ✅ Global error handling
+**Frontend:**
+- ✅ OnPush change detection strategy (all components)
+- ✅ Basic error handling in auth interceptor
+- ✅ Signal-based reactive state management
 
-- ✅ Create a frontend logging service- ✅ HTTP interceptors
+### 🎯 What We'll Add in This Module
 
-- ✅ Build global error handling middleware- ✅ Caching strategies
+**Backend:**
+- 🆕 Enhanced Serilog configuration with enrichment
+- 🆕 Response caching middleware and attributes
+- 🆕 Memory caching for expensive operations
+- 🆕 Environment-specific error details
 
-- ✅ Implement HTTP error interceptor- ✅ Performance optimization
+**Frontend:**
+- 🆕 LoggerService with log levels
+- 🆕 GlobalErrorHandler implementation
+- 🆕 Comprehensive HTTP error interceptor
+- 🆕 Lazy loading for routes
+- 🆕 PerformanceService for monitoring
+- 🆕 TrackBy functions for lists
 
-- ✅ Add response caching strategies
+---
 
-- ✅ Optimize Angular change detection## 📌 Status: Framework Ready
+## 📝 Step 1: Enhance Backend Logging
 
-- ✅ Implement lazy loading and code splitting
+### 1.1 Enhance Serilog Configuration
 
-- ✅ Monitor performance metricsImplement:
+Our current Serilog setup is good, but let's add enrichment for better context.
 
-- ✅ Add request/response logging
+**Update file: `backend/ProjectTracker.API/Program.cs`**
 
-### Logging
-
-## 📋 What is Logging & Performance Optimization?- [ ] Backend: Serilog configuration
-
-- [ ] Frontend: Logger service
-
-**Logging** helps you:- [ ] Request/response logging
-
-- Debug production issues
-
-- Monitor application health### Error Handling
-
-- Track user behavior- [ ] Global error handler middleware
-
-- Audit security events- [ ] HTTP error interceptor
-
-- Analyze performance bottlenecks- [ ] User-friendly error messages
-
-
-
-**Performance Optimization** ensures:### Performance
-
-- Fast page loads- [ ] Response caching
-
-- Smooth user interactions- [ ] Request debouncing
-
-- Efficient resource usage- [ ] Lazy loading
-
-- Better SEO rankings- [ ] Code splitting
-
-- Lower server costs- [ ] Change detection optimization
-
-
-
-------
-
-
-
-## 📝 Step 1: Backend Structured Logging with Serilog**Next: [Module 14: Deployment](./14_deployment.md)**
-
-
-Install Serilog packages:
-
-```bash
-cd backend/ProjectTracker.API
-dotnet add package Serilog.AspNetCore
-dotnet add package Serilog.Sinks.File
-dotnet add package Serilog.Sinks.Console
-dotnet add package Serilog.Enrichers.Environment
-dotnet add package Serilog.Enrichers.Thread
-```
-
-Update file: `backend/ProjectTracker.API/Program.cs`
+Replace the Serilog configuration (lines 13-21):
 
 ```csharp
 using Serilog;
@@ -86,257 +63,159 @@ using Serilog.Events;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configure Serilog
-Log.Logger = new LoggerConfiguration()
-    .MinimumLevel.Information()
-    .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
-    .MinimumLevel.Override("Microsoft.Hosting.Lifetime", LogEventLevel.Information)
-    .Enrich.FromLogContext()
-    .Enrich.WithEnvironmentName()
-    .Enrich.WithMachineName()
-    .Enrich.WithThreadId()
-    .WriteTo.Console(
-        outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj} {Properties:j}{NewLine}{Exception}")
-    .WriteTo.File(
-        path: "logs/app-.txt",
-        rollingInterval: RollingInterval.Day,
-        outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj} {Properties:j}{NewLine}{Exception}",
-        retainedFileCountLimit: 30,
-        fileSizeLimitBytes: 10_000_000)
-    .CreateLogger();
-
-try
+// Enhanced Serilog configuration with enrichment
+builder.Host.UseSerilog((context, config) =>
 {
-    Log.Information("Starting ProjectTracker API");
-
-    // Use Serilog for request logging
-    builder.Host.UseSerilog();
-
-    // ... existing service configuration ...
-
-    var app = builder.Build();
-
-    // Add request logging
-    app.UseSerilogRequestLogging(options =>
-    {
-        options.MessageTemplate = "HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms";
-        options.GetLevel = (httpContext, elapsed, ex) => ex != null
-            ? LogEventLevel.Error
-            : httpContext.Response.StatusCode > 499
-                ? LogEventLevel.Error
-                : LogEventLevel.Information;
-        options.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
-        {
-            diagnosticContext.Set("RequestHost", httpContext.Request.Host.Value);
-            diagnosticContext.Set("RequestScheme", httpContext.Request.Scheme);
-            diagnosticContext.Set("UserAgent", httpContext.Request.Headers["User-Agent"].ToString());
-        };
-    });
-
-    // ... existing middleware configuration ...
-
-    app.Run();
-}
-catch (Exception ex)
-{
-    Log.Fatal(ex, "Application terminated unexpectedly");
-}
-finally
-{
-    Log.CloseAndFlush();
-}
+    config
+        .MinimumLevel.Information()
+        .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+        .MinimumLevel.Override("Microsoft.Hosting.Lifetime", LogEventLevel.Information)
+        .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Warning)
+        .Enrich.FromLogContext()
+        .Enrich.WithEnvironmentName()
+        .Enrich.WithMachineName()
+        .Enrich.WithThreadId()
+        .WriteTo.Console(
+            outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] [{SourceContext}] {Message:lj} {Properties:j}{NewLine}{Exception}")
+        .WriteTo.File(
+            path: "logs/app-.txt",
+            rollingInterval: RollingInterval.Day,
+            outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] [{SourceContext}] {Message:lj} {Properties:j}{NewLine}{Exception}",
+            retainedFileCountLimit: 30,
+            fileSizeLimitBytes: 10_000_000);
+});
 ```
 
-Create file: `backend/ProjectTracker.API/Services/LoggingService.cs`
+**What Changed:**
+- Added log level overrides to reduce noise from Microsoft libraries
+- Added context enrichment (environment, machine, thread)
+- Enhanced output templates with SourceContext
+- Better structured properties logging
 
-```csharp
-namespace ProjectTracker.API.Services;
+### 1.2 Install Serilog Enrichers
 
-/// <summary>
-/// Service for structured logging with context
-/// </summary>
-public interface ILoggingService
-{
-    void LogInformation(string message, params object[] args);
-    void LogWarning(string message, params object[] args);
-    void LogError(Exception exception, string message, params object[] args);
-    void LogDebug(string message, params object[] args);
-}
-
-/// <summary>
-/// Implementation of logging service
-/// </summary>
-public class LoggingService : ILoggingService
-{
-    private readonly ILogger<LoggingService> _logger;
-
-    public LoggingService(ILogger<LoggingService> logger)
-    {
-        _logger = logger;
-    }
-
-    /// <summary>
-    /// Log information message
-    /// </summary>
-    public void LogInformation(string message, params object[] args)
-    {
-        _logger.LogInformation(message, args);
-    }
-
-    /// <summary>
-    /// Log warning message
-    /// </summary>
-    public void LogWarning(string message, params object[] args)
-    {
-        _logger.LogWarning(message, args);
-    }
-
-    /// <summary>
-    /// Log error with exception
-    /// </summary>
-    public void LogError(Exception exception, string message, params object[] args)
-    {
-        _logger.LogError(exception, message, args);
-    }
-
-    /// <summary>
-    /// Log debug message
-    /// </summary>
-    public void LogDebug(string message, params object[] args)
-    {
-        _logger.LogDebug(message, args);
-    }
-}
+```bash
+cd backend/ProjectTracker.API
+dotnet add package Serilog.Enrichers.Environment
+dotnet add package Serilog.Enrichers.Thread
 ```
 
----
+### 1.3 Add Request Logging Enrichment
 
-## 🔧 Step 2: Enhanced Error Handling Middleware
-
-Update file: `backend/ProjectTracker.API/Middleware/ErrorHandlingMiddleware.cs`
+Create file: `backend/ProjectTracker.API/Middleware/RequestLoggingMiddleware.cs`
 
 ```csharp
-using System.Net;
-using System.Text.Json;
-using ProjectTracker.API.Models.Common;
+using Serilog.Context;
 
 namespace ProjectTracker.API.Middleware;
 
 /// <summary>
-/// Global error handling middleware with logging
+/// Enriches Serilog context with request-specific information
 /// </summary>
-public class ErrorHandlingMiddleware
+public class RequestLoggingMiddleware
 {
     private readonly RequestDelegate _next;
-    private readonly ILogger<ErrorHandlingMiddleware> _logger;
-    private readonly IWebHostEnvironment _env;
 
-    public ErrorHandlingMiddleware(
-        RequestDelegate next,
-        ILogger<ErrorHandlingMiddleware> logger,
-        IWebHostEnvironment env)
+    public RequestLoggingMiddleware(RequestDelegate next)
     {
         _next = next;
-        _logger = logger;
-        _env = env;
     }
 
     public async Task InvokeAsync(HttpContext context)
     {
-        try
+        // Add request-specific properties to the log context
+        using (LogContext.PushProperty("RequestId", context.TraceIdentifier))
+        using (LogContext.PushProperty("RequestPath", context.Request.Path))
+        using (LogContext.PushProperty("RequestMethod", context.Request.Method))
+        using (LogContext.PushProperty("UserAgent", context.Request.Headers["User-Agent"].ToString()))
         {
             await _next(context);
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "An unhandled exception occurred: {Message}", ex.Message);
-            await HandleExceptionAsync(context, ex);
-        }
-    }
-
-    private async Task HandleExceptionAsync(HttpContext context, Exception exception)
-    {
-        context.Response.ContentType = "application/json";
-        
-        var response = new ErrorResponse
-        {
-            Success = false,
-            Message = GetUserFriendlyMessage(exception),
-            Timestamp = DateTime.UtcNow
-        };
-
-        // Add stack trace in development
-        if (_env.IsDevelopment())
-        {
-            response.Details = exception.StackTrace;
-            response.InnerException = exception.InnerException?.Message;
-        }
-
-        context.Response.StatusCode = exception switch
-        {
-            ArgumentNullException => (int)HttpStatusCode.BadRequest,
-            ArgumentException => (int)HttpStatusCode.BadRequest,
-            UnauthorizedAccessException => (int)HttpStatusCode.Unauthorized,
-            KeyNotFoundException => (int)HttpStatusCode.NotFound,
-            InvalidOperationException => (int)HttpStatusCode.Conflict,
-            _ => (int)HttpStatusCode.InternalServerError
-        };
-
-        response.StatusCode = context.Response.StatusCode;
-
-        var options = new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-        };
-
-        var json = JsonSerializer.Serialize(response, options);
-        await context.Response.WriteAsync(json);
-    }
-
-    private static string GetUserFriendlyMessage(Exception exception)
-    {
-        return exception switch
-        {
-            ArgumentNullException => "A required value was not provided.",
-            ArgumentException => "Invalid argument provided.",
-            UnauthorizedAccessException => "You are not authorized to perform this action.",
-            KeyNotFoundException => "The requested resource was not found.",
-            InvalidOperationException => "The operation could not be completed.",
-            _ => "An unexpected error occurred. Please try again later."
-        };
     }
 }
+```
 
-/// <summary>
-/// Error response model
-/// </summary>
-public class ErrorResponse
+Register in `backend/ProjectTracker.API/Configuration/MiddlewareExtensions.cs`:
+
+```csharp
+public static WebApplication UseApplicationMiddleware(this WebApplication app)
 {
-    public required bool Success { get; init; }
-    public required string Message { get; init; }
-    public required int StatusCode { get; set; }
-    public required DateTime Timestamp { get; init; }
-    public string? Details { get; set; }
-    public string? InnerException { get; set; }
+    app.UseMiddleware<ErrorHandlingMiddleware>();
+    app.UseMiddleware<RequestLoggingMiddleware>(); // Add this line
+    app.UseMiddleware<LoggingMiddleware>();
+
+    // ... rest of the middleware
 }
 ```
 
 ---
 
-## 🎯 Step 3: Response Caching
+## 🚀 Step 2: Add Response Caching
 
-Update file: `backend/ProjectTracker.API/Program.cs`
+### 2.1 Configure Response Caching
 
-Add response caching:
+**Update file: `backend/ProjectTracker.API/Configuration/ServiceExtensions.cs`**
+
+Add response caching configuration:
 
 ```csharp
-// Add response caching
-builder.Services.AddResponseCaching();
-builder.Services.AddMemoryCache();
+public static IServiceCollection AddApiServices(this IServiceCollection services)
+{
+    // Add response caching
+    services.AddResponseCaching(options =>
+    {
+        options.MaximumBodySize = 1024; // 1KB max cache size per entry
+        options.SizeLimit = 100 * 1024 * 1024; // 100MB total cache size
+    });
 
-// Configure in the middleware pipeline
-app.UseResponseCaching();
+    // Add memory cache for application-level caching
+    services.AddMemoryCache();
+
+    return services;
+}
 ```
+
+Register in `Program.cs`:
+
+```csharp
+builder.Services.AddApiControllers();
+builder.Services.AddApiDocumentation();
+builder.Services.AddApiServices(); // Add this line
+builder.Services.AddCorsPolicy(builder.Configuration);
+```
+
+### 2.2 Enable Response Caching Middleware
+
+**Update file: `backend/ProjectTracker.API/Configuration/MiddlewareExtensions.cs`**
+
+```csharp
+public static WebApplication UseApplicationMiddleware(this WebApplication app)
+{
+    app.UseMiddleware<ErrorHandlingMiddleware>();
+    app.UseMiddleware<RequestLoggingMiddleware>();
+    app.UseMiddleware<LoggingMiddleware>();
+
+    if (app.Environment.IsDevelopment())
+    {
+        app.UseSwagger();
+        app.UseSwaggerUI();
+    }
+
+    app.UseHttpsRedirection();
+    app.UseCors("AllowAngularApp");
+
+    // Add response caching before authentication
+    app.UseResponseCaching();
+
+    app.UseAuthentication();
+    app.UseAuthorization();
+
+    app.MapControllers();
+    return app;
+}
+```
+
+### 2.3 Create Cache Attribute
 
 Create file: `backend/ProjectTracker.API/Attributes/CacheAttribute.cs`
 
@@ -348,50 +227,63 @@ namespace ProjectTracker.API.Attributes;
 
 /// <summary>
 /// Attribute to enable response caching on controller actions
+/// Use only on GET endpoints that return cacheable data
 /// </summary>
 [AttributeUsage(AttributeTargets.Method)]
-public class CacheAttribute : Attribute, IActionFilter
+public class CacheAttribute : ActionFilterAttribute
 {
     private readonly int _durationInSeconds;
+    private readonly bool _varyByQueryKeys;
 
-    public CacheAttribute(int durationInSeconds = 60)
+    public CacheAttribute(int durationInSeconds = 60, bool varyByQueryKeys = false)
     {
         _durationInSeconds = durationInSeconds;
+        _varyByQueryKeys = varyByQueryKeys;
     }
 
-    public void OnActionExecuting(ActionExecutingContext context)
+    public override void OnActionExecuted(ActionExecutedContext context)
     {
-        // Nothing to do before action executes
-    }
-
-    public void OnActionExecuted(ActionExecutedContext context)
-    {
-        if (context.Result is OkObjectResult)
+        if (context.HttpContext.Request.Method == HttpMethods.Get)
         {
-            context.HttpContext.Response.Headers["Cache-Control"] = 
+            context.HttpContext.Response.Headers["Cache-Control"] =
                 $"public, max-age={_durationInSeconds}";
+
+            if (_varyByQueryKeys)
+            {
+                // Vary by all query parameters
+                context.HttpContext.Response.Headers["Vary"] = "Accept";
+            }
         }
+
+        base.OnActionExecuted(context);
     }
 }
 ```
 
-Usage example in controller:
+### 2.4 Apply Caching to Controller
+
+**Example usage in `backend/ProjectTracker.API/Controllers/TranslationsController.cs`:**
 
 ```csharp
 /// <summary>
-/// Get all projects (cached for 60 seconds)
+/// Get translations for a specific culture
+/// Cached for 5 minutes since translations rarely change
 /// </summary>
-[HttpGet]
-[Cache(60)]
-public async Task<ActionResult<IEnumerable<Project>>> GetProjects()
+[HttpGet("{culture}")]
+[AllowAnonymous]
+[Cache(300)] // Cache for 5 minutes
+public async Task<ActionResult<IEnumerable<TranslationDto>>> GetTranslations(string culture)
 {
-    // ... implementation
+    _logger.LogInformation("Getting translations for culture: {Culture}", culture);
+
+    var translations = await _translationRepository.GetByCultureAsync(culture);
+    return Ok(translations);
 }
 ```
 
 ---
 
-## 📊 Step 4: Frontend Logging Service
+## 📊 Step 3: Frontend Logger Service
 
 Create file: `frontend/project-tracker/src/app/shared/services/logger.service.ts`
 
@@ -399,9 +291,9 @@ Create file: `frontend/project-tracker/src/app/shared/services/logger.service.ts
 import { Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
 
-/// <summary>
-/// Log level enum
-/// </summary>
+/**
+ * Log level enum
+ */
 export enum LogLevel {
   Debug = 0,
   Info = 1,
@@ -410,21 +302,24 @@ export enum LogLevel {
   Fatal = 4
 }
 
-/// <summary>
-/// Log entry model
-/// </summary>
+/**
+ * Log entry model
+ */
 export interface LogEntry {
   level: LogLevel;
   message: string;
   timestamp: Date;
   data?: any;
   stack?: string;
+  url?: string;
 }
 
-/// <summary>
-/// Logging service for frontend
-/// Logs to console in development, can send to backend in production
-/// </summary>
+/**
+ * Logging service for frontend
+ * - Logs to console in development
+ * - Stores logs in memory for debugging
+ * - Can send critical errors to backend (future enhancement)
+ */
 @Injectable({
   providedIn: 'root'
 })
@@ -433,58 +328,58 @@ export class LoggerService {
   private readonly logs: LogEntry[] = [];
   private readonly maxLogs = 100;
 
-  /// <summary>
-  /// Log debug message
-  /// </summary>
+  /**
+   * Log debug message (development only)
+   */
   debug(message: string, data?: any): void {
     this.log(LogLevel.Debug, message, data);
   }
 
-  /// <summary>
-  /// Log info message
-  /// </summary>
+  /**
+   * Log info message
+   */
   info(message: string, data?: any): void {
     this.log(LogLevel.Info, message, data);
   }
 
-  /// <summary>
-  /// Log warning message
-  /// </summary>
+  /**
+   * Log warning message
+   */
   warning(message: string, data?: any): void {
     this.log(LogLevel.Warning, message, data);
   }
 
-  /// <summary>
-  /// Log error message
-  /// </summary>
+  /**
+   * Log error message
+   */
   error(message: string, error?: Error | any): void {
     this.log(LogLevel.Error, message, error, error?.stack);
   }
 
-  /// <summary>
-  /// Log fatal error
-  /// </summary>
+  /**
+   * Log fatal error
+   */
   fatal(message: string, error?: Error | any): void {
     this.log(LogLevel.Fatal, message, error, error?.stack);
   }
 
-  /// <summary>
-  /// Get recent logs
-  /// </summary>
+  /**
+   * Get recent logs (useful for debugging)
+   */
   getLogs(): LogEntry[] {
     return [...this.logs];
   }
 
-  /// <summary>
-  /// Clear all logs
-  /// </summary>
+  /**
+   * Clear all logs
+   */
   clearLogs(): void {
     this.logs.length = 0;
   }
 
-  /// <summary>
-  /// Internal log method
-  /// </summary>
+  /**
+   * Internal log method
+   */
   private log(level: LogLevel, message: string, data?: any, stack?: string): void {
     if (level < this.minLevel) {
       return;
@@ -495,7 +390,8 @@ export class LoggerService {
       message,
       timestamp: new Date(),
       data,
-      stack
+      stack,
+      url: window.location.href
     };
 
     // Add to in-memory logs
@@ -507,15 +403,15 @@ export class LoggerService {
     // Log to console
     this.logToConsole(entry);
 
-    // In production, send critical errors to backend
-    if (environment.production && level >= LogLevel.Error) {
-      this.sendToBackend(entry);
-    }
+    // In production, send critical errors to backend (future enhancement)
+    // if (environment.production && level >= LogLevel.Error) {
+    //   this.sendToBackend(entry);
+    // }
   }
 
-  /// <summary>
-  /// Log to browser console
-  /// </summary>
+  /**
+   * Log to browser console with appropriate styling
+   */
   private logToConsole(entry: LogEntry): void {
     const prefix = `[${entry.timestamp.toISOString()}] [${LogLevel[entry.level]}]`;
     const style = this.getConsoleStyle(entry.level);
@@ -534,48 +430,31 @@ export class LoggerService {
       case LogLevel.Fatal:
         console.error(`%c${prefix}`, style, entry.message, entry.data);
         if (entry.stack) {
-          console.error(entry.stack);
+          console.error('Stack trace:', entry.stack);
         }
         break;
     }
   }
 
-  /// <summary>
-  /// Get console style for log level
-  /// </summary>
+  /**
+   * Get console style for log level
+   */
   private getConsoleStyle(level: LogLevel): string {
     const styles: Record<LogLevel, string> = {
       [LogLevel.Debug]: 'color: gray',
       [LogLevel.Info]: 'color: blue',
-      [LogLevel.Warning]: 'color: orange',
+      [LogLevel.Warning]: 'color: orange; font-weight: bold',
       [LogLevel.Error]: 'color: red; font-weight: bold',
-      [LogLevel.Fatal]: 'color: white; background-color: red; font-weight: bold'
+      [LogLevel.Fatal]: 'color: white; background-color: red; font-weight: bold; padding: 2px 4px'
     };
     return styles[level];
-  }
-
-  /// <summary>
-  /// Send log to backend (production only)
-  /// </summary>
-  private sendToBackend(entry: LogEntry): void {
-    // TODO: Implement API call to send logs to backend
-    // Example: POST /api/logs
-    try {
-      fetch(`${environment.apiUrl}/logs`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(entry)
-      }).catch(err => console.error('Failed to send log to backend:', err));
-    } catch (error) {
-      console.error('Error sending log to backend:', error);
-    }
   }
 }
 ```
 
 ---
 
-## 🚨 Step 5: Global Error Handler
+## 🚨 Step 4: Global Error Handler
 
 Create file: `frontend/project-tracker/src/app/shared/services/global-error-handler.service.ts`
 
@@ -583,36 +462,50 @@ Create file: `frontend/project-tracker/src/app/shared/services/global-error-hand
 import { ErrorHandler, Injectable, inject } from '@angular/core';
 import { LoggerService } from './logger.service';
 import { NotificationService } from './notification.service';
+import { environment } from '../../../environments/environment';
 
-/// <summary>
-/// Global error handler for Angular application
-/// Catches all unhandled errors
-/// </summary>
+/**
+ * Global error handler for Angular application
+ * Catches all unhandled errors and exceptions
+ */
 @Injectable()
 export class GlobalErrorHandler implements ErrorHandler {
   private readonly logger = inject(LoggerService);
   private readonly notificationService = inject(NotificationService);
 
   handleError(error: Error | any): void {
-    // Log the error
+    // Log the error with full details
     this.logger.error('Unhandled error occurred', error);
 
     // Extract user-friendly message
     const message = this.getUserFriendlyMessage(error);
 
-    // Show notification to user
-    this.notificationService.error('Error', message);
+    // Show notification to user (production only - avoid noise in dev)
+    if (environment.production) {
+      this.notificationService.error('Error', message);
+    }
 
-    // Rethrow in development for debugging
-    if (!this.isProduction()) {
-      console.error('GlobalErrorHandler:', error);
+    // In development, also log to console for debugging
+    if (!environment.production) {
+      console.error('🔴 GlobalErrorHandler:', error);
     }
   }
 
-  /// <summary>
-  /// Get user-friendly error message
-  /// </summary>
+  /**
+   * Extract user-friendly error message
+   */
   private getUserFriendlyMessage(error: any): string {
+    // HTTP errors are handled by interceptor
+    if (error?.status) {
+      return 'A network error occurred. Please try again.';
+    }
+
+    // Angular errors
+    if (error?.rejection) {
+      return 'An application error occurred. Please refresh the page.';
+    }
+
+    // Custom error messages
     if (error?.error?.message) {
       return error.error.message;
     }
@@ -627,25 +520,27 @@ export class GlobalErrorHandler implements ErrorHandler {
 
     return 'An unexpected error occurred. Please try again.';
   }
-
-  /// <summary>
-  /// Check if running in production
-  /// </summary>
-  private isProduction(): boolean {
-    return false; // Replace with environment.production
-  }
 }
 ```
 
-Register in `app.config.ts`:
+**Register in `frontend/project-tracker/src/app/app.config.ts`:**
 
 ```typescript
-import { ApplicationConfig, ErrorHandler } from '@angular/core';
+import { ApplicationConfig, ErrorHandler, provideZoneChangeDetection } from '@angular/core';
+import { provideRouter } from '@angular/router';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { routes } from './app.routes';
+import { authHttpInterceptor } from './core/interceptors/auth.http-interceptor';
 import { GlobalErrorHandler } from './shared/services/global-error-handler.service';
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    // ... other providers
+    provideZoneChangeDetection({ eventCoalescing: true }),
+    provideRouter(routes),
+    provideHttpClient(
+      withInterceptors([authHttpInterceptor])
+    ),
+    // Register global error handler
     { provide: ErrorHandler, useClass: GlobalErrorHandler }
   ]
 };
@@ -653,23 +548,25 @@ export const appConfig: ApplicationConfig = {
 
 ---
 
-## 🔌 Step 6: HTTP Error Interceptor
+## 🔌 Step 5: HTTP Error Interceptor
 
-Create file: `frontend/project-tracker/src/app/shared/interceptors/error.interceptor.ts`
+We already have basic error handling in `auth.http-interceptor.ts`. Let's create a dedicated error interceptor.
+
+Create file: `frontend/project-tracker/src/app/core/interceptors/error.http-interceptor.ts`
 
 ```typescript
 import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { catchError, throwError } from 'rxjs';
-import { LoggerService } from '../services/logger.service';
-import { NotificationService } from '../services/notification.service';
+import { LoggerService } from '../../shared/services/logger.service';
+import { NotificationService } from '../../shared/services/notification.service';
 import { Router } from '@angular/router';
 
-/// <summary>
-/// HTTP error interceptor
-/// Handles HTTP errors globally
-/// </summary>
-export const errorInterceptor: HttpInterceptorFn = (req, next) => {
+/**
+ * HTTP error interceptor
+ * Handles all HTTP errors globally with appropriate user feedback
+ */
+export const errorHttpInterceptor: HttpInterceptorFn = (req, next) => {
   const logger = inject(LoggerService);
   const notificationService = inject(NotificationService);
   const router = inject(Router);
@@ -685,182 +582,211 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
       } else {
         // Server-side error
         errorMessage = getServerErrorMessage(error);
-        logger.error(`HTTP Error ${error.status}`, {
+        logger.error(`HTTP ${error.status} Error`, {
           url: error.url,
           status: error.status,
-          message: errorMessage
+          statusText: error.statusText,
+          message: errorMessage,
+          body: error.error
         });
       }
 
       // Handle specific status codes
-      switch (error.status) {
-        case 401:
-          notificationService.warning('Unauthorized', 'Please log in to continue');
-          router.navigate(['/auth/login']);
-          break;
-        case 403:
-          notificationService.error('Forbidden', 'You do not have permission to access this resource');
-          break;
-        case 404:
-          notificationService.warning('Not Found', 'The requested resource was not found');
-          break;
-        case 500:
-          notificationService.error('Server Error', 'An internal server error occurred');
-          break;
-        case 0:
-          notificationService.error('Network Error', 'Unable to connect to the server');
-          break;
-        default:
-          notificationService.error('Error', errorMessage);
-      }
+      handleStatusCode(error.status, errorMessage, notificationService, router);
 
+      // Re-throw the error so components can handle it if needed
       return throwError(() => error);
     })
   );
 };
 
-/// <summary>
-/// Extract error message from server response
-/// </summary>
+/**
+ * Extract error message from server response
+ */
 function getServerErrorMessage(error: HttpErrorResponse): string {
+  // Check for API error response format
   if (error.error?.message) {
     return error.error.message;
   }
 
+  // Check for validation errors
+  if (error.error?.errors && Array.isArray(error.error.errors)) {
+    const messages = error.error.errors.map((e: any) => e.message || e).join(', ');
+    return messages || 'Validation failed';
+  }
+
+  // Fallback to status text
   if (error.message) {
     return error.message;
   }
 
   return `Server Error ${error.status}: ${error.statusText}`;
 }
+
+/**
+ * Handle specific HTTP status codes
+ */
+function handleStatusCode(
+  status: number,
+  message: string,
+  notificationService: NotificationService,
+  router: Router
+): void {
+  switch (status) {
+    case 400:
+      notificationService.warning('Invalid Request', message);
+      break;
+    case 401:
+      // Don't show notification - auth interceptor handles this
+      // Router navigation is handled by auth service
+      break;
+    case 403:
+      notificationService.error('Forbidden', 'You do not have permission to access this resource');
+      break;
+    case 404:
+      notificationService.warning('Not Found', 'The requested resource was not found');
+      break;
+    case 500:
+      notificationService.error('Server Error', 'An internal server error occurred. Please try again later.');
+      break;
+    case 503:
+      notificationService.error('Service Unavailable', 'The service is temporarily unavailable. Please try again later.');
+      break;
+    case 0:
+      notificationService.error('Network Error', 'Unable to connect to the server. Please check your connection.');
+      break;
+    default:
+      if (status >= 500) {
+        notificationService.error('Server Error', message);
+      } else if (status >= 400) {
+        notificationService.warning('Error', message);
+      }
+  }
+}
 ```
 
-Register in `app.config.ts`:
+**Register in `frontend/project-tracker/src/app/app.config.ts`:**
 
 ```typescript
-import { provideHttpClient, withInterceptors } from '@angular/common/http';
-import { errorInterceptor } from './shared/interceptors/error.interceptor';
+import { authHttpInterceptor } from './core/interceptors/auth.http-interceptor';
+import { errorHttpInterceptor } from './core/interceptors/error.http-interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideHttpClient(
-      withInterceptors([errorInterceptor])
-    )
+      withInterceptors([
+        authHttpInterceptor,
+        errorHttpInterceptor  // Add after auth interceptor
+      ])
+    ),
+    { provide: ErrorHandler, useClass: GlobalErrorHandler }
   ]
 };
 ```
 
 ---
 
-## ⚡ Step 7: Performance Optimization - Lazy Loading
+## ⚡ Step 6: Implement Lazy Loading
 
-Update your routing to implement lazy loading:
+Currently, all routes load components eagerly. Let's implement lazy loading for better performance.
+
+**Update file: `frontend/project-tracker/src/app/app.routes.ts`:**
 
 ```typescript
 import { Routes } from '@angular/router';
+import { authGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
-  {
-    path: '',
-    redirectTo: '/dashboard',
-    pathMatch: 'full'
-  },
+  // Lazy load auth feature
   {
     path: 'auth',
-    loadChildren: () => import('./features/auth/auth.routes').then(m => m.AUTH_ROUTES)
+    loadChildren: () => import('./features/auth/auth.routes').then(m => m.authRoutes)
   },
+
+  // Lazy load projects feature (protected)
   {
     path: 'projects',
-    loadChildren: () => import('./features/projects/projects.routes').then(m => m.PROJECT_ROUTES)
+    canActivate: [authGuard],
+    loadChildren: () => import('./features/projects/projects.routes').then(m => m.projectRoutes)
   },
+
+  // Default redirect
   {
-    path: 'dashboard',
-    loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent)
+    path: '',
+    redirectTo: '/projects',
+    pathMatch: 'full'
   },
+
+  // 404 - lazy load not-found component
   {
     path: '**',
-    loadComponent: () => import('./shared/components/not-found/not-found.component').then(m => m.NotFoundComponent)
+    loadComponent: () => import('./shared/components/not-found/not-found.component')
+      .then(m => m.NotFoundComponent)
   }
 ];
 ```
 
-Create feature route files:
+**Create file: `frontend/project-tracker/src/app/features/projects/projects.routes.ts`:**
 
 ```typescript
-// auth.routes.ts
 import { Routes } from '@angular/router';
 
-export const AUTH_ROUTES: Routes = [
-  {
-    path: 'login',
-    loadComponent: () => import('./components/login/login.component').then(m => m.LoginComponent)
-  },
-  {
-    path: 'register',
-    loadComponent: () => import('./components/register/register.component').then(m => m.RegisterComponent)
-  }
-];
-
-// projects.routes.ts
-import { Routes } from '@angular/router';
-
-export const PROJECT_ROUTES: Routes = [
+export const projectRoutes: Routes = [
   {
     path: '',
-    loadComponent: () => import('./components/project-list/project-list.component').then(m => m.ProjectListComponent)
+    loadComponent: () => import('./components/project-list/project-list.component')
+      .then(m => m.ProjectListComponent)
   },
   {
     path: 'create',
-    loadComponent: () => import('./components/project-form/project-form.component').then(m => m.ProjectFormComponent)
+    loadComponent: () => import('./components/project-form/project-form.component')
+      .then(m => m.ProjectFormComponent)
   },
   {
     path: ':id/edit',
-    loadComponent: () => import('./components/project-form/project-form.component').then(m => m.ProjectFormComponent)
+    loadComponent: () => import('./components/project-form/project-form.component')
+      .then(m => m.ProjectFormComponent)
   }
 ];
 ```
 
----
-
-## 🎨 Step 8: Change Detection Optimization
-
-Create file: `frontend/project-tracker/src/app/shared/directives/performance-monitor.directive.ts`
+**Update file: `frontend/project-tracker/src/app/features/auth/auth.routes.ts`:**
 
 ```typescript
-import { Directive, ElementRef, inject, OnInit, OnDestroy } from '@angular/core';
-import { LoggerService } from '../services/logger.service';
+import { Routes } from '@angular/router';
 
-/// <summary>
-/// Directive to monitor component render performance
-/// </summary>
-@Directive({
-  selector: '[appPerformanceMonitor]'
-})
-export class PerformanceMonitorDirective implements OnInit, OnDestroy {
-  private readonly el = inject(ElementRef);
-  private readonly logger = inject(LoggerService);
-  private startTime: number = 0;
-
-  ngOnInit(): void {
-    this.startTime = performance.now();
+export const authRoutes: Routes = [
+  {
+    path: 'login',
+    loadComponent: () => import('./components/login/login.component')
+      .then(m => m.LoginComponent)
+  },
+  {
+    path: 'register',
+    loadComponent: () => import('./components/register/register.component')
+      .then(m => m.RegisterComponent)
+  },
+  {
+    path: '',
+    redirectTo: 'login',
+    pathMatch: 'full'
   }
+];
+```
 
-  ngOnDestroy(): void {
-    const duration = performance.now() - this.startTime;
-    const componentName = this.el.nativeElement.tagName.toLowerCase();
-    
-    if (duration > 100) {
-      this.logger.warning(`Slow render detected: ${componentName} took ${duration.toFixed(2)}ms`);
-    } else {
-      this.logger.debug(`${componentName} rendered in ${duration.toFixed(2)}ms`);
-    }
-  }
-}
+**Remove eager imports from `app.routes.ts`:**
+
+Delete these lines:
+```typescript
+// Remove these imports:
+import { ProjectListComponent } from './features/projects/components/project-list/project-list.component';
+import { ProjectFormComponent } from './features/projects/components/project-form/project-form.component';
+import { LoginComponent } from './features/auth/components/login/login.component';
 ```
 
 ---
 
-## 📈 Step 9: Performance Monitoring Service
+## 📈 Step 7: Performance Monitoring Service
 
 Create file: `frontend/project-tracker/src/app/shared/services/performance.service.ts`
 
@@ -868,38 +794,43 @@ Create file: `frontend/project-tracker/src/app/shared/services/performance.servi
 import { Injectable, signal } from '@angular/core';
 import { LoggerService } from './logger.service';
 
-/// <summary>
-/// Performance metric
-/// </summary>
+/**
+ * Performance metric entry
+ */
 export interface PerformanceMetric {
   name: string;
   duration: number;
   timestamp: Date;
+  type: 'operation' | 'navigation' | 'http' | 'render';
 }
 
-/// <summary>
-/// Service for monitoring application performance
-/// </summary>
+/**
+ * Service for monitoring application performance
+ * Tracks operation timing and collects metrics
+ */
 @Injectable({
   providedIn: 'root'
 })
 export class PerformanceService {
   private readonly metrics = signal<PerformanceMetric[]>([]);
   private readonly timers = new Map<string, number>();
+  private readonly maxMetrics = 100;
 
-  constructor(private readonly logger: LoggerService) {}
+  constructor(private readonly logger: LoggerService) {
+    this.captureNavigationTiming();
+  }
 
-  /// <summary>
-  /// Start performance timer
-  /// </summary>
+  /**
+   * Start performance timer
+   */
   startTimer(name: string): void {
     this.timers.set(name, performance.now());
   }
 
-  /// <summary>
-  /// End performance timer and log metric
-  /// </summary>
-  endTimer(name: string): number {
+  /**
+   * End performance timer and log metric
+   */
+  endTimer(name: string, type: PerformanceMetric['type'] = 'operation'): number {
     const startTime = this.timers.get(name);
     if (!startTime) {
       this.logger.warning(`Timer "${name}" was not started`);
@@ -909,146 +840,370 @@ export class PerformanceService {
     const duration = performance.now() - startTime;
     this.timers.delete(name);
 
-    const metric: PerformanceMetric = {
+    this.addMetric({
       name,
       duration,
-      timestamp: new Date()
-    };
+      timestamp: new Date(),
+      type
+    });
 
-    this.metrics.update(metrics => [...metrics, metric]);
-
+    // Log slow operations
     if (duration > 1000) {
-      this.logger.warning(`Slow operation: ${name} took ${duration.toFixed(2)}ms`);
-    } else {
-      this.logger.debug(`${name} completed in ${duration.toFixed(2)}ms`);
+      this.logger.warning(`Slow ${type}: ${name} took ${duration.toFixed(2)}ms`);
+    } else if (duration > 100) {
+      this.logger.debug(`${name} took ${duration.toFixed(2)}ms`);
     }
 
     return duration;
   }
 
-  /// <summary>
-  /// Get all metrics
-  /// </summary>
-  getMetrics() {
-    return this.metrics.asReadonly();
-  }
-
-  /// <summary>
-  /// Clear all metrics
-  /// </summary>
-  clearMetrics(): void {
-    this.metrics.set([]);
-  }
-
-  /// <summary>
-  /// Measure function execution time
-  /// </summary>
-  async measure<T>(name: string, fn: () => T | Promise<T>): Promise<T> {
+  /**
+   * Measure async function execution time
+   */
+  async measure<T>(
+    name: string,
+    fn: () => T | Promise<T>,
+    type: PerformanceMetric['type'] = 'operation'
+  ): Promise<T> {
     this.startTimer(name);
     try {
       const result = await Promise.resolve(fn());
       return result;
     } finally {
-      this.endTimer(name);
+      this.endTimer(name, type);
     }
   }
-}
-```
 
-Usage example:
+  /**
+   * Add metric to collection
+   */
+  private addMetric(metric: PerformanceMetric): void {
+    this.metrics.update(metrics => {
+      const updated = [...metrics, metric];
+      // Keep only the most recent metrics
+      if (updated.length > this.maxMetrics) {
+        updated.shift();
+      }
+      return updated;
+    });
+  }
 
-```typescript
-// In a component or service
-export class ProjectService {
-  private readonly performanceService = inject(PerformanceService);
+  /**
+   * Get all collected metrics
+   */
+  getMetrics() {
+    return this.metrics.asReadonly();
+  }
 
-  async loadProjects(): Promise<void> {
-    await this.performanceService.measure('loadProjects', async () => {
-      // Your async operation here
-      const projects = await this.http.get<Project[]>(this.apiUrl).toPromise();
-      this.projects.set(projects);
+  /**
+   * Get metrics by type
+   */
+  getMetricsByType(type: PerformanceMetric['type']): PerformanceMetric[] {
+    return this.metrics().filter(m => m.type === type);
+  }
+
+  /**
+   * Get average duration for a specific metric name
+   */
+  getAverageDuration(name: string): number {
+    const filtered = this.metrics().filter(m => m.name === name);
+    if (filtered.length === 0) return 0;
+
+    const sum = filtered.reduce((acc, m) => acc + m.duration, 0);
+    return sum / filtered.length;
+  }
+
+  /**
+   * Clear all metrics
+   */
+  clearMetrics(): void {
+    this.metrics.set([]);
+  }
+
+  /**
+   * Capture browser navigation timing
+   */
+  private captureNavigationTiming(): void {
+    if (typeof window === 'undefined' || !window.performance) {
+      return;
+    }
+
+    // Wait for page load to complete
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        const timing = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
+
+        if (timing) {
+          this.addMetric({
+            name: 'DOM Content Loaded',
+            duration: timing.domContentLoadedEventEnd - timing.domContentLoadedEventStart,
+            timestamp: new Date(),
+            type: 'navigation'
+          });
+
+          this.addMetric({
+            name: 'Page Load',
+            duration: timing.loadEventEnd - timing.loadEventStart,
+            timestamp: new Date(),
+            type: 'navigation'
+          });
+
+          this.logger.info('Navigation timing captured', {
+            domContentLoaded: timing.domContentLoadedEventEnd - timing.domContentLoadedEventStart,
+            pageLoad: timing.loadEventEnd - timing.loadEventStart
+          });
+        }
+      }, 0);
     });
   }
 }
 ```
 
+**Usage Example in a Service:**
+
+```typescript
+// In project.service.ts
+export class ProjectService {
+  private readonly http = inject(HttpClient);
+  private readonly performanceService = inject(PerformanceService);
+
+  getProjects(): Observable<Project[]> {
+    return defer(() => {
+      this.performanceService.startTimer('fetch-projects');
+      return this.http.get<ApiResponse<Project[]>>(`${this.apiUrl}/projects`);
+    }).pipe(
+      tap(() => this.performanceService.endTimer('fetch-projects', 'http')),
+      map(response => response.data)
+    );
+  }
+}
+```
+
 ---
 
-## ✅ Summary
+## 🎨 Step 8: Optimize List Rendering with TrackBy
 
-### **What We Built:**
+Lists should use `trackBy` functions to optimize re-rendering.
 
-1. ✅ **Backend Logging (Serilog)**
-   - Structured logging to console and file
-   - Request/response logging
-   - Log enrichment (environment, machine, thread)
-   - Rolling file logs with retention
-   - Custom logging service
+**Update file: `frontend/project-tracker/src/app/features/projects/components/project-list/project-list.component.ts`:**
 
-2. ✅ **Enhanced Error Handling**
-   - Global error middleware
-   - User-friendly error messages
-   - Stack trace in development only
-   - HTTP status code mapping
-   - Structured error responses
+Add trackBy function:
 
-3. ✅ **Response Caching**
-   - In-memory caching
-   - Cache attribute for controllers
-   - Configurable cache duration
-   - Cache-Control headers
+```typescript
+export class ProjectListComponent implements OnInit {
+  // ... existing code ...
 
-4. ✅ **Frontend Logging Service**
-   - Log levels (Debug, Info, Warning, Error, Fatal)
-   - Console logging with colors
-   - In-memory log storage
-   - Send errors to backend in production
-   - Log history
+  /**
+   * TrackBy function for projects list
+   * Helps Angular track items by ID for better performance
+   */
+  trackByProjectId(index: number, project: Project): number {
+    return project.id;
+  }
+}
+```
 
-5. ✅ **Global Error Handling**
-   - Angular ErrorHandler implementation
-   - User notifications for errors
-   - Automatic error logging
-   - Production vs development behavior
+**Update the template: `project-list.component.html`:**
 
-6. ✅ **HTTP Error Interceptor**
-   - Centralized HTTP error handling
-   - Status code specific handling
-   - Automatic redirect on 401
-   - User-friendly error notifications
+Find the `*ngFor` loop and add `trackBy`:
 
-7. ✅ **Performance Optimization**
-   - Lazy loading modules
-   - Code splitting by route
-   - Performance monitoring service
-   - Render time tracking directive
-   - Timer utilities
+```html
+<tr *ngFor="let project of projects(); trackBy: trackByProjectId">
+  <!-- table cells -->
+</tr>
+```
 
-### **Best Practices Applied:**
+**Similarly, add trackBy to pagination component:**
+
+In `frontend/project-tracker/src/app/shared/components/pagination/pagination.component.ts`:
+
+```typescript
+trackByIndex(index: number): number {
+  return index;
+}
+```
+
+And update the template:
+
+```html
+<li *ngFor="let page of pages; trackBy: trackByIndex" class="page-item">
+  <!-- pagination item -->
+</li>
+```
+
+---
+
+## 🎯 Step 9: Create 404 Not Found Component
+
+Create file: `frontend/project-tracker/src/app/shared/components/not-found/not-found.component.ts`
+
+```typescript
+import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Router, RouterModule } from '@angular/router';
+
+@Component({
+  selector: 'app-not-found',
+  standalone: true,
+  imports: [CommonModule, RouterModule],
+  template: `
+    <div class="container mt-5">
+      <div class="row justify-content-center">
+        <div class="col-md-6 text-center">
+          <h1 class="display-1 text-danger">404</h1>
+          <h2 class="mb-4">Page Not Found</h2>
+          <p class="lead mb-4">
+            The page you are looking for does not exist or has been moved.
+          </p>
+          <a routerLink="/projects" class="btn btn-primary">
+            <i class="fas fa-home me-2"></i>
+            Go to Projects
+          </a>
+        </div>
+      </div>
+    </div>
+  `,
+  styles: [`
+    .display-1 {
+      font-size: 8rem;
+      font-weight: bold;
+    }
+  `]
+})
+export class NotFoundComponent {}
+```
+
+---
+
+## ✅ Step 10: Verify Performance Improvements
+
+### 10.1 Check Lazy Loading
+
+Build the application and verify code splitting:
+
+```bash
+cd frontend/project-tracker
+ng build --configuration=production
+
+# Check the output - you should see separate chunk files
+ls dist/project-tracker/browser/*.js
+```
+
+You should see files like:
+- `chunk-AUTH-*.js` (auth feature)
+- `chunk-PROJECTS-*.js` (projects feature)
+
+### 10.2 Test Performance Monitoring
+
+Add to a component to test:
+
+```typescript
+export class ProjectListComponent implements OnInit {
+  private readonly performanceService = inject(PerformanceService);
+
+  async ngOnInit() {
+    await this.performanceService.measure('load-projects', async () => {
+      await this.loadProjects();
+    });
+
+    // View metrics in console
+    console.log('Performance metrics:', this.performanceService.getMetrics()());
+  }
+}
+```
+
+### 10.3 Test Error Handling
+
+Test the global error handler:
+
+```typescript
+// Trigger an error in component
+throw new Error('Test error');
+
+// Check console - should see styled log entry
+// Check if notification appears (in production mode)
+```
+
+### 10.4 Test HTTP Error Interceptor
+
+```bash
+# Stop the backend API and try to load projects
+# You should see:
+# 1. Error logged with details
+# 2. User-friendly notification
+# 3. Proper error message
+```
+
+---
+
+## 📊 Summary
+
+### ✅ What We Implemented
+
+**Backend:**
+1. ✅ Enhanced Serilog with enrichment (environment, thread, machine)
+2. ✅ Request context logging middleware
+3. ✅ Response caching configuration and middleware
+4. ✅ Cache attribute for controller actions
+5. ✅ Memory cache for application-level caching
+
+**Frontend:**
+1. ✅ LoggerService with log levels and console styling
+2. ✅ GlobalErrorHandler for unhandled exceptions
+3. ✅ HTTP Error Interceptor with status-specific handling
+4. ✅ Lazy loading for all route modules
+5. ✅ PerformanceService for monitoring operations
+6. ✅ TrackBy functions for list optimization
+7. ✅ NotFoundComponent for 404 errors
+
+### 📈 Performance Improvements
+
+- **Lazy Loading**: Reduces initial bundle size by 40-60%
+- **Response Caching**: Reduces API calls for static data
+- **OnPush Detection**: Already implemented, reduces change detection cycles
+- **TrackBy Functions**: Reduces unnecessary DOM updates
+- **Code Splitting**: Enables parallel chunk downloads
+
+### 🎯 Best Practices Applied
+
 - ✅ Structured logging with context
-- ✅ Centralized error handling
+- ✅ Centralized error handling (frontend + backend)
 - ✅ User-friendly error messages
-- ✅ Performance monitoring
-- ✅ Lazy loading for faster initial load
-- ✅ OnPush change detection (already implemented)
-- ✅ Signal-based reactivity
-- ✅ Response caching for read operations
+- ✅ Performance monitoring and metrics
+- ✅ HTTP status code specific handling
+- ✅ Environment-specific behavior (dev vs prod)
+- ✅ Proper middleware ordering
+- ✅ Signal-based reactive state
 
-### **Performance Improvements:**
-- Lazy loading reduces initial bundle size by 40-60%
-- Response caching reduces API calls
-- OnPush detection reduces change detection cycles
-- Code splitting enables parallel downloads
+### 🔍 Monitoring & Debugging
 
-### **Production Checklist:**
-- [ ] Enable response compression (gzip/brotli)
-- [ ] Configure CDN for static assets
-- [ ] Set up monitoring (Application Insights, Sentry)
-- [ ] Enable production builds with AOT
-- [ ] Configure log aggregation (ELK, Splunk)
-- [ ] Set up performance budgets
-- [ ] Enable service workers for PWA
+**View Logs:**
+```bash
+# Backend logs
+tail -f backend/ProjectTracker.API/logs/app-<date>.txt
+
+# Frontend logs (in browser console)
+# Open DevTools > Console
+# Logs are styled by severity level
+```
+
+**View Performance Metrics:**
+```typescript
+// In browser console
+JSON.stringify(performanceService.getMetrics()())
+```
+
+### 📝 Next Steps
+
+Optional enhancements for production:
+- [ ] Integrate Application Insights or Sentry
+- [ ] Add response compression (gzip/brotli)
+- [ ] Implement distributed caching (Redis)
+- [ ] Add Web Vitals monitoring
+- [ ] Create performance budget alerts
+- [ ] Implement service worker for offline support
+- [ ] Add error tracking dashboard
 
 ---
 
-**Next: [Module 14: Deployment](./14_deployment.md)**
+**Next Module: [Module 14: Deployment](./14_deployment.md)**
