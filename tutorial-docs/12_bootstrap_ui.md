@@ -1402,6 +1402,64 @@ h2 {
 - ❌ Removed `var(--bs-secondary)` from labels (poor contrast)
 - ✅ Uses `var(--bs-body-color)` (automatically adapts to light/dark theme)
 
+### 10.6 Fix User Info Display in Navbar
+
+The navbar dropdown shows user information, but there's a mismatch between the JWT token claims and how the frontend reads them.
+
+**Issue**: The backend JWT token uses `given_name` and `family_name` claims, but the frontend tries to read a `name` claim that doesn't exist.
+
+**Update file**: `frontend/project-tracker/src/app/core/services/auth.service.ts`
+
+Find the `decodeAndSetUser` method and update it:
+
+```typescript
+/* BEFORE */
+private decodeAndSetUser(token: string) {
+  try {
+    const decodedToken: any = jwtDecode(token);
+    this.currentUser.set({
+      name: decodedToken.name,  // ❌ This claim doesn't exist!
+      email: decodedToken.email,
+      role: decodedToken.role
+    });
+
+/* AFTER */
+private decodeAndSetUser(token: string) {
+  try {
+    const decodedToken: any = jwtDecode(token);
+    // JWT token uses given_name and family_name, combine them for display
+    const firstName = decodedToken.given_name || '';
+    const lastName = decodedToken.family_name || '';
+    const name = `${firstName} ${lastName}`.trim() || decodedToken.email || 'User';
+
+    this.currentUser.set({
+      name: name,  // ✅ Combines first + last name
+      email: decodedToken.email,
+      role: decodedToken.role || 'User'
+    });
+```
+
+**Also update**: `frontend/project-tracker/src/app/layouts/navbar/navbar.component.css`
+
+Add styles to ensure user info text is visible in dark mode:
+
+```css
+/* Add after .dropdown-menu */
+.dropdown-item-text {
+  color: var(--bs-body-color);
+}
+
+.dropdown-item-text small {
+  color: var(--bs-secondary-color);
+}
+```
+
+**Key Changes**:
+- ✅ Correctly maps JWT claims: `given_name` and `family_name` → combined `name`
+- ✅ Fallback to email or "User" if names are empty
+- ✅ Ensures user info text is visible in both light and dark modes
+- ✅ Uses theme-aware color variables for "Signed in as" label
+
 ---
 
 ## 🎨 Bootstrap Dark Mode Best Practices

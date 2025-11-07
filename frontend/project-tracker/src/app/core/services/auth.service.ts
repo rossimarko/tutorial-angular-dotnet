@@ -132,10 +132,15 @@ export class AuthService {
   private decodeAndSetUser(token: string) {
     try {
       const decodedToken: any = jwtDecode(token);
+      // JWT token uses given_name and family_name, combine them for display
+      const firstName = decodedToken.given_name || '';
+      const lastName = decodedToken.family_name || '';
+      const name = `${firstName} ${lastName}`.trim() || decodedToken.email || 'User';
+
       this.currentUser.set({
-        name: decodedToken.name,
+        name: name,
         email: decodedToken.email,
-        role: decodedToken.role
+        role: decodedToken.role || 'User'
       });
       console.log('AuthService: User decoded and set', this.currentUser());
     } catch (error) {
