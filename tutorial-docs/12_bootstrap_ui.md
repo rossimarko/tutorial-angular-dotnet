@@ -1104,7 +1104,226 @@ import { SkipLinkDirective } from './shared/directives/skip-link.directive';
 
 ---
 
-## 🧪 Step 10: Add Translation Keys
+## 🔧 Step 10: Fix Dark Mode Issues in Existing Components
+
+Now that we have dark mode support, we need to update existing components to work properly with both light and dark themes.
+
+### 10.1 Update Project List Component
+
+The project list currently uses hardcoded light colors that don't adapt to dark mode.
+
+**Update file**: `frontend/project-tracker/src/app/features/projects/components/project-list/project-list.component.html`
+
+**Issue 1 - Table Header**: Find the table header (around line 94) and change:
+
+```html
+<!-- BEFORE -->
+<thead class="table-light">
+
+<!-- AFTER -->
+<thead>
+```
+
+Bootstrap's table will automatically use the correct colors based on theme.
+
+**Issue 2 - Card Footer**: Find the pagination footer (around line 179) and change:
+
+```html
+<!-- BEFORE -->
+<div class="card-footer bg-light">
+
+<!-- AFTER -->
+<div class="card-footer">
+```
+
+### 10.2 Update Pagination Component CSS
+
+The pagination component uses light colors for hover states that are invisible in dark mode.
+
+**Update file**: `frontend/project-tracker/src/app/shared/components/pagination/pagination.component.css`
+
+Replace the entire file content with:
+
+```css
+/* Pagination Component - Dark Mode Compatible */
+
+.pagination-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.page-item .page-link {
+  transition: all 0.15s ease-in-out;
+}
+
+.page-item .page-link:hover {
+  background-color: var(--bs-secondary-bg);
+  border-color: var(--bs-border-color);
+}
+
+.page-item .page-link:focus {
+  box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25);
+}
+
+.page-item.active .page-link {
+  background-color: var(--bs-primary);
+  border-color: var(--bs-primary);
+}
+
+.page-item.disabled .page-link {
+  background-color: var(--bs-secondary-bg);
+  border-color: var(--bs-border-color);
+  color: var(--bs-secondary-color);
+}
+
+.page-size-select {
+  max-width: 200px;
+}
+
+@media (max-width: 767.98px) {
+  .pagination-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .page-size-select {
+    max-width: 100%;
+  }
+}
+```
+
+**Key Changes**:
+- ❌ Removed `var(--bs-light)` (doesn't adapt to dark mode)
+- ✅ Uses `var(--bs-secondary-bg)` (adapts automatically)
+- ✅ Uses `var(--bs-border-color)` (adapts automatically)
+- ✅ Uses `var(--bs-secondary-color)` (adapts automatically)
+
+### 10.3 Update Language Selector Component
+
+**Update file**: `frontend/project-tracker/src/app/shared/components/language-selector/language-selector.component.css`
+
+Find and update the hover/focus styles:
+
+```css
+/* BEFORE */
+.dropdown-item:hover,
+.dropdown-item:focus {
+  background-color: var(--bs-light);
+}
+
+/* AFTER */
+.dropdown-item:hover,
+.dropdown-item:focus {
+  background-color: var(--bs-secondary-bg);
+  color: var(--bs-body-color);
+}
+```
+
+### 10.4 Update Login Component (if exists)
+
+If you have a login component with hardcoded light background:
+
+**Update file**: `frontend/project-tracker/src/app/features/auth/components/login/login.component.html`
+
+Find and change:
+
+```html
+<!-- BEFORE -->
+<div class="container-fluid bg-light min-vh-100">
+
+<!-- AFTER -->
+<div class="container-fluid min-vh-100">
+```
+
+The background will now use the theme's default background color.
+
+### 10.5 Theme Toggle Button Visibility
+
+Update the theme toggle to use outline buttons for better visibility in the navbar.
+
+**Update file**: `frontend/project-tracker/src/app/shared/components/theme-toggle/theme-toggle.component.html`
+
+```html
+<div class="btn-group" role="group" aria-label="Theme selector">
+  @for (theme of themeOptions; track theme) {
+    <button
+      type="button"
+      class="btn btn-sm"
+      [class.btn-light]="currentTheme() === theme"
+      [class.btn-outline-light]="currentTheme() !== theme"
+      (click)="setTheme(theme)"
+      [attr.aria-label]="getThemeLabel(theme) | translate"
+      [attr.aria-pressed]="currentTheme() === theme"
+      [title]="getThemeLabel(theme) | translate">
+      <i [class]="getThemeIcon(theme)"></i>
+      <span class="d-none d-md-inline ms-2">
+        {{ getThemeLabel(theme) | translate }}
+      </span>
+    </button>
+  }
+</div>
+```
+
+**Changes**:
+- ✅ Active button: `btn-light` (stands out in dark navbar)
+- ✅ Inactive buttons: `btn-outline-light` (visible but subtle)
+
+---
+
+## 🎨 Bootstrap Dark Mode Best Practices
+
+When working with Bootstrap's dark mode, follow these guidelines:
+
+### ✅ DO Use These Classes/Variables:
+
+| Purpose | Use | Why |
+|---------|-----|-----|
+| Background | `var(--bs-body-bg)` or `var(--bs-secondary-bg)` | Adapts to theme |
+| Text | `var(--bs-body-color)` or `var(--bs-secondary-color)` | Adapts to theme |
+| Borders | `var(--bs-border-color)` | Adapts to theme |
+| Cards | Just `card` class (no bg-*) | Default adapts |
+| Tables | Just `table` class (no table-*) | Default adapts |
+
+### ❌ DON'T Use These:
+
+| Avoid | Why | Use Instead |
+|-------|-----|-------------|
+| `bg-light` | Fixed light gray | `var(--bs-secondary-bg)` or remove |
+| `bg-white` | Fixed white | `var(--bs-body-bg)` or remove |
+| `table-light` | Fixed light | Remove, use default |
+| `text-dark` | Fixed dark text | `var(--bs-body-color)` |
+| `var(--bs-light)` | Doesn't adapt | `var(--bs-secondary-bg)` |
+| `var(--bs-white)` | Doesn't adapt | `var(--bs-body-bg)` |
+
+### 🎯 Quick Fix Checklist
+
+After implementing dark mode, check these:
+
+```bash
+# Search for potential dark mode issues:
+cd frontend/project-tracker
+
+# Find hardcoded light backgrounds
+grep -r "bg-light" src/app/
+
+# Find hardcoded white backgrounds
+grep -r "bg-white" src/app/
+
+# Find hardcoded table light
+grep -r "table-light" src/app/
+
+# Find CSS using --bs-light variable
+grep -r "var(--bs-light)" src/app/
+```
+
+For each match, evaluate if it should adapt to dark mode or remain fixed.
+
+---
+
+## 🧪 Step 11: Add Translation Keys
 
 Translations in this application are served from the backend API, not frontend JSON files. Add these keys to your backend translation files.
 
@@ -1178,9 +1397,9 @@ dotnet run
 
 ---
 
-## ✅ Testing Your Implementation
+## ✅ Step 12: Testing Your Implementation
 
-### 1. Build and Serve
+### 12.1 Build and Serve
 
 ```bash
 cd frontend/project-tracker
@@ -1189,7 +1408,7 @@ npm start
 
 The SCSS will be compiled automatically by Angular.
 
-### 2. Visual Tests
+### 12.2 Visual Tests
 
 **Test Dark Mode:**
 - Click the theme toggle buttons in the navbar
@@ -1210,7 +1429,16 @@ The SCSS will be compiled automatically by Angular.
 - Test logout functionality
 - Verify all Bootstrap components use theme colors
 
-### 3. Accessibility Tests
+### 12.3 Dark Mode Specific Tests
+
+**Test Fixed Components**:
+- Navigate to project list - verify card footer adapts to dark mode
+- Check table header - should not be light gray in dark mode
+- Test pagination - hover states should be visible
+- Check language selector dropdown - hover should be visible
+- Verify no white boxes appear in dark mode
+
+### 12.4 Accessibility Tests
 
 **Keyboard Navigation:**
 - Press Tab key repeatedly
@@ -1225,7 +1453,7 @@ The SCSS will be compiled automatically by Angular.
 - Test theme toggle button descriptions
 - Verify landmark regions (nav, main)
 
-### 4. Functional Tests
+### 12.5 Functional Tests
 
 **Verify Existing Features Still Work:**
 - Toast notifications (from Module 11)
@@ -1234,7 +1462,7 @@ The SCSS will be compiled automatically by Angular.
 - Language switching (from Module 7)
 - All Bootstrap components (cards, buttons, forms)
 
-### 5. Bootstrap Variable Verification
+### 12.6 Bootstrap Variable Verification
 
 Open browser DevTools and check computed styles:
 - Verify custom colors are applied
