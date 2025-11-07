@@ -39,6 +39,7 @@ export class ProjectFormComponent implements OnInit {
   // Status options
   protected readonly statusOptions = ['Active', 'Completed', 'OnHold', 'Cancelled'];
   protected readonly priorityOptions = [1, 2, 3, 4, 5];
+  protected readonly descriptionMaxLength = 1000;
 
   constructor() {
     // Initialize form with validators
