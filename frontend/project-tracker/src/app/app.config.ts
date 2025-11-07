@@ -1,4 +1,4 @@
-import { ApplicationConfig, provideBrowserGlobalErrorListeners, provideZoneChangeDetection, APP_INITIALIZER } from '@angular/core';
+import { ApplicationConfig, provideBrowserGlobalErrorListeners, provideZoneChangeDetection, APP_INITIALIZER, LOCALE_ID } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 
@@ -16,10 +16,10 @@ function initializeTranslations(translationService: TranslationService) {
 }
 
 /// <summary>
-/// Factory function to provide current locale dynamically
+/// Factory function to provide current locale dynamically for date/number formatting
 /// </summary>
-function localeIdFactory(translationService: TranslationService) {
-  return () => translationService.currentLanguage();
+function localeIdFactory(translationService: TranslationService): string {
+  return translationService.currentLanguage();
 }
 
 export const appConfig: ApplicationConfig = {
@@ -33,6 +33,11 @@ export const appConfig: ApplicationConfig = {
       useFactory: initializeTranslations,
       deps: [TranslationService],
       multi: true
+    },
+    {
+      provide: LOCALE_ID,
+      useFactory: localeIdFactory,
+      deps: [TranslationService]
     }
   ]
 };

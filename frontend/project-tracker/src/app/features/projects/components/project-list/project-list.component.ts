@@ -9,6 +9,7 @@ import { Project, PaginationParams } from '../../../../shared/models/project.mod
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
 import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
+import { LocalizedDatePipe } from '../../../../shared/pipes/localized-date.pipe';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 /// <summary>
@@ -21,7 +22,8 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
     ReactiveFormsModule,
     PaginationComponent,
     ConfirmDialogComponent,
-    TranslatePipe
+    TranslatePipe,
+    LocalizedDatePipe
   ],
   templateUrl: 'project-list.component.html',
   styleUrl: 'project-list.component.css',
