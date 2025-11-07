@@ -7,17 +7,17 @@
           <h2 class="mb-1">
             @if (isEditMode()) {
               <i class="fas fa-edit me-2"></i>
-              Edit Project
+              {{ 'projects.editProject' | translate }}
             } @else {
               <i class="fas fa-plus me-2"></i>
-              Create New Project
+              {{ 'projects.createProject' | translate }}
             }
           </h2>
           <p class="text-muted mb-0">
             @if (isEditMode()) {
-              Update project details
+              {{ 'projects.editProjectDesc' | translate }}
             } @else {
-              Add a new project to your list
+              {{ 'projects.createProjectDesc' | translate }}
             }
           </p>
         </div>
@@ -30,7 +30,7 @@
             <!-- Title -->
             <div class="mb-3">
               <label for="title" class="form-label">
-                Project Title
+                {{ 'projects.projectTitle' | translate }}
                 <span class="text-danger">*</span>
               </label>
               <input
@@ -39,7 +39,7 @@
                 class="form-control"
                 formControlName="title"
                 [class.is-invalid]="hasError('title')"
-                placeholder="Enter project title">
+                placeholder="{{ 'projects.projectNamePlaceholder' | translate }}">
               @if (hasError('title')) {
                 <div class="invalid-feedback">
                   {{ getErrorMessage('title') }}
@@ -50,7 +50,7 @@
             <!-- Description -->
             <div class="mb-3">
               <label for="description" class="form-label">
-                Description
+                {{ 'projects.description' | translate }}
               </label>
               <textarea
                 id="description"
@@ -58,7 +58,7 @@
                 formControlName="description"
                 rows="4"
                 [class.is-invalid]="hasError('description')"
-                placeholder="Enter project description">
+                placeholder="{{ 'projects.descriptionPlaceholder' | translate }}">
               </textarea>
               @if (hasError('description')) {
                 <div class="invalid-feedback">
@@ -66,7 +66,7 @@
                 </div>
               }
               <div class="form-text">
-                {{ form.get('description')?.value?.length || 0 }} / 1000 characters
+                {{ 'projects.characterCount' | translate:{ count: form.get('description')?.value?.length || 0, max: descriptionMaxLength } }}
               </div>
             </div>
 
@@ -74,7 +74,7 @@
             <div class="row">
               <div class="col-md-6 mb-3">
                 <label for="status" class="form-label">
-                  Status
+                  {{ 'projects.status' | translate }}
                   <span class="text-danger">*</span>
                 </label>
                 <select
@@ -97,7 +97,7 @@
 
               <div class="col-md-6 mb-3">
                 <label for="priority" class="form-label">
-                  Priority
+                  {{ 'projects.priority' | translate }}
                   <span class="text-danger">*</span>
                 </label>
                 <select
@@ -123,7 +123,7 @@
             <div class="row">
               <div class="col-md-6 mb-3">
                 <label for="startDate" class="form-label">
-                  Start Date
+                  {{ 'projects.startDate' | translate }}
                 </label>
                 <input
                   type="date"
@@ -140,7 +140,7 @@
 
               <div class="col-md-6 mb-3">
                 <label for="dueDate" class="form-label">
-                  Due Date
+                  {{ 'projects.dueDate' | translate }}
                 </label>
                 <input
                   type="date"
@@ -159,7 +159,7 @@
             <!-- Required Fields Notice -->
             <div class="alert alert-info mb-3">
               <i class="fas fa-info-circle me-2"></i>
-              <span class="text-danger">*</span> Required fields
+              {{ 'common.requiredFieldIndicator' | translate }}
             </div>
 
             <!-- Form Actions -->
@@ -170,7 +170,7 @@
                 (click)="cancel()"
                 [disabled]="loading()">
                 <i class="fas fa-times me-2"></i>
-                Cancel
+                {{ 'common.cancel' | translate }}
               </button>
               <button
                 type="submit"
@@ -178,13 +178,13 @@
                 [disabled]="loading() || form.invalid">
                 @if (loading()) {
                   <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                  Saving...
+                  {{ 'common.saving' | translate }}
                 } @else {
                   <i class="fas fa-save me-2"></i>
                   @if (isEditMode()) {
-                    Update
+                    {{ 'common.update' | translate }}
                   } @else {
-                    Create
+                    {{ 'common.create' | translate }}
                   }
                 }
               </button>

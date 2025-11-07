@@ -4,7 +4,9 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angula
 import { Router, ActivatedRoute } from '@angular/router';
 import { ProjectService } from '../../services/project.service';
 import { NotificationService } from '../../../../shared/services/notification.service';
+import { TranslationService } from '../../../../shared/services/translation.service';
 import { CreateProjectRequest, UpdateProjectRequest } from '../../../../shared/models/project.model';
+import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
 
 /// <summary>
 /// Form component for creating and editing projects
@@ -12,7 +14,7 @@ import { CreateProjectRequest, UpdateProjectRequest } from '../../../../shared/m
 /// </summary>
 @Component({
   selector: 'app-project-form',
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, TranslatePipe],
   templateUrl: './project-form.component.html',
   styleUrl: './project-form.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -22,6 +24,7 @@ export class ProjectFormComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly projectService = inject(ProjectService);
   private readonly notificationService = inject(NotificationService);
+  private readonly translationService = inject(TranslationService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
 
@@ -36,6 +39,7 @@ export class ProjectFormComponent implements OnInit {
   // Status options
   protected readonly statusOptions = ['Active', 'Completed', 'OnHold', 'Cancelled'];
   protected readonly priorityOptions = [1, 2, 3, 4, 5];
+  protected readonly descriptionMaxLength = 1000;
 
   constructor() {
     // Initialize form with validators
@@ -79,8 +83,8 @@ export class ProjectFormComponent implements OnInit {
       error: (error) => {
         console.error('Error loading project:', error);
         this.notificationService.error(
-          'Error',
-          'Failed to load project data'
+          this.translationService.translate('common.error'),
+          this.translationService.translate('projects.loadError')
         );
         this.loading.set(false);
         this.router.navigate(['/projects']);
@@ -104,8 +108,8 @@ export class ProjectFormComponent implements OnInit {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       this.notificationService.warning(
-        'Validation Error',
-        'Please fix the errors in the form'
+        this.translationService.translate('validation.error'),
+        this.translationService.translate('validation.fixErrors')
       );
       return;
     }
@@ -127,8 +131,8 @@ export class ProjectFormComponent implements OnInit {
       this.projectService.updateProject(this.projectId()!, projectData as UpdateProjectRequest).subscribe({
         next: () => {
           this.notificationService.success(
-            'Success',
-            'Project updated successfully'
+            this.translationService.translate('common.success'),
+            this.translationService.translate('projects.updateSuccess')
           );
           this.loading.set(false);
           this.router.navigate(['/projects']);
@@ -136,8 +140,8 @@ export class ProjectFormComponent implements OnInit {
         error: (error: any) => {
           console.error('Error updating project:', error);
           this.notificationService.error(
-            'Error',
-            'Failed to update project. Please try again.'
+            this.translationService.translate('common.error'),
+            this.translationService.translate('projects.updateError')
           );
           this.loading.set(false);
         }
@@ -146,8 +150,8 @@ export class ProjectFormComponent implements OnInit {
       this.projectService.createProject(projectData as CreateProjectRequest).subscribe({
         next: () => {
           this.notificationService.success(
-            'Success',
-            'Project created successfully'
+            this.translationService.translate('common.success'),
+            this.translationService.translate('projects.createSuccess')
           );
           this.loading.set(false);
           this.router.navigate(['/projects']);
@@ -155,8 +159,8 @@ export class ProjectFormComponent implements OnInit {
         error: (error: any) => {
           console.error('Error creating project:', error);
           this.notificationService.error(
-            'Error',
-            'Failed to create project. Please try again.'
+            this.translationService.translate('common.error'),
+            this.translationService.translate('projects.createError')
           );
           this.loading.set(false);
         }
@@ -169,7 +173,7 @@ export class ProjectFormComponent implements OnInit {
   /// </summary>
   cancel(): void {
     if (this.form.dirty) {
-      if (confirm('You have unsaved changes. Are you sure you want to leave?')) {
+      if (confirm(this.translationService.translate('projects.unsavedChanges'))) {
         this.router.navigate(['/projects']);
       }
     } else {
@@ -200,21 +204,29 @@ export class ProjectFormComponent implements OnInit {
     const errors = field.errors;
 
     if (errors['required']) {
-      return 'This field is required';
+      return this.translationService.translate('validation.required');
     }
     if (errors['minlength']) {
-      return `Minimum length is ${errors['minlength'].requiredLength} characters`;
+      return this.translationService.translate('validation.minLength', {
+        min: errors['minlength'].requiredLength
+      });
     }
     if (errors['maxlength']) {
-      return `Maximum length is ${errors['maxlength'].requiredLength} characters`;
+      return this.translationService.translate('validation.maxLength', {
+        max: errors['maxlength'].requiredLength
+      });
     }
     if (errors['min']) {
-      return `Minimum value is ${errors['min'].min}`;
+      return this.translationService.translate('validation.min', {
+        min: errors['min'].min
+      });
     }
     if (errors['max']) {
-      return `Maximum value is ${errors['max'].max}`;
+      return this.translationService.translate('validation.max', {
+        max: errors['max'].max
+      });
     }
 
-    return 'Invalid value';
+    return this.translationService.translate('validation.invalidValue');
   }
 }
