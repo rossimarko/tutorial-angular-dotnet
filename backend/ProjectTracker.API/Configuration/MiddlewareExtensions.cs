@@ -39,7 +39,7 @@ public static class MiddlewareExtensions
         // CORS before routing
         app.UseCors("AllowAngularApp");
 
-        //Response caching
+        // Response caching
         app.UseResponseCaching();
 
         // Authentication and authorization
