@@ -79,10 +79,10 @@ public static class MiddlewareExtensions
             var upgrader = DeployChanges.To
                 .SqlDatabase(connectionString)
                 .WithScriptsEmbeddedInAssembly(typeof(Program).Assembly, script =>
-                    script.Contains("Data.Migrations"))
-                .WithoutVariableSubstitution()  // Disable variable substitution to avoid issues with $ characters in SQL
+                    script.Contains("Data.Migrations"))                
                 .LogTo(new DbUpLogger(logger))
                 .Build();
+            
 
             // Check if upgrade is required
             if (!upgrader.IsUpgradeRequired())
