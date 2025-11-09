@@ -182,4 +182,19 @@ public static class ConfigurationExtensions
 
         return services;
     }
+
+    public static IServiceCollection AddApiServices(this IServiceCollection services)
+    {
+        // Add response caching
+        services.AddResponseCaching(options =>
+        {
+            options.MaximumBodySize = 1024; // 1KB max cache size per entry
+            options.SizeLimit = 100 * 1024 * 1024; // 100MB total cache size
+        });
+
+        // Add memory cache for application-level caching
+        services.AddMemoryCache();
+
+        return services;
+    }
 }

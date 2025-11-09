@@ -1,6 +1,7 @@
 using ProjectTracker.API.Authentication;
 using ProjectTracker.API.Configuration;
 using Serilog;
+using Serilog.Events;
 
 // ============================================
 // 1. LOGGING CONFIGURATION
@@ -12,11 +13,22 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Host.UseSerilog((context, config) =>
 {
     config
-        .MinimumLevel.Debug()
-        .WriteTo.Console()
-        .WriteTo.File("logs/app-.txt",
+        .MinimumLevel.Information()
+        .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+        .MinimumLevel.Override("Microsoft.Hosting.Lifetime", LogEventLevel.Information)
+        .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Warning)
+        .Enrich.FromLogContext()
+        .Enrich.WithEnvironmentName()
+        .Enrich.WithMachineName()
+        .Enrich.WithThreadId()
+        .WriteTo.Console(
+            outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] [{SourceContext}] {Message:lj} {Properties:j}{NewLine}{Exception}")
+        .WriteTo.File(
+            path: "logs/app-.txt",
             rollingInterval: RollingInterval.Day,
-            outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}");
+            outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] [{SourceContext}] {Message:lj} {Properties:j}{NewLine}{Exception}",
+            retainedFileCountLimit: 30,
+            fileSizeLimitBytes: 10_000_000);
 });
 
 // ============================================
@@ -27,6 +39,7 @@ builder.Host.UseSerilog((context, config) =>
 
 builder.Services.AddApiControllers();
 builder.Services.AddApiDocumentation();
+builder.Services.AddApiServices();
 builder.Services.AddCorsPolicy(builder.Configuration);
 builder.Services.AddHealthChecks();
 builder.Services.ConfigureJwtAuthentication(builder.Configuration);

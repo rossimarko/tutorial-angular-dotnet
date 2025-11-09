@@ -2,6 +2,7 @@ import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, tap, catchError, of } from 'rxjs';
 import { environment } from '../../../../environments/environment';
+import { PerformanceService } from '../../../shared/services/performance.service';
 import { 
   Project, 
   ProjectPaginatedResponse,
@@ -9,6 +10,7 @@ import {
   CreateProjectRequest,
   UpdateProjectRequest
 } from '../../../shared/models/project.model';
+
 
 /// <summary>
 /// Service for managing projects with pagination support
@@ -19,6 +21,7 @@ import {
 })
 export class ProjectService {
   private readonly http = inject(HttpClient);
+  private readonly performanceService = inject(PerformanceService);
   private readonly apiUrl = `${environment.apiUrl}/projects`;
 
   // Default page size - must match component default

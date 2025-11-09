@@ -295,4 +295,5 @@ export class ProjectListComponent implements OnInit {
     this.showDeleteConfirm.set(false);
     this.projectToDelete.set(null);
   }
+
 }

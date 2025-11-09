@@ -1,48 +1,31 @@
 import { Routes } from '@angular/router';
-import { ProjectListComponent } from './features/projects/components/project-list/project-list.component';
-import { ProjectFormComponent } from './features/projects/components/project-form/project-form.component';
-import { LoginComponent } from './features/auth/components/login/login.component';
-import { LanguageSelectorComponent } from './shared/components/language-selector/language-selector.component';
 import { authGuard } from './core/guards/auth.guard';
-import { authRoutes } from './features/auth/auth.routes';
 
 export const routes: Routes = [
-  // Public auth routes
+  // Lazy load auth feature
   {
     path: 'auth',
-    children: authRoutes
+    loadChildren: () => import('./features/auth/auth.routes').then(m => m.authRoutes)
   },
-  
-  // Protected project routes (require authentication)
+
+  // Lazy load projects feature (protected)
   {
     path: 'projects',
     canActivate: [authGuard],
-    children: [
-      {
-        path: '',
-        component: ProjectListComponent
-      },
-      {
-        path: 'create',
-        component: ProjectFormComponent
-      },
-      {
-        path: ':id/edit',
-        component: ProjectFormComponent
-      }
-    ]
+    loadChildren: () => import('./features/projects/projects.routes').then(m => m.projectRoutes)
   },
-  
+
   // Default redirect
   {
     path: '',
     redirectTo: '/projects',
     pathMatch: 'full'
   },
-  
-  // 404 redirect
+
+  // 404 - lazy load not-found component
   {
     path: '**',
-    redirectTo: '/projects'
+    loadComponent: () => import('./shared/components/not-found/not-found.component')
+      .then(m => m.NotFoundComponent)
   }
 ];

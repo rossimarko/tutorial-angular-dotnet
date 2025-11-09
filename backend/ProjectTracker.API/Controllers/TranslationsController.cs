@@ -49,6 +49,7 @@ public class TranslationsController(
     [HttpGet("{culture}")]
     [ProducesResponseType(typeof(TranslationsResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ResponseCache(Duration = 60)]
     public async Task<ActionResult<TranslationsResponse>> GetTranslations(string culture)
     {
         _logger.LogInformation("Fetching translations for culture: {Culture}", culture);
