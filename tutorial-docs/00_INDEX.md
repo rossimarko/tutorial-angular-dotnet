@@ -149,7 +149,17 @@
   - Accessibility
 - **File**: [12_bootstrap_ui.md](./12_bootstrap_ui.md)
 
-#### Module 13: Bootstrap 5.3 Form Components for CRUD
+#### Module 13: Logging, Error Handling & Performance
+- **Duration**: 2-3 hours
+- **Topics**:
+  - Structured logging
+  - Global error handling
+  - HTTP interceptors
+  - Caching strategies
+  - Performance optimization
+- **File**: [13_logging_performance.md](./13_logging_performance.md)
+
+#### Module 14: Bootstrap 5.3 Form Components for CRUD
 - **Duration**: 3-4 hours
 - **Topics**:
   - Reusable form components
@@ -159,17 +169,7 @@
   - Text, textarea, date, datetime, integer, decimal, checkbox, radio, dropdown inputs
   - Modal component
   - Accessibility with ARIA attributes
-- **File**: [13_bootstrap_form_components.md](./13_bootstrap_form_components.md)
-
-#### Module 14: Logging, Error Handling & Performance
-- **Duration**: 2-3 hours
-- **Topics**:
-  - Structured logging
-  - Global error handling
-  - HTTP interceptors
-  - Caching strategies
-  - Performance optimization
-- **File**: [13_logging_performance.md](./13_logging_performance.md)
+- **File**: [14_bootstrap_form_components.md](./14_bootstrap_form_components.md)
 
 ---
 

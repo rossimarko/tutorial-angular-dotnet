@@ -1,4 +1,4 @@
-# Module 13: Bootstrap 5.3 Form Components for CRUD Operations
+# Module 14: Bootstrap 5.3 Form Components for CRUD Operations
 
 ## 🎯 Objectives
 
@@ -1327,11 +1327,12 @@ handleConfirm() {
 
 ## 🚀 What's Next?
 
-In **Module 14: Logging & Performance**, you'll learn:
-- Application logging with Serilog
-- Performance monitoring
-- Error tracking
-- Analytics integration
+In **Module 15: Containerization & Deployment**, you'll learn:
+- Docker container building
+- Docker Compose orchestration
+- Deployment strategies
+- Environment configuration
+- Production considerations
 
 ---
 
