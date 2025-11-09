@@ -132,19 +132,37 @@ public static class MiddlewareExtensions
             _logger = logger;
         }
 
-        public void WriteInformation(string format, params object[] args)
+        public void LogInformation(string format, params object[] args)
         {
             _logger.LogInformation(format, args);
         }
 
-        public void WriteError(string format, params object[] args)
+        public void LogError(string format, params object[] args)
         {
             _logger.LogError(format, args);
         }
 
-        public void WriteWarning(string format, params object[] args)
+        public void LogError(Exception exception, string format, params object[] args)
+        {
+            _logger.LogError(exception, format, args);
+        }
+
+        public void LogWarning(string format, params object[] args)
         {
             _logger.LogWarning(format, args);
         }
+
+        public void LogTrace(string format, params object[] args)
+        {
+            _logger.LogTrace(format, args);
+        }
+
+        public void LogDebug(string format, params object[] args)
+        {
+            _logger.LogDebug(format, args);
+        }
+
+      
+
     }
 }
