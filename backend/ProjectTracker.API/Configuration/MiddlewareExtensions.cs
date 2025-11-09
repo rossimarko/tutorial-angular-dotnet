@@ -27,6 +27,7 @@ public static class MiddlewareExtensions
 
         // Error handling and logging middleware (should be first)
         app.UseMiddleware<ErrorHandlingMiddleware>();
+        app.UseMiddleware<RequestLoggingMiddleware>();
         app.UseMiddleware<LoggingMiddleware>();
 
         // Security middleware
@@ -37,6 +38,9 @@ public static class MiddlewareExtensions
 
         // CORS before routing
         app.UseCors("AllowAngularApp");
+
+        // Response caching
+        app.UseResponseCaching();
 
         // Authentication and authorization
         app.UseAuthentication();
