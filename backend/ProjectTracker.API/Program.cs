@@ -1,4 +1,3 @@
-using Microsoft.OpenApi.Models;
 using ProjectTracker.API.Authentication;
 using ProjectTracker.API.Configuration;
 using Serilog;
