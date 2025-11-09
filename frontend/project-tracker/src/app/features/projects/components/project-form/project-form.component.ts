@@ -7,6 +7,13 @@ import { NotificationService } from '../../../../shared/services/notification.se
 import { TranslationService } from '../../../../shared/services/translation.service';
 import { CreateProjectRequest, UpdateProjectRequest } from '../../../../shared/models/project.model';
 import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
+import {
+  TextInput,
+  TextareaInput,
+  DropdownInput,
+  IntegerInput,
+  DateInput
+} from '../../../../shared/components';
 
 /// <summary>
 /// Form component for creating and editing projects
@@ -14,7 +21,16 @@ import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
 /// </summary>
 @Component({
   selector: 'app-project-form',
-  imports: [CommonModule, ReactiveFormsModule, TranslatePipe],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    TranslatePipe,
+    TextInput,
+    TextareaInput,
+    DropdownInput,
+    IntegerInput,
+    DateInput
+  ],
   templateUrl: './project-form.component.html',
   styleUrl: './project-form.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -37,8 +53,12 @@ export class ProjectFormComponent implements OnInit {
   protected readonly form: FormGroup;
 
   // Status options
-  protected readonly statusOptions = ['Active', 'Completed', 'OnHold', 'Cancelled'];
-  protected readonly priorityOptions = [1, 2, 3, 4, 5];
+  protected readonly statusOptions = [
+    { value: 'Active', label: 'Active' },
+    { value: 'Completed', label: 'Completed' },
+    { value: 'OnHold', label: 'On Hold' },
+    { value: 'Cancelled', label: 'Cancelled' }
+  ];
   protected readonly descriptionMaxLength = 1000;
 
   constructor() {

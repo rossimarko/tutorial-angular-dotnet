@@ -1,0 +1,75 @@
+<!-- Standard Layout -->
+@if (visualizationType === 'standard') {
+  <div class="mb-3">
+    <label [for]="inputId()" class="form-label">
+      {{ label }}
+      @if (required) {
+        <span class="text-danger">*</span>
+      }
+    </label>
+    <input
+      type="datetime-local"
+      [id]="inputId()"
+      class="form-control"
+      [class.is-invalid]="hasError()"
+      [value]="value()"
+      [disabled]="disabled()"
+      [placeholder]="placeholder || ''"
+      [attr.min]="minDateTime"
+      [attr.max]="maxDateTime"
+      [attr.aria-label]="label"
+      [attr.aria-required]="required"
+      [attr.aria-invalid]="hasError()"
+      [attr.aria-describedby]="hasError() ? inputId() + '-error' : helpText ? inputId() + '-help' : null"
+      (input)="onInput($event)"
+      (blur)="onBlur()">
+    @if (hasError()) {
+      <div [id]="inputId() + '-error'" class="invalid-feedback">
+        {{ errorMessage() }}
+      </div>
+    }
+    @if (helpText && !hasError()) {
+      <div [id]="inputId() + '-help'" class="form-text">
+        {{ helpText }}
+      </div>
+    }
+  </div>
+}
+
+<!-- Floating Labels Layout -->
+@if (visualizationType === 'floating') {
+  <div class="form-floating mb-3">
+    <input
+      type="datetime-local"
+      [id]="inputId()"
+      class="form-control"
+      [class.is-invalid]="hasError()"
+      [value]="value()"
+      [disabled]="disabled()"
+      [placeholder]="placeholder || label"
+      [attr.min]="minDateTime"
+      [attr.max]="maxDateTime"
+      [attr.aria-label]="label"
+      [attr.aria-required]="required"
+      [attr.aria-invalid]="hasError()"
+      [attr.aria-describedby]="hasError() ? inputId() + '-error' : helpText ? inputId() + '-help' : null"
+      (input)="onInput($event)"
+      (blur)="onBlur()">
+    <label [for]="inputId()">
+      {{ label }}
+      @if (required) {
+        <span class="text-danger">*</span>
+      }
+    </label>
+    @if (hasError()) {
+      <div [id]="inputId() + '-error'" class="invalid-feedback">
+        {{ errorMessage() }}
+      </div>
+    }
+    @if (helpText && !hasError()) {
+      <div [id]="inputId() + '-help'" class="form-text">
+        {{ helpText }}
+      </div>
+    }
+  </div>
+}
