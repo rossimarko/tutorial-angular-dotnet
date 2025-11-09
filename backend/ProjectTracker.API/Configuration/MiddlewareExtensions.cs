@@ -80,6 +80,7 @@ public static class MiddlewareExtensions
                 .SqlDatabase(connectionString)
                 .WithScriptsEmbeddedInAssembly(typeof(Program).Assembly, script =>
                     script.Contains("Data.Migrations"))
+                .WithoutVariableSubstitution()  // Disable variable substitution to avoid issues with $ characters in SQL
                 .LogTo(new DbUpLogger(logger))
                 .Build();
 
