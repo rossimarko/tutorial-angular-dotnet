@@ -216,7 +216,7 @@ This is our most comprehensive example. All other components follow similar patt
 ### File: `text-input.component.ts`
 
 ```typescript
-import { Component, Input, forwardRef, signal, computed, ChangeDetectionStrategy, inject } from '@angular/core';
+import { Component, Input, forwardRef, signal, computed, ChangeDetectionStrategy, inject, effect, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { TranslatePipe } from '../../../pipes/translate.pipe';
@@ -242,9 +242,42 @@ import { TranslationService } from '../../../services/translation.service';
 })
 export class TextInputComponent implements ControlValueAccessor {
   private readonly translationService = inject(TranslationService);
+  private readonly cdr = inject(ChangeDetectorRef);
+
+  constructor() {
+    // Watch for control status changes and update validation state
+    effect((onCleanup) => {
+      const ctrl = this.control();
+      if (ctrl) {
+        // Update error state immediately
+        this.updateErrorState();
+
+        // Subscribe to status changes (valid/invalid state)
+        const statusSub = ctrl.statusChanges.subscribe(() => {
+          this.updateErrorState();
+        });
+        // Subscribe to value changes (triggers validation)
+        const valueSub = ctrl.valueChanges.subscribe(() => {
+          this.updateErrorState();
+        });
+
+        // Clean up subscriptions when effect re-runs or component destroys
+        onCleanup(() => {
+          statusSub.unsubscribe();
+          valueSub.unsubscribe();
+        });
+      }
+    });
+  }
+
+  private updateErrorState(): void {
+    const ctrl = this.control();
+    const hasErr = !!(ctrl && ctrl.invalid && (ctrl.dirty || ctrl.touched || this.touched()));
+    this.hasError.set(hasErr);
+  }
 
   // Common inputs
-  @Input() label: string = '';
+  @Input() label: string = '';  // For input-group: the addon text/icon; For standard/floating: field label
   @Input() controlName!: string;
   @Input() visualizationType: 'floating' | 'input-group' | 'standard' = 'standard';
   @Input() required: boolean = false;
@@ -252,29 +285,30 @@ export class TextInputComponent implements ControlValueAccessor {
   @Input() placeholder?: string;
   @Input() helpText?: string;
 
+  // Input-group specific
+  @Input() inputGroupPosition: 'prefix' | 'suffix' = 'prefix';  // Position of label in input-group
+  @Input() fieldLabel?: string;  // Optional label above input-group
+
   // Specific inputs
   @Input() type: 'text' | 'email' | 'password' | 'url' = 'text';
   @Input() minLength?: number;
   @Input() maxLength?: number;
   @Input() pattern?: string;
-  @Input() prefixIcon?: string;  // For input-group type
-  @Input() suffixIcon?: string;  // For input-group type
-  @Input() prefixText?: string;  // For input-group type
-  @Input() suffixText?: string;  // For input-group type
 
   // Internal state
   protected readonly value = signal<string>('');
   protected readonly disabled = signal<boolean>(false);
   protected readonly touched = signal<boolean>(false);
+  protected readonly hasError = signal<boolean>(false);
 
   // Computed properties
   protected readonly control = computed(() => {
     return this.parentForm?.get(this.controlName);
   });
 
-  protected readonly hasError = computed(() => {
-    const ctrl = this.control();
-    return ctrl && ctrl.invalid && (ctrl.dirty || ctrl.touched || this.touched());
+  protected readonly isLabelIcon = computed(() => {
+    return this.label.startsWith('fas ') || this.label.startsWith('fa ') ||
+           this.label.startsWith('fab ') || this.label.startsWith('far ');
   });
 
   protected readonly errorMessage = computed(() => {
@@ -427,22 +461,21 @@ export class TextInputComponent implements ControlValueAccessor {
 <!-- Input Group Layout -->
 @if (visualizationType === 'input-group') {
   <div class="mb-3">
-    @if (label) {
+    @if (fieldLabel) {
       <label [for]="inputId()" class="form-label">
-        {{ label }}
+        {{ fieldLabel }}
         @if (required) {
           <span class="text-danger">*</span>
         }
       </label>
     }
     <div class="input-group" [class.has-validation]="hasError()">
-      @if (prefixIcon || prefixText) {
+      @if (inputGroupPosition === 'prefix') {
         <span class="input-group-text">
-          @if (prefixIcon) {
-            <i [class]="prefixIcon"></i>
-          }
-          @if (prefixText) {
-            {{ prefixText }}
+          @if (isLabelIcon()) {
+            <i [class]="label"></i>
+          } @else {
+            {{ label }}
           }
         </span>
       }
@@ -457,19 +490,18 @@ export class TextInputComponent implements ControlValueAccessor {
         [attr.minlength]="minLength"
         [attr.maxlength]="maxLength"
         [attr.pattern]="pattern"
-        [attr.aria-label]="label"
+        [attr.aria-label]="fieldLabel || label"
         [attr.aria-required]="required"
         [attr.aria-invalid]="hasError()"
         [attr.aria-describedby]="hasError() ? inputId() + '-error' : helpText ? inputId() + '-help' : null"
         (input)="onInput($event)"
         (blur)="onBlur()">
-      @if (suffixIcon || suffixText) {
+      @if (inputGroupPosition === 'suffix') {
         <span class="input-group-text">
-          @if (suffixIcon) {
-            <i [class]="suffixIcon"></i>
-          }
-          @if (suffixText) {
-            {{ suffixText }}
+          @if (isLabelIcon()) {
+            <i [class]="label"></i>
+          } @else {
+            {{ label }}
           }
         </span>
       }
@@ -496,9 +528,20 @@ export class TextInputComponent implements ControlValueAccessor {
 
 ---
 
-## 🔨 Step 3: Implement TextareaInputComponent
+## 🔨 Step 3: Implement Remaining Components
 
-Similar to TextInputComponent but for multi-line text.
+**IMPORTANT**: All remaining form components follow the same patterns as TextInputComponent:
+
+1. **Constructor with effect**: Subscribe to FormControl changes with proper cleanup
+2. **Writable hasError signal**: Manually updated via `updateErrorState()` method
+3. **ChangeDetectorRef**: Injected but not needed (handled by signal updates)
+4. **Input-group support**: Use dual-purpose `label` property (components that support input-group)
+
+Below are simplified examples showing component-specific features. Refer to TextInputComponent above for the complete change detection and validation pattern.
+
+### TextareaInputComponent
+
+Multi-line text input with character count.
 
 ### File: `textarea-input.component.ts`
 
@@ -1086,11 +1129,21 @@ Replace form fields with components:
 ✅ **Call onChange when value changes**
 ✅ **Call onTouched on blur**
 
-### 2. Validation
+### 2. Validation and Change Detection
 ✅ **Get FormControl from parent FormGroup**
+✅ **Use writable signal for hasError (not computed)**
+✅ **Update hasError via updateErrorState() method**
+✅ **Subscribe to FormControl statusChanges and valueChanges**
+✅ **Use effect with onCleanup for subscription management**
 ✅ **Check control.invalid && (control.dirty || control.touched)**
 ✅ **Translate all error messages**
 ✅ **Use Bootstrap validation classes (.is-invalid, .invalid-feedback)**
+
+**Why writable signal for hasError?**
+- Computed signals only react to signal dependencies
+- FormControl is NOT a signal - it's a regular object
+- When FormControl properties change (invalid, dirty, touched), computed doesn't detect it
+- Solution: Manually update hasError signal when FormControl emits statusChanges/valueChanges
 
 ### 3. Accessibility
 ✅ **Use semantic HTML elements**
@@ -1145,7 +1198,58 @@ Replace form fields with components:
 - The FormControl won't notify the component of value changes
 - Validation will still work via `parentForm` and `controlName`, but data binding will be broken
 
-### 2. ControlValueAccessor Mistakes
+### 2. Validation State Management
+
+❌ **Using computed signal for hasError:**
+```typescript
+// ❌ Wrong - Computed won't update when FormControl changes
+protected readonly hasError = computed(() => {
+  const ctrl = this.control();
+  return ctrl && ctrl.invalid && (ctrl.dirty || ctrl.touched);
+});
+```
+
+✅ **Use writable signal with manual updates:**
+```typescript
+// ✅ Correct - Writable signal updated explicitly
+protected readonly hasError = signal<boolean>(false);
+
+constructor() {
+  effect((onCleanup) => {
+    const ctrl = this.control();
+    if (ctrl) {
+      this.updateErrorState();
+
+      const statusSub = ctrl.statusChanges.subscribe(() => {
+        this.updateErrorState();
+      });
+      const valueSub = ctrl.valueChanges.subscribe(() => {
+        this.updateErrorState();
+      });
+
+      onCleanup(() => {
+        statusSub.unsubscribe();
+        valueSub.unsubscribe();
+      });
+    }
+  });
+}
+
+private updateErrorState(): void {
+  const ctrl = this.control();
+  const hasErr = !!(ctrl && ctrl.invalid && (ctrl.dirty || ctrl.touched));
+  this.hasError.set(hasErr);
+}
+```
+
+**Why this matters:**
+- Computed signals only react to changes in signal dependencies
+- FormControl is a regular object, not a signal
+- When you type in a field, FormControl's internal state changes, but computed doesn't see it
+- Result: Errors won't appear when you clear a required field, and won't disappear when you type valid input
+- Solution: Subscribe to FormControl observables and manually update hasError signal
+
+### 3. ControlValueAccessor Mistakes
 
 ❌ **Forgetting to register the provider:**
 ```typescript
@@ -1272,20 +1376,42 @@ npm start
 </app-text-input>
 ```
 
-### Example 2: Email with Input Group
+### Example 2: Email with Input Group (Icon Prefix)
 
 ```html
 <app-text-input
   formControlName="email"
-  label="Email Address"
+  label="fas fa-envelope"
+  fieldLabel="Email Address"
   controlName="email"
   type="email"
   [parentForm]="myForm"
   [required]="true"
   visualizationType="input-group"
-  prefixIcon="fas fa-envelope">
+  inputGroupPosition="prefix">
 </app-text-input>
 ```
+
+**Note**: In input-group mode, `label` is the addon text/icon (e.g., "fas fa-envelope" or "$"), and `fieldLabel` is the optional label above the input.
+
+### Example 2b: Priority with Input Group (Text Suffix)
+
+```html
+<app-integer-input
+  formControlName="priority"
+  label="/5"
+  fieldLabel="Priority"
+  controlName="priority"
+  [parentForm]="myForm"
+  [required]="true"
+  [min]="1"
+  [max]="5"
+  visualizationType="input-group"
+  inputGroupPosition="suffix">
+</app-integer-input>
+```
+
+**Result**: Shows a number input with "/5" displayed inside the input border on the right side.
 
 ### Example 3: Password with Floating Label
 
