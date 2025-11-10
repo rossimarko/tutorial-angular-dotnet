@@ -1,4 +1,4 @@
-import { Component, Input, forwardRef, signal, computed, ChangeDetectionStrategy, inject } from '@angular/core';
+import { Component, Input, forwardRef, signal, computed, ChangeDetectionStrategy, inject, effect, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { TranslatePipe } from '../../pipes/translate.pipe';
@@ -23,6 +23,22 @@ import { TranslationService } from '../../services/translation.service';
 })
 export class DecimalInput implements ControlValueAccessor {
   private readonly translationService = inject(TranslationService);
+  private readonly cdr = inject(ChangeDetectorRef);
+
+  constructor() {
+    // Watch for control status changes and trigger change detection
+    effect(() => {
+      const ctrl = this.control();
+      if (ctrl) {
+        ctrl.statusChanges.subscribe(() => {
+          this.cdr.markForCheck();
+        });
+        ctrl.valueChanges.subscribe(() => {
+          this.cdr.markForCheck();
+        });
+      }
+    });
+  }
 
   // Common inputs
   @Input() label: string = '';  // For input-group: the addon text/icon; For standard/floating: field label
