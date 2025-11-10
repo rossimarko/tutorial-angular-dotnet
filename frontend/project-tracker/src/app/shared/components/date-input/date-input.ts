@@ -1,17 +1,18 @@
 import { Component, Input, forwardRef, signal, computed, ChangeDetectionStrategy, inject, effect, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormGroup, ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { NgbDatepicker, NgbInputDatepicker, NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
 import { TranslatePipe } from '../../pipes/translate.pipe';
 import { TranslationService } from '../../services/translation.service';
 
 /// <summary>
-/// Reusable date input component with Bootstrap 5.3 styling
+/// Reusable date input component with ng-bootstrap datepicker
 /// Supports min and max date validation
 /// Implements ControlValueAccessor for reactive forms integration
 /// </summary>
 @Component({
   selector: 'app-date-input',
-  imports: [CommonModule, ReactiveFormsModule, TranslatePipe],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, NgbDatepicker, NgbInputDatepicker],
   templateUrl: './date-input.html',
   styleUrl: './date-input.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -61,7 +62,7 @@ export class DateInput implements ControlValueAccessor {
   @Input() maxDate?: string; // ISO format YYYY-MM-DD
 
   // Internal state
-  protected readonly value = signal<string>('');
+  protected readonly value = signal<NgbDateStruct | null>(null);
   protected readonly disabled = signal<boolean>(false);
   protected readonly touched = signal<boolean>(false);
   protected readonly hasError = signal<boolean>(false);
@@ -69,6 +70,14 @@ export class DateInput implements ControlValueAccessor {
   // Computed properties
   protected readonly control = computed(() => {
     return this.parentForm?.get(this.controlName);
+  });
+
+  protected readonly minDateStruct = computed(() => {
+    return this.minDate ? this.stringToDateStruct(this.minDate) : null;
+  });
+
+  protected readonly maxDateStruct = computed(() => {
+    return this.maxDate ? this.stringToDateStruct(this.maxDate) : null;
   });
 
   protected readonly errorMessage = computed(() => {
@@ -80,15 +89,17 @@ export class DateInput implements ControlValueAccessor {
     if (errors['required']) {
       return this.translationService.translate('validation.required');
     }
-    if (errors['min']) {
-      return this.translationService.translate('validation.minDate', {
-        min: this.formatDate(errors['min'].min)
-      });
-    }
-    if (errors['max']) {
-      return this.translationService.translate('validation.maxDate', {
-        max: this.formatDate(errors['max'].max)
-      });
+    if (errors['ngbDate']) {
+      if (errors['ngbDate'].minDate) {
+        return this.translationService.translate('validation.minDate', {
+          min: this.formatDateStruct(errors['ngbDate'].minDate)
+        });
+      }
+      if (errors['ngbDate'].maxDate) {
+        return this.translationService.translate('validation.maxDate', {
+          max: this.formatDateStruct(errors['ngbDate'].maxDate)
+        });
+      }
     }
 
     return this.translationService.translate('validation.invalidValue');
@@ -101,7 +112,11 @@ export class DateInput implements ControlValueAccessor {
   private onTouched: () => void = () => {};
 
   writeValue(value: string): void {
-    this.value.set(value || '');
+    if (value) {
+      this.value.set(this.stringToDateStruct(value));
+    } else {
+      this.value.set(null);
+    }
   }
 
   registerOnChange(fn: (value: string) => void): void {
@@ -117,11 +132,10 @@ export class DateInput implements ControlValueAccessor {
   }
 
   // Event handlers
-  onInput(event: Event): void {
-    const target = event.target as HTMLInputElement;
-    const newValue = target.value;
-    this.value.set(newValue);
-    this.onChange(newValue);
+  onDateSelect(date: NgbDateStruct | null): void {
+    this.value.set(date);
+    const isoString = date ? this.dateStructToString(date) : '';
+    this.onChange(isoString);
   }
 
   onBlur(): void {
@@ -129,14 +143,37 @@ export class DateInput implements ControlValueAccessor {
     this.onTouched();
   }
 
-  // Helper method to format date for error messages
-  private formatDate(dateString: string): string {
-    if (!dateString) return '';
+  // Conversion methods
+  private stringToDateStruct(dateString: string): NgbDateStruct | null {
+    if (!dateString) return null;
     try {
       const date = new Date(dateString);
-      return date.toLocaleDateString();
+      return {
+        year: date.getFullYear(),
+        month: date.getMonth() + 1,
+        day: date.getDate()
+      };
     } catch {
-      return dateString;
+      return null;
+    }
+  }
+
+  private dateStructToString(date: NgbDateStruct): string {
+    if (!date) return '';
+    const year = date.year.toString().padStart(4, '0');
+    const month = date.month.toString().padStart(2, '0');
+    const day = date.day.toString().padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  private formatDateStruct(date: NgbDateStruct): string {
+    if (!date) return '';
+    const isoString = this.dateStructToString(date);
+    try {
+      const dateObj = new Date(isoString);
+      return dateObj.toLocaleDateString();
+    } catch {
+      return isoString;
     }
   }
 

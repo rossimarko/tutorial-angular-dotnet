@@ -7,24 +7,35 @@
         <span class="text-danger">*</span>
       }
     </label>
-    <input
-      type="date"
-      [id]="inputId()"
-      class="form-control"
-      [class.is-invalid]="hasError()"
-      [value]="value()"
-      [disabled]="disabled()"
-      [placeholder]="placeholder || ''"
-      [attr.min]="minDate"
-      [attr.max]="maxDate"
-      [attr.aria-label]="label"
-      [attr.aria-required]="required"
-      [attr.aria-invalid]="hasError()"
-      [attr.aria-describedby]="hasError() ? inputId() + '-error' : helpText ? inputId() + '-help' : null"
-      (input)="onInput($event)"
-      (blur)="onBlur()">
+    <div class="input-group">
+      <input
+        [id]="inputId()"
+        class="form-control"
+        [class.is-invalid]="hasError()"
+        [ngModel]="value()"
+        (ngModelChange)="onDateSelect($event)"
+        [disabled]="disabled()"
+        [placeholder]="placeholder || 'yyyy-mm-dd'"
+        [minDate]="$any(minDateStruct() || undefined)"
+        [maxDate]="$any(maxDateStruct() || undefined)"
+        [attr.aria-label]="label"
+        [attr.aria-required]="required"
+        [attr.aria-invalid]="hasError()"
+        [attr.aria-describedby]="hasError() ? inputId() + '-error' : helpText ? inputId() + '-help' : null"
+        (blur)="onBlur()"
+        ngbDatepicker
+        #d="ngbDatepicker">
+      <button
+        class="btn btn-outline-secondary"
+        [class.btn-outline-danger]="hasError()"
+        (click)="d.toggle()"
+        type="button"
+        [disabled]="disabled()">
+        <i class="fas fa-calendar"></i>
+      </button>
+    </div>
     @if (hasError()) {
-      <div [id]="inputId() + '-error'" class="invalid-feedback">
+      <div [id]="inputId() + '-error'" class="invalid-feedback d-block">
         {{ errorMessage() }}
       </div>
     }
@@ -38,31 +49,35 @@
 
 <!-- Floating Labels Layout -->
 @if (visualizationType === 'floating') {
-  <div class="form-floating mb-3">
-    <input
-      type="date"
-      [id]="inputId()"
-      class="form-control"
-      [class.is-invalid]="hasError()"
-      [value]="value()"
-      [disabled]="disabled()"
-      [placeholder]="placeholder || label"
-      [attr.min]="minDate"
-      [attr.max]="maxDate"
-      [attr.aria-label]="label"
-      [attr.aria-required]="required"
-      [attr.aria-invalid]="hasError()"
-      [attr.aria-describedby]="hasError() ? inputId() + '-error' : helpText ? inputId() + '-help' : null"
-      (input)="onInput($event)"
-      (blur)="onBlur()">
-    <label [for]="inputId()">
-      {{ label }}
-      @if (required) {
-        <span class="text-danger">*</span>
-      }
-    </label>
+  <div class="mb-3">
+    <div class="form-floating">
+      <input
+        [id]="inputId()"
+        class="form-control"
+        [class.is-invalid]="hasError()"
+        [ngModel]="value()"
+        (ngModelChange)="onDateSelect($event)"
+        [disabled]="disabled()"
+        [placeholder]="placeholder || label"
+        [minDate]="$any(minDateStruct() || undefined)"
+        [maxDate]="$any(maxDateStruct() || undefined)"
+        [attr.aria-label]="label"
+        [attr.aria-required]="required"
+        [attr.aria-invalid]="hasError()"
+        [attr.aria-describedby]="hasError() ? inputId() + '-error' : helpText ? inputId() + '-help' : null"
+        (blur)="onBlur()"
+        ngbDatepicker
+        #df="ngbDatepicker"
+        (click)="df.toggle()">
+      <label [for]="inputId()">
+        {{ label }}
+        @if (required) {
+          <span class="text-danger">*</span>
+        }
+      </label>
+    </div>
     @if (hasError()) {
-      <div [id]="inputId() + '-error'" class="invalid-feedback">
+      <div [id]="inputId() + '-error'" class="invalid-feedback d-block">
         {{ errorMessage() }}
       </div>
     }
