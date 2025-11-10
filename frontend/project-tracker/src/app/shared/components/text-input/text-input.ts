@@ -25,7 +25,7 @@ export class TextInput implements ControlValueAccessor {
   private readonly translationService = inject(TranslationService);
 
   // Common inputs
-  @Input() label: string = '';
+  @Input() label: string = '';  // For input-group: the addon text/icon; For standard/floating: field label
   @Input() controlName!: string;
   @Input() visualizationType: 'floating' | 'input-group' | 'standard' = 'standard';
   @Input() required: boolean = false;
@@ -33,15 +33,15 @@ export class TextInput implements ControlValueAccessor {
   @Input() placeholder?: string;
   @Input() helpText?: string;
 
+  // Input-group specific
+  @Input() inputGroupPosition: 'prefix' | 'suffix' = 'prefix';  // Position of label in input-group
+  @Input() fieldLabel?: string;  // Optional label above input-group
+
   // Specific inputs
   @Input() type: 'text' | 'email' | 'password' | 'url' = 'text';
   @Input() minLength?: number;
   @Input() maxLength?: number;
   @Input() pattern?: string;
-  @Input() prefixIcon?: string;  // For input-group type
-  @Input() suffixIcon?: string;  // For input-group type
-  @Input() prefixText?: string;  // For input-group type
-  @Input() suffixText?: string;  // For input-group type
 
   // Internal state
   protected readonly value = signal<string>('');
@@ -88,6 +88,11 @@ export class TextInput implements ControlValueAccessor {
   });
 
   protected readonly inputId = computed(() => `${this.controlName}-${Math.random().toString(36).substr(2, 9)}`);
+
+  protected readonly isLabelIcon = computed(() => {
+    return this.label.startsWith('fas ') || this.label.startsWith('fa ') ||
+           this.label.startsWith('fab ') || this.label.startsWith('far ');
+  });
 
   // ControlValueAccessor implementation
   private onChange: (value: string) => void = () => {};

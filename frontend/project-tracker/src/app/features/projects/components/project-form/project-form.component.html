@@ -68,15 +68,15 @@
               <div class="col-md-6">
                 <app-integer-input
                   formControlName="priority"
-                  [label]="'projects.priority' | translate"
+                  label="/5"
+                  [fieldLabel]="'projects.priority' | translate"
                   controlName="priority"
                   [parentForm]="form"
                   [required]="true"
                   [min]="1"
                   [max]="5"
                   visualizationType="input-group"
-                  prefixIcon="fas fa-star"
-                  suffixText="/5">
+                  inputGroupPosition="suffix">
                 </app-integer-input>
               </div>
             </div>

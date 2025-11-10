@@ -14,7 +14,7 @@
       [value]="value()"
       [disabled]="disabled()"
       [multiple]="multiple"
-      [attr.aria-label]="label"
+      [attr.aria-label]="fieldLabel || label"
       [attr.aria-required]="required"
       [attr.aria-invalid]="hasError()"
       [attr.aria-describedby]="hasError() ? inputId() + '-error' : helpText ? inputId() + '-help' : null"
@@ -50,7 +50,7 @@
       [value]="value()"
       [disabled]="disabled()"
       [multiple]="multiple"
-      [attr.aria-label]="label"
+      [attr.aria-label]="fieldLabel || label"
       [attr.aria-required]="required"
       [attr.aria-invalid]="hasError()"
       [attr.aria-describedby]="hasError() ? inputId() + '-error' : helpText ? inputId() + '-help' : null"
@@ -85,22 +85,21 @@
 <!-- Input Group Layout -->
 @if (visualizationType === 'input-group') {
   <div class="mb-3">
-    @if (label) {
+    @if (fieldLabel) {
       <label [for]="inputId()" class="form-label">
-        {{ label }}
+        {{ fieldLabel }}
         @if (required) {
           <span class="text-danger">*</span>
         }
       </label>
     }
     <div class="input-group" [class.has-validation]="hasError()">
-      @if (prefixIcon || prefixText) {
+      @if (inputGroupPosition === 'prefix') {
         <span class="input-group-text">
-          @if (prefixIcon) {
-            <i [class]="prefixIcon"></i>
-          }
-          @if (prefixText) {
-            {{ prefixText }}
+          @if (isLabelIcon()) {
+            <i [class]="label"></i>
+          } @else {
+            {{ label }}
           }
         </span>
       }
@@ -111,7 +110,7 @@
         [value]="value()"
         [disabled]="disabled()"
         [multiple]="multiple"
-        [attr.aria-label]="label"
+        [attr.aria-label]="fieldLabel || label"
         [attr.aria-required]="required"
         [attr.aria-invalid]="hasError()"
         [attr.aria-describedby]="hasError() ? inputId() + '-error' : helpText ? inputId() + '-help' : null"
@@ -124,13 +123,12 @@
           <option [value]="option.value">{{ option.label }}</option>
         }
       </select>
-      @if (suffixIcon || suffixText) {
+      @if (inputGroupPosition === 'suffix') {
         <span class="input-group-text">
-          @if (suffixIcon) {
-            <i [class]="suffixIcon"></i>
-          }
-          @if (suffixText) {
-            {{ suffixText }}
+          @if (isLabelIcon()) {
+            <i [class]="label"></i>
+          } @else {
+            {{ label }}
           }
         </span>
       }
