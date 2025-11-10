@@ -29,6 +29,7 @@
           <form [formGroup]="form" (ngSubmit)="onSubmit()">
             <!-- Title with Floating Label -->
             <app-text-input
+              formControlName="title"
               [label]="'projects.projectTitle' | translate"
               controlName="title"
               [parentForm]="form"
@@ -39,6 +40,7 @@
 
             <!-- Description with Character Count -->
             <app-textarea-input
+              formControlName="description"
               [label]="'projects.description' | translate"
               controlName="description"
               [parentForm]="form"
@@ -53,6 +55,7 @@
             <div class="row">
               <div class="col-md-6">
                 <app-dropdown-input
+                  formControlName="status"
                   [label]="'projects.status' | translate"
                   controlName="status"
                   [parentForm]="form"
@@ -64,6 +67,7 @@
 
               <div class="col-md-6">
                 <app-integer-input
+                  formControlName="priority"
                   [label]="'projects.priority' | translate"
                   controlName="priority"
                   [parentForm]="form"
@@ -79,6 +83,7 @@
             <div class="row">
               <div class="col-md-6">
                 <app-date-input
+                  formControlName="startDate"
                   [label]="'projects.startDate' | translate"
                   controlName="startDate"
                   [parentForm]="form"
@@ -88,6 +93,7 @@
 
               <div class="col-md-6">
                 <app-date-input
+                  formControlName="dueDate"
                   [label]="'projects.dueDate' | translate"
                   controlName="dueDate"
                   [parentForm]="form"
