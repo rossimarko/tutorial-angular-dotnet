@@ -30,11 +30,13 @@ export class DropdownInput implements ControlValueAccessor {
     effect((onCleanup) => {
       const ctrl = this.control();
       if (ctrl) {
+        this.updateErrorState();
+
         const statusSub = ctrl.statusChanges.subscribe(() => {
-          this.cdr.markForCheck();
+          this.updateErrorState();
         });
         const valueSub = ctrl.valueChanges.subscribe(() => {
-          this.cdr.markForCheck();
+          this.updateErrorState();
         });
 
         onCleanup(() => {
@@ -66,15 +68,11 @@ export class DropdownInput implements ControlValueAccessor {
   protected readonly value = signal<any>(null);
   protected readonly disabled = signal<boolean>(false);
   protected readonly touched = signal<boolean>(false);
+  protected readonly hasError = signal<boolean>(false);
 
   // Computed properties
   protected readonly control = computed(() => {
     return this.parentForm?.get(this.controlName);
-  });
-
-  protected readonly hasError = computed(() => {
-    const ctrl = this.control();
-    return ctrl && ctrl.invalid && (ctrl.dirty || ctrl.touched || this.touched());
   });
 
   protected readonly errorMessage = computed(() => {
@@ -137,5 +135,11 @@ export class DropdownInput implements ControlValueAccessor {
   onBlur(): void {
     this.touched.set(true);
     this.onTouched();
+  }
+
+  private updateErrorState(): void {
+    const ctrl = this.control();
+    const hasErr = !!(ctrl && ctrl.invalid && (ctrl.dirty || ctrl.touched || this.touched()));
+    this.hasError.set(hasErr);
   }
 }
