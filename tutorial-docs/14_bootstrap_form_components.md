@@ -48,8 +48,8 @@ In this module, we'll create **9 reusable form input components** that integrate
 ### Form Input Components:
 1. **TextInputComponent** - Text, email, password, URL inputs with validation
 2. **TextareaInputComponent** - Multi-line text area with character count
-3. **DateInputComponent** - Date picker with min/max validation
-4. **DateTimeInputComponent** - DateTime picker with constraints
+3. **DateInputComponent** - Date picker using ng-bootstrap's NgbDatepicker with calendar UI
+4. **DateTimeInputComponent** - DateTime picker with ng-bootstrap's NgbDatepicker + NgbTimepicker
 5. **IntegerInputComponent** - Integer input with numeric validation
 6. **DecimalInputComponent** - Decimal input with precision control
 7. **CheckboxInputComponent** - Checkbox and switch controls
@@ -745,14 +745,158 @@ export class TextareaInputComponent implements ControlValueAccessor {
 
 ---
 
+## 🔨 Step 3.5: Install ng-bootstrap for Date/Time Components
+
+Before implementing the remaining components, install ng-bootstrap for enhanced date and time pickers.
+
+### Install ng-bootstrap and Dependencies
+
+```bash
+cd frontend/project-tracker
+npm install @ng-bootstrap/ng-bootstrap@19.0.1 @popperjs/core@2.11.8
+```
+
+**Why ng-bootstrap for date/time components?**
+- ✅ Better UX with calendar picker UI instead of browser-native date inputs
+- ✅ Consistent cross-browser experience (native date inputs vary by browser)
+- ✅ Enhanced features: min/max validation, disabled dates, custom formatting
+- ✅ Bootstrap-native styling with no custom CSS needed
+- ✅ Full accessibility support (ARIA attributes, keyboard navigation)
+- ✅ Works seamlessly with ControlValueAccessor pattern
+
+### ng-bootstrap Integration Pattern
+
+Our date and datetime components use ng-bootstrap while maintaining the ControlValueAccessor pattern:
+
+**Data Flow:**
+```
+FormControl (ISO string) ↔ ControlValueAccessor ↔ NgbDateStruct ↔ NgbDatepicker UI
+```
+
+**Key Conversions:**
+- **writeValue()**: ISO string → NgbDateStruct
+- **onDateSelect()**: NgbDateStruct → ISO string → FormControl
+
+**For datetime components:**
+- Split into separate date (`NgbDateStruct`) and time (`NgbTimeStruct`) signals
+- Automatically combine when either changes into ISO datetime string
+- Handle edge cases (e.g., only date set → default time to midnight)
+
+### DateInputComponent with ng-bootstrap
+
+**Key Features:**
+- **Standard Layout**: Input with calendar button icon to toggle datepicker
+- **Floating Layout**: Input opens datepicker on click
+- **Value Conversion**: Bidirectional conversion between ISO strings and NgbDateStruct
+- **Validation**: Supports min/max date validation via NgbDatepicker
+
+**Required Imports:**
+```typescript
+import { FormsModule } from '@angular/forms';
+import { NgbDatepicker, NgbInputDatepicker, NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
+```
+
+**Template Example (Standard Layout):**
+```html
+<div class="input-group">
+  <input
+    class="form-control"
+    [ngModel]="value()"
+    (ngModelChange)="onDateSelect($event)"
+    [minDate]="$any(minDateStruct() || undefined)"
+    [maxDate]="$any(maxDateStruct() || undefined)"
+    ngbDatepicker
+    #d="ngbDatepicker">
+  <button class="btn btn-outline-secondary" (click)="d.toggle()" type="button">
+    <i class="fas fa-calendar"></i>
+  </button>
+</div>
+```
+
+### DatetimeInputComponent with ng-bootstrap
+
+**Key Features:**
+- **Date Input**: NgbDatepicker with calendar button (left side)
+- **Time Input**: NgbTimepicker with hour/minute/second spinners (right side)
+- **Layout**: Side-by-side using Bootstrap's grid system
+- **Auto-Combine**: Automatically combines date + time into ISO datetime string
+
+**Required Imports:**
+```typescript
+import { FormsModule } from '@angular/forms';
+import { NgbDatepicker, NgbInputDatepicker, NgbTimepicker, NgbDateStruct, NgbTimeStruct } from '@ng-bootstrap/ng-bootstrap';
+```
+
+**Template Example (Standard Layout):**
+```html
+<div class="row g-2">
+  <!-- Date Input -->
+  <div class="col-md-6">
+    <div class="input-group">
+      <input
+        class="form-control"
+        [ngModel]="dateValue()"
+        (ngModelChange)="onDateSelect($event)"
+        ngbDatepicker
+        #d="ngbDatepicker">
+      <button class="btn btn-outline-secondary" (click)="d.toggle()" type="button">
+        <i class="fas fa-calendar"></i>
+      </button>
+    </div>
+  </div>
+  <!-- Time Input -->
+  <div class="col-md-6">
+    <ngb-timepicker
+      [ngModel]="timeValue()"
+      (ngModelChange)="onTimeChange($event)"
+      [seconds]="true">
+    </ngb-timepicker>
+  </div>
+</div>
+```
+
+**TypeScript Logic for DateTime Combination:**
+```typescript
+protected readonly dateValue = signal<NgbDateStruct | null>(null);
+protected readonly timeValue = signal<NgbTimeStruct | null>(null);
+
+onDateSelect(date: NgbDateStruct | null): void {
+  this.dateValue.set(date);
+  this.emitDateTime();
+}
+
+onTimeChange(time: NgbTimeStruct | null): void {
+  this.timeValue.set(time);
+  this.emitDateTime();
+}
+
+private emitDateTime(): void {
+  const date = this.dateValue();
+  const time = this.timeValue();
+
+  if (date && time) {
+    const isoString = this.dateTimeToString(date, time);
+    this.onChange(isoString);
+  } else if (date) {
+    // Only date set - default to midnight
+    const isoString = this.dateTimeToString(date, { hour: 0, minute: 0, second: 0 });
+    this.onChange(isoString);
+  } else {
+    this.onChange('');
+  }
+}
+```
+
+---
+
 ## 🔨 Step 4-9: Implement Remaining Form Components
 
 The remaining components follow the same pattern. See the complete implementations in the repository.
 
 **Key points for each:**
 
-- **DateInputComponent**: Uses `<input type="date">` with min/max validation
-- **DateTimeInputComponent**: Uses `<input type="datetime-local">` with constraints
+- **DateInputComponent**: Uses ng-bootstrap's `NgbDatepicker` with calendar UI, calendar button toggle, min/max validation
+- **DateTimeInputComponent**: Uses ng-bootstrap's `NgbDatepicker` + `NgbTimepicker` with separate date and time inputs
 - **IntegerInputComponent**: Uses `<input type="number" step="1">` with min/max
 - **DecimalInputComponent**: Uses `<input type="number" step="0.01">` with precision
 - **CheckboxInputComponent**: Supports standard checkbox and Bootstrap switches
@@ -1023,6 +1167,37 @@ Replace form fields with components:
 ✅ **Standalone components only**
 ✅ **Inject services with inject() function**
 
+### 6. ng-bootstrap Integration for Date/Time Components
+✅ **Use FormsModule with ngModel for ng-bootstrap components**
+✅ **Convert between ISO strings (FormControl) and ng-bootstrap structures (UI)**
+✅ **Use `$any()` type cast for optional min/max date properties**
+✅ **Split datetime into separate date and time signals**
+✅ **Automatically combine date + time changes into ISO datetime string**
+✅ **Handle edge cases (e.g., only date set → default to midnight)**
+✅ **Maintain ControlValueAccessor pattern throughout**
+
+**Why ng-bootstrap for date/time?**
+- Native HTML5 date/datetime inputs have inconsistent UX across browsers
+- ng-bootstrap provides consistent, accessible, feature-rich calendar UI
+- Better accessibility with ARIA support and keyboard navigation
+- More features: min/max validation, disabled dates, custom formatting
+- Bootstrap-native styling without custom CSS
+
+**Key Pattern:**
+```typescript
+// Date component uses NgbDateStruct
+protected readonly value = signal<NgbDateStruct | null>(null);
+
+writeValue(value: string): void {
+  this.value.set(this.stringToDateStruct(value));
+}
+
+onDateSelect(date: NgbDateStruct | null): void {
+  this.value.set(date);
+  this.onChange(date ? this.dateStructToString(date) : '');
+}
+```
+
 ---
 
 ## ❌ Common Mistakes
@@ -1172,6 +1347,50 @@ this.form = this.fb.group({
 ```html
 <input class="form-control is-invalid"> <!-- ✅ Correct -->
 <div class="invalid-feedback">Error</div> <!-- ✅ Correct -->
+```
+
+### 6. ng-bootstrap Integration Mistakes
+
+❌ **Forgetting FormsModule for ng-bootstrap components:**
+```typescript
+// ❌ Missing FormsModule - ngModel won't work
+imports: [CommonModule, ReactiveFormsModule, NgbDatepicker]
+```
+
+✅ **Always include FormsModule:**
+```typescript
+// ✅ FormsModule required for ngModel with ng-bootstrap
+imports: [CommonModule, ReactiveFormsModule, FormsModule, NgbDatepicker, NgbInputDatepicker]
+```
+
+❌ **Using wrong value type with ng-bootstrap:**
+```typescript
+// ❌ Wrong - ng-bootstrap expects NgbDateStruct, not string
+protected readonly value = signal<string>('');
+```
+
+✅ **Use ng-bootstrap structures:**
+```typescript
+// ✅ Correct - Use NgbDateStruct for datepicker
+protected readonly value = signal<NgbDateStruct | null>(null);
+
+// Convert in writeValue and event handlers
+writeValue(value: string): void {
+  this.value.set(this.stringToDateStruct(value));
+}
+```
+
+❌ **Not handling optional min/max dates:**
+```typescript
+// ❌ TypeScript error: Type 'null | undefined' not assignable to 'NgbDateStruct'
+[minDate]="minDateStruct()"
+```
+
+✅ **Use $any() for optional dates:**
+```typescript
+// ✅ Correct - Use $any() type cast for optional properties
+[minDate]="$any(minDateStruct() || undefined)"
+[maxDate]="$any(maxDateStruct() || undefined)"
 ```
 
 ---
