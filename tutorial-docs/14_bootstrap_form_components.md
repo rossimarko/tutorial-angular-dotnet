@@ -8,9 +8,9 @@ By the end of this module, you will:
 - ✅ Support multiple visualization types (floating labels, input groups, standard)
 - ✅ Build comprehensive validation with translated error messages
 - ✅ Create accessible form controls with ARIA attributes
-- ✅ Implement a reusable modal dialog component
 - ✅ Refactor existing CRUD forms to use the new components
 - ✅ Understand advanced Angular patterns for form components
+- ✅ Learn when to use ngbootstrap for utility components (modals, tooltips, etc.)
 
 ---
 
@@ -43,7 +43,7 @@ If any of these are missing, please complete the prerequisite modules first.
 
 ## 📌 What We'll Build in This Module
 
-In this module, we'll create **10 reusable form components** that integrate seamlessly with Angular Reactive Forms:
+In this module, we'll create **9 reusable form input components** that integrate seamlessly with Angular Reactive Forms:
 
 ### Form Input Components:
 1. **TextInputComponent** - Text, email, password, URL inputs with validation
@@ -56,8 +56,8 @@ In this module, we'll create **10 reusable form components** that integrate seam
 8. **RadioInputComponent** - Radio button groups (inline/stacked)
 9. **DropdownInputComponent** - Select dropdown with search support
 
-### Utility Components:
-10. **ModalComponent** - Reusable modal dialog with content projection
+### Note on Utility Components:
+For utility components like **modals, tooltips, popovers, carousels, etc.**, we recommend using **[ng-bootstrap](https://ng-bootstrap.github.io/)**, which provides ready-made Angular wrappers for Bootstrap components. This saves development time and ensures proper Bootstrap behavior.
 
 ### Features:
 - **Three visualization types**: Floating labels, input groups, standard
@@ -187,7 +187,7 @@ Classic label above input:
 
 ## 🛠️ Step 1: Generate Component Scaffolds
 
-Let's create all 10 components using Angular CLI:
+Let's create all 9 form input components using Angular CLI:
 
 ```bash
 cd frontend/project-tracker
@@ -202,10 +202,9 @@ ng generate component shared/components/decimal-input --standalone
 ng generate component shared/components/checkbox-input --standalone
 ng generate component shared/components/radio-input --standalone
 ng generate component shared/components/dropdown-input --standalone
-
-# Utility component
-ng generate component shared/components/modal --standalone
 ```
+
+**Note**: For modals and other utility components, we'll use [ng-bootstrap](https://ng-bootstrap.github.io/) instead of creating custom implementations.
 
 ---
 
@@ -762,145 +761,7 @@ The remaining components follow the same pattern. See the complete implementatio
 
 ---
 
-## 🔨 Step 10: Implement Modal Component
-
-The modal component uses Bootstrap 5.3 modal structure with Angular control.
-
-### File: `modal.component.ts`
-
-```typescript
-import { Component, Input, Output, EventEmitter, signal, ChangeDetectionStrategy, ViewChild, ElementRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { TranslatePipe } from '../../../pipes/translate.pipe';
-
-@Component({
-  selector: 'app-modal',
-  standalone: true,
-  imports: [CommonModule, TranslatePipe],
-  templateUrl: './modal.component.html',
-  styleUrl: './modal.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush
-})
-export class ModalComponent {
-  @ViewChild('modalElement') modalElement!: ElementRef<HTMLDivElement>;
-
-  @Input() title: string = '';
-  @Input() size: 'sm' | 'md' | 'lg' | 'xl' = 'md';
-  @Input() closeButton: boolean = true;
-  @Input() backdrop: boolean | 'static' = true;
-  @Input() keyboard: boolean = true;
-  @Input() showFooter: boolean = true;
-  @Input() confirmText: string = 'common.confirm';
-  @Input() cancelText: string = 'common.cancel';
-  @Input() confirmButtonClass: string = 'btn-primary';
-
-  @Output() onClose = new EventEmitter<void>();
-  @Output() onConfirm = new EventEmitter<any>();
-
-  protected readonly isOpen = signal(false);
-  private backdropElement?: HTMLDivElement;
-
-  open(): void {
-    this.isOpen.set(true);
-    document.body.classList.add('modal-open');
-    this.createBackdrop();
-  }
-
-  close(): void {
-    this.isOpen.set(false);
-    document.body.classList.remove('modal-open');
-    this.removeBackdrop();
-    this.onClose.emit();
-  }
-
-  confirm(): void {
-    this.onConfirm.emit();
-  }
-
-  private createBackdrop(): void {
-    if (this.backdrop === false) return;
-
-    this.backdropElement = document.createElement('div');
-    this.backdropElement.className = 'modal-backdrop fade show';
-    document.body.appendChild(this.backdropElement);
-
-    if (this.backdrop !== 'static') {
-      this.backdropElement.addEventListener('click', () => this.close());
-    }
-  }
-
-  private removeBackdrop(): void {
-    if (this.backdropElement) {
-      this.backdropElement.remove();
-      this.backdropElement = undefined;
-    }
-  }
-
-  handleKeyDown(event: KeyboardEvent): void {
-    if (event.key === 'Escape' && this.keyboard) {
-      this.close();
-    }
-  }
-}
-```
-
-### File: `modal.component.html`
-
-```html
-@if (isOpen()) {
-  <div
-    #modalElement
-    class="modal fade show d-block"
-    tabindex="-1"
-    role="dialog"
-    [attr.aria-modal]="true"
-    [attr.aria-labelledby]="'modalTitle'"
-    (keydown)="handleKeyDown($event)">
-    <div class="modal-dialog" [ngClass]="{
-      'modal-sm': size === 'sm',
-      'modal-lg': size === 'lg',
-      'modal-xl': size === 'xl'
-    }" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="modalTitle">{{ title }}</h5>
-          @if (closeButton) {
-            <button
-              type="button"
-              class="btn-close"
-              aria-label="Close"
-              (click)="close()">
-            </button>
-          }
-        </div>
-        <div class="modal-body">
-          <ng-content></ng-content>
-        </div>
-        @if (showFooter) {
-          <div class="modal-footer">
-            <button
-              type="button"
-              class="btn btn-secondary"
-              (click)="close()">
-              {{ cancelText | translate }}
-            </button>
-            <button
-              type="button"
-              [class]="'btn ' + confirmButtonClass"
-              (click)="confirm()">
-              {{ confirmText | translate }}
-            </button>
-          </div>
-        }
-      </div>
-    </div>
-  </div>
-}
-```
-
----
-
-## 📦 Step 11: Create Components Export Index
+## 📦 Step 10: Create Components Export Index
 
 Create file: `frontend/project-tracker/src/app/shared/components/index.ts`
 
@@ -917,7 +778,6 @@ export * from './radio-input/radio-input.component';
 export * from './dropdown-input/dropdown-input.component';
 
 // Utility components
-export * from './modal/modal.component';
 export * from './card/card-component';
 export * from './confirm-dialog/confirm-dialog.component';
 export * from './language-selector/language-selector.component';
@@ -929,7 +789,7 @@ export * from './toast-container/toast-container.component';
 
 ---
 
-## 🔧 Step 12: Refactor Project Form
+## 🔧 Step 11: Refactor Project Form
 
 Now let's update the project form to use our new components.
 
@@ -943,8 +803,7 @@ import {
   TextareaInputComponent,
   DropdownInputComponent,
   IntegerInputComponent,
-  DateInputComponent,
-  ModalComponent
+  DateInputComponent
 } from '../../../shared/components';
 ```
 
@@ -961,8 +820,7 @@ Update imports array:
     TextareaInputComponent,
     DropdownInputComponent,
     IntegerInputComponent,
-    DateInputComponent,
-    ModalComponent
+    DateInputComponent
   ],
   // ...
 })
@@ -1450,33 +1308,54 @@ statusOptions = [
 </app-dropdown-input>
 ```
 
-### Example 5: Modal Dialog
+### Example 5: Using ng-bootstrap for Modals
 
+For modals and other utility components, we recommend using **[ng-bootstrap](https://ng-bootstrap.github.io/)** instead of creating custom implementations.
+
+Install ng-bootstrap:
+```bash
+npm install @ng-bootstrap/ng-bootstrap
+```
+
+Example modal usage with ng-bootstrap:
 ```typescript
-// In component
-@ViewChild('confirmModal') confirmModal!: ModalComponent;
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
-showConfirmation() {
-  this.confirmModal.open();
-}
+export class MyComponent {
+  private modalService = inject(NgbModal);
 
-handleConfirm() {
-  console.log('User confirmed!');
-  this.confirmModal.close();
+  openConfirmDialog(content: any) {
+    this.modalService.open(content, { centered: true })
+      .result.then(
+        (result) => console.log('Confirmed:', result),
+        (reason) => console.log('Dismissed:', reason)
+      );
+  }
 }
 ```
 
 ```html
-<app-modal
-  #confirmModal
-  title="Confirm Delete"
-  confirmText="Delete"
-  cancelText="Cancel"
-  confirmButtonClass="btn-danger"
-  (onConfirm)="handleConfirm()">
-  <p>Are you sure you want to delete this project?</p>
-</app-modal>
+<ng-template #confirmModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title">Confirm Delete</h4>
+    <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
+  </div>
+  <div class="modal-body">
+    <p>Are you sure you want to delete this project?</p>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">Cancel</button>
+    <button type="button" class="btn btn-danger" (click)="modal.close('Delete')">Delete</button>
+  </div>
+</ng-template>
 ```
+
+**Benefits of ng-bootstrap:**
+- Battle-tested, maintained by Angular community
+- Full Bootstrap 5 support with Angular directives
+- Includes modals, tooltips, popovers, typeahead, datepicker, and more
+- Proper accessibility support built-in
+- No jQuery dependency
 
 ---
 
@@ -1489,6 +1368,7 @@ handleConfirm() {
 5. **Signals** provide reactive state management with better performance
 6. **OnPush** change detection improves component performance
 7. **Reusable components** reduce code duplication and ensure consistency
+8. **ng-bootstrap** is recommended for utility components (modals, tooltips, etc.) instead of custom implementations
 
 ---
 
@@ -1510,6 +1390,7 @@ In **Module 15: Containerization & Deployment**, you'll learn:
 - [Angular Reactive Forms](https://angular.io/guide/reactive-forms)
 - [WCAG 2.1 Guidelines](https://www.w3.org/WAI/WCAG21/quickref/)
 - [Angular Signals](https://angular.io/guide/signals)
+- [ng-bootstrap](https://ng-bootstrap.github.io/) - Angular widgets built from ground up using Bootstrap 5
 
 ---
 

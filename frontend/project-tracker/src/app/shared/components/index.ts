@@ -10,7 +10,6 @@ export * from './radio-input/radio-input';
 export * from './dropdown-input/dropdown-input';
 
 // Utility components
-export * from './modal/modal';
 export * from './card/card-component';
 export * from './confirm-dialog/confirm-dialog.component';
 export * from './language-selector/language-selector.component';
