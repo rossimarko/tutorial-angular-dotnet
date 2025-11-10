@@ -27,16 +27,22 @@ export class TextInput implements ControlValueAccessor {
 
   constructor() {
     // Watch for control status changes and trigger change detection
-    effect(() => {
+    effect((onCleanup) => {
       const ctrl = this.control();
       if (ctrl) {
-        // Trigger change detection when control status changes
-        ctrl.statusChanges.subscribe(() => {
+        // Subscribe to status changes (valid/invalid state)
+        const statusSub = ctrl.statusChanges.subscribe(() => {
           this.cdr.markForCheck();
         });
-        // Also watch valueChanges to detect touched/dirty state changes
-        ctrl.valueChanges.subscribe(() => {
+        // Subscribe to value changes (triggers validation)
+        const valueSub = ctrl.valueChanges.subscribe(() => {
           this.cdr.markForCheck();
+        });
+
+        // Clean up subscriptions when effect re-runs or component destroys
+        onCleanup(() => {
+          statusSub.unsubscribe();
+          valueSub.unsubscribe();
         });
       }
     });

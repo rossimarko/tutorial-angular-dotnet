@@ -27,14 +27,19 @@ export class DecimalInput implements ControlValueAccessor {
 
   constructor() {
     // Watch for control status changes and trigger change detection
-    effect(() => {
+    effect((onCleanup) => {
       const ctrl = this.control();
       if (ctrl) {
-        ctrl.statusChanges.subscribe(() => {
+        const statusSub = ctrl.statusChanges.subscribe(() => {
           this.cdr.markForCheck();
         });
-        ctrl.valueChanges.subscribe(() => {
+        const valueSub = ctrl.valueChanges.subscribe(() => {
           this.cdr.markForCheck();
+        });
+
+        onCleanup(() => {
+          statusSub.unsubscribe();
+          valueSub.unsubscribe();
         });
       }
     });
