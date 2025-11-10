@@ -961,6 +961,7 @@ Replace form fields with components:
           <form [formGroup]="form" (ngSubmit)="onSubmit()">
             <!-- Title with Floating Label -->
             <app-text-input
+              formControlName="title"
               [label]="'projects.projectTitle' | translate"
               controlName="title"
               [parentForm]="form"
@@ -971,6 +972,7 @@ Replace form fields with components:
 
             <!-- Description with Character Count -->
             <app-textarea-input
+              formControlName="description"
               [label]="'projects.description' | translate"
               controlName="description"
               [parentForm]="form"
@@ -985,6 +987,7 @@ Replace form fields with components:
             <div class="row">
               <div class="col-md-6">
                 <app-dropdown-input
+                  formControlName="status"
                   [label]="'projects.status' | translate"
                   controlName="status"
                   [parentForm]="form"
@@ -996,6 +999,7 @@ Replace form fields with components:
 
               <div class="col-md-6">
                 <app-integer-input
+                  formControlName="priority"
                   [label]="'projects.priority' | translate"
                   controlName="priority"
                   [parentForm]="form"
@@ -1011,6 +1015,7 @@ Replace form fields with components:
             <div class="row">
               <div class="col-md-6">
                 <app-date-input
+                  formControlName="startDate"
                   [label]="'projects.startDate' | translate"
                   controlName="startDate"
                   [parentForm]="form"
@@ -1020,6 +1025,7 @@ Replace form fields with components:
 
               <div class="col-md-6">
                 <app-date-input
+                  formControlName="dueDate"
                   [label]="'projects.dueDate' | translate"
                   controlName="dueDate"
                   [parentForm]="form"
@@ -1110,7 +1116,36 @@ Replace form fields with components:
 
 ## ❌ Common Mistakes
 
-### 1. ControlValueAccessor Mistakes
+### 1. Missing formControlName Directive
+
+❌ **CRITICAL: Forgetting formControlName directive:**
+```html
+<!-- ❌ Wrong - Values won't load in edit mode -->
+<app-text-input
+  [label]="'Name' | translate"
+  controlName="name"
+  [parentForm]="form">
+</app-text-input>
+```
+
+✅ **Correct - Always include formControlName:**
+```html
+<!-- ✅ Correct - FormControl properly connects to component -->
+<app-text-input
+  formControlName="name"
+  [label]="'Name' | translate"
+  controlName="name"
+  [parentForm]="form">
+</app-text-input>
+```
+
+**Why this matters:**
+- Without `formControlName`, the component's `writeValue()` is never called
+- Values won't load when editing (e.g., `form.patchValue()` won't work)
+- The FormControl won't notify the component of value changes
+- Validation will still work via `parentForm` and `controlName`, but data binding will be broken
+
+### 2. ControlValueAccessor Mistakes
 
 ❌ **Forgetting to register the provider:**
 ```typescript
@@ -1134,7 +1169,7 @@ this.value.set(newValue);
 this.onChange(newValue); // ✅ Notify form
 ```
 
-### 2. Validation Mistakes
+### 3. Validation Mistakes
 
 ❌ **Validating in the component instead of parent form:**
 ```typescript
@@ -1149,7 +1184,7 @@ this.form = this.fb.group({
 });
 ```
 
-### 3. Accessibility Mistakes
+### 4. Accessibility Mistakes
 
 ❌ **Missing label association:**
 ```html
@@ -1163,7 +1198,7 @@ this.form = this.fb.group({
 <input [id]="inputId()"> <!-- ✅ Associated -->
 ```
 
-### 4. Bootstrap Class Mistakes
+### 5. Bootstrap Class Mistakes
 
 ❌ **Using wrong validation classes:**
 ```html
@@ -1222,10 +1257,13 @@ npm start
 
 ## 📚 Usage Examples
 
+**IMPORTANT**: All form components **must** include the `formControlName` directive to work properly with Angular reactive forms. This ensures values load correctly in edit mode and validation works as expected.
+
 ### Example 1: Simple Text Input (Standard)
 
 ```html
 <app-text-input
+  formControlName="name"
   label="Full Name"
   controlName="name"
   [parentForm]="myForm"
@@ -1238,6 +1276,7 @@ npm start
 
 ```html
 <app-text-input
+  formControlName="email"
   label="Email Address"
   controlName="email"
   type="email"
@@ -1252,6 +1291,7 @@ npm start
 
 ```html
 <app-text-input
+  formControlName="password"
   label="Password"
   controlName="password"
   type="password"
@@ -1275,6 +1315,7 @@ statusOptions = [
 
 ```html
 <app-dropdown-input
+  formControlName="status"
   label="Project Status"
   controlName="status"
   [parentForm]="myForm"
