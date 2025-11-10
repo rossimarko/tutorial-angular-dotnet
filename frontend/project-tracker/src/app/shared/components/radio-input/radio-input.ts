@@ -1,7 +1,6 @@
 import { Component, Input, forwardRef, signal, computed, ChangeDetectionStrategy, inject, effect, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { TranslatePipe } from '../../pipes/translate.pipe';
 import { TranslationService } from '../../services/translation.service';
 
 /// <summary>
@@ -20,7 +19,7 @@ export interface RadioOption {
 /// </summary>
 @Component({
   selector: 'app-radio-input',
-  imports: [CommonModule, ReactiveFormsModule, TranslatePipe],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './radio-input.html',
   styleUrl: './radio-input.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

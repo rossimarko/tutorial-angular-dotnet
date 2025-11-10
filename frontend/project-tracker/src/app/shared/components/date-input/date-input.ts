@@ -2,7 +2,6 @@ import { Component, Input, forwardRef, signal, computed, ChangeDetectionStrategy
 import { CommonModule } from '@angular/common';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormGroup, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { NgbDatepicker, NgbInputDatepicker, NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
-import { TranslatePipe } from '../../pipes/translate.pipe';
 import { TranslationService } from '../../services/translation.service';
 
 /// <summary>
@@ -12,10 +11,10 @@ import { TranslationService } from '../../services/translation.service';
 /// </summary>
 @Component({
   selector: 'app-date-input',
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, NgbDatepicker, NgbInputDatepicker],
   templateUrl: './date-input.html',
   styleUrl: './date-input.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, NgbDatepicker, NgbInputDatepicker],
   providers: [{
     provide: NG_VALUE_ACCESSOR,
     useExisting: forwardRef(() => DateInput),

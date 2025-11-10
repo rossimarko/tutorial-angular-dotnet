@@ -1,7 +1,6 @@
 import { Component, Input, forwardRef, signal, computed, ChangeDetectionStrategy, inject, effect, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { TranslatePipe } from '../../pipes/translate.pipe';
 import { TranslationService } from '../../services/translation.service';
 
 /// <summary>
@@ -11,7 +10,7 @@ import { TranslationService } from '../../services/translation.service';
 /// </summary>
 @Component({
   selector: 'app-decimal-input',
-  imports: [CommonModule, ReactiveFormsModule, TranslatePipe],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './decimal-input.html',
   styleUrl: './decimal-input.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
