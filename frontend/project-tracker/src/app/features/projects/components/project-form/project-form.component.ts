@@ -95,8 +95,8 @@ export class ProjectFormComponent implements OnInit {
           description: project.description,
           status: project.status,
           priority: project.priority,
-          startDate: this.formatDateForInput(project.startDate),
-          dueDate: this.formatDateForInput(project.dueDate)
+          startDate: project.startDate,
+          dueDate: project.dueDate
         });
         this.loading.set(false);
       },
@@ -112,14 +112,6 @@ export class ProjectFormComponent implements OnInit {
     });
   }
 
-  /// <summary>
-  /// Format date for HTML input (YYYY-MM-DD)
-  /// </summary>
-  private formatDateForInput(date: Date | string | null | undefined): string | null {
-    if (!date) return null;
-    const d = new Date(date);
-    return d.toISOString().split('T')[0];
-  }
 
   /// <summary>
   /// Submit form

@@ -1,8 +1,46 @@
 import { Component, Input, forwardRef, signal, computed, ChangeDetectionStrategy, inject, effect, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormGroup, ReactiveFormsModule, FormsModule } from '@angular/forms';
-import { NgbDatepicker, NgbInputDatepicker, NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
+import { NgbInputDatepicker, NgbDateStruct, NgbDateParserFormatter } from '@ng-bootstrap/ng-bootstrap';
 import { TranslationService } from '../../services/translation.service';
+
+/// <summary>
+/// Custom date formatter for ng-bootstrap datepicker
+/// Formats dates according to the current locale
+/// </summary>
+class LocaleDateFormatter extends NgbDateParserFormatter {
+  constructor(private translationService: TranslationService) {
+    super();
+  }
+
+  parse(value: string): NgbDateStruct | null {
+    if (!value) return null;
+    try {
+      const date = new Date(value);
+      if (isNaN(date.getTime())) return null;
+      return {
+        year: date.getFullYear(),
+        month: date.getMonth() + 1,
+        day: date.getDate()
+      };
+    } catch {
+      return null;
+    }
+  }
+
+  format(date: NgbDateStruct | null): string {
+    if (!date) return '';
+    try {
+      const isoString = `${date.year}-${String(date.month).padStart(2, '0')}-${String(date.day).padStart(2, '0')}`;
+      const dateObj = new Date(isoString);
+      const culture = this.translationService.currentCultureInfo();
+      const locale = culture?.code || 'en-US';
+      return dateObj.toLocaleDateString(locale);
+    } catch {
+      return '';
+    }
+  }
+}
 
 /// <summary>
 /// Reusable date input component with ng-bootstrap datepicker
@@ -14,16 +52,27 @@ import { TranslationService } from '../../services/translation.service';
   templateUrl: './date-input.html',
   styleUrl: './date-input.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, NgbDatepicker, NgbInputDatepicker],
-  providers: [{
-    provide: NG_VALUE_ACCESSOR,
-    useExisting: forwardRef(() => DateInput),
-    multi: true
-  }]
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, NgbInputDatepicker],
+  providers: [
+    {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: forwardRef(() => DateInput),
+      multi: true
+    },
+    {
+      provide: NgbDateParserFormatter,
+      useClass: LocaleDateFormatter,
+      deps: [TranslationService]
+    }
+  ]
 })
 export class DateInput implements ControlValueAccessor {
   private readonly translationService = inject(TranslationService);
   private readonly cdr = inject(ChangeDetectorRef);
+  private readonly currentLocale = computed(() => {
+    const culture = this.translationService.currentCultureInfo();
+    return culture?.code || 'en-US';
+  });
 
   constructor() {
     // Watch for control status changes and trigger change detection
@@ -106,6 +155,40 @@ export class DateInput implements ControlValueAccessor {
 
   protected readonly inputId = computed(() => `${this.controlName}-${Math.random().toString(36).substr(2, 9)}`);
 
+  protected readonly localizedPlaceholder = computed(() => {
+    const locale = this.currentLocale();
+    
+    // Use Intl.DateTimeFormat to get the format parts
+    const formatter = new Intl.DateTimeFormat(locale, {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    });
+    
+    // Get the format parts to determine the order and separators
+    const parts = formatter.formatToParts(new Date(2020, 0, 15));
+    let pattern = '';
+    
+    for (const part of parts) {
+      switch (part.type) {
+        case 'year':
+          pattern += 'yyyy';
+          break;
+        case 'month':
+          pattern += 'mm';
+          break;
+        case 'day':
+          pattern += 'dd';
+          break;
+        case 'literal':
+          pattern += part.value;
+          break;
+      }
+    }
+    
+    return pattern;
+  });
+
   // ControlValueAccessor implementation
   private onChange: (value: string) => void = () => {};
   private onTouched: () => void = () => {};
@@ -170,7 +253,7 @@ export class DateInput implements ControlValueAccessor {
     const isoString = this.dateStructToString(date);
     try {
       const dateObj = new Date(isoString);
-      return dateObj.toLocaleDateString();
+      return dateObj.toLocaleDateString(this.currentLocale());
     } catch {
       return isoString;
     }

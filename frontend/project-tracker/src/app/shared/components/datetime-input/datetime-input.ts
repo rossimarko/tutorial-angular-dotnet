@@ -1,7 +1,7 @@
 import { Component, Input, forwardRef, signal, computed, ChangeDetectionStrategy, inject, effect, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormGroup, ReactiveFormsModule, FormsModule } from '@angular/forms';
-import { NgbDatepicker, NgbInputDatepicker, NgbTimepicker, NgbDateStruct, NgbTimeStruct } from '@ng-bootstrap/ng-bootstrap';
+import { NgbInputDatepicker, NgbTimepicker, NgbDateStruct, NgbTimeStruct } from '@ng-bootstrap/ng-bootstrap';
 import { TranslationService } from '../../services/translation.service';
 
 /// <summary>
@@ -14,7 +14,7 @@ import { TranslationService } from '../../services/translation.service';
   templateUrl: './datetime-input.html',
   styleUrl: './datetime-input.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, NgbDatepicker, NgbInputDatepicker, NgbTimepicker],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, NgbInputDatepicker, NgbTimepicker],
   providers: [{
     provide: NG_VALUE_ACCESSOR,
     useExisting: forwardRef(() => DatetimeInput),
