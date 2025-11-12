@@ -159,11 +159,23 @@
   - Performance optimization
 - **File**: [13_logging_performance.md](./13_logging_performance.md)
 
+#### Module 14: Bootstrap 5.3 Form Components for CRUD
+- **Duration**: 3-4 hours
+- **Topics**:
+  - Reusable form components
+  - ControlValueAccessor pattern
+  - Multiple visualization types (floating, input-group, standard)
+  - Form validation with translated messages
+  - Text, textarea, date, datetime, integer, decimal, checkbox, radio, dropdown inputs
+  - Modal component
+  - Accessibility with ARIA attributes
+- **File**: [14_bootstrap_form_components.md](./14_bootstrap_form_components.md)
+
 ---
 
 ### ⏳ Phase 6: Deployment & DevOps (NOT STARTED)
 
-#### Module 14: Containerization & Deployment
+#### Module 15: Containerization & Deployment
 - **Duration**: 2-3 hours
 - **Topics**:
   - Docker container building
@@ -171,7 +183,7 @@
   - Deployment strategies
   - Environment configuration
   - Production considerations
-- **File**: [14_deployment.md](./14_deployment.md)
+- **File**: [15_deployment.md](./15_deployment.md)
 
 ---
 

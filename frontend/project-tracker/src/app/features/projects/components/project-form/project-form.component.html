@@ -27,132 +27,80 @@
       <div class="card shadow-sm">
         <div class="card-body p-4">
           <form [formGroup]="form" (ngSubmit)="onSubmit()">
-            <!-- Title -->
-            <div class="mb-3">
-              <label for="title" class="form-label">
-                {{ 'projects.projectTitle' | translate }}
-                <span class="text-danger">*</span>
-              </label>
-              <input
-                type="text"
-                id="title"
-                class="form-control"
-                formControlName="title"
-                [class.is-invalid]="hasError('title')"
-                placeholder="{{ 'projects.projectNamePlaceholder' | translate }}">
-              @if (hasError('title')) {
-                <div class="invalid-feedback">
-                  {{ getErrorMessage('title') }}
-                </div>
-              }
-            </div>
+            <!-- Title with Floating Label -->
+            <app-text-input
+              formControlName="title"
+              [label]="'projects.projectTitle' | translate"
+              controlName="title"
+              [parentForm]="form"
+              [required]="true"
+              visualizationType="floating"
+              [placeholder]="'projects.projectNamePlaceholder' | translate">
+            </app-text-input>
 
-            <!-- Description -->
-            <div class="mb-3">
-              <label for="description" class="form-label">
-                {{ 'projects.description' | translate }}
-              </label>
-              <textarea
-                id="description"
-                class="form-control"
-                formControlName="description"
-                rows="4"
-                [class.is-invalid]="hasError('description')"
-                placeholder="{{ 'projects.descriptionPlaceholder' | translate }}">
-              </textarea>
-              @if (hasError('description')) {
-                <div class="invalid-feedback">
-                  {{ getErrorMessage('description') }}
-                </div>
-              }
-              <div class="form-text">
-                {{ 'projects.characterCount' | translate:{ count: form.get('description')?.value?.length || 0, max: descriptionMaxLength } }}
-              </div>
-            </div>
+            <!-- Description with Character Count -->
+            <app-textarea-input
+              formControlName="description"
+              [label]="'projects.description' | translate"
+              controlName="description"
+              [parentForm]="form"
+              visualizationType="standard"
+              [rows]="4"
+              [maxLength]="descriptionMaxLength"
+              [showCharacterCount]="true"
+              [placeholder]="'projects.descriptionPlaceholder' | translate">
+            </app-textarea-input>
 
             <!-- Status and Priority Row -->
             <div class="row">
-              <div class="col-md-6 mb-3">
-                <label for="status" class="form-label">
-                  {{ 'projects.status' | translate }}
-                  <span class="text-danger">*</span>
-                </label>
-                <select
-                  id="status"
-                  class="form-select"
+              <div class="col-md-6">
+                <app-dropdown-input
                   formControlName="status"
-                  [class.is-invalid]="hasError('status')">
-                  @for (status of statusOptions; track status) {
-                    <option [value]="status">
-                      {{ status }}
-                    </option>
-                  }
-                </select>
-                @if (hasError('status')) {
-                  <div class="invalid-feedback">
-                    {{ getErrorMessage('status') }}
-                  </div>
-                }
+                  [label]="'projects.status' | translate"
+                  controlName="status"
+                  [parentForm]="form"
+                  [required]="true"
+                  [options]="statusOptions"
+                  visualizationType="standard">
+                </app-dropdown-input>
               </div>
 
-              <div class="col-md-6 mb-3">
-                <label for="priority" class="form-label">
-                  {{ 'projects.priority' | translate }}
-                  <span class="text-danger">*</span>
-                </label>
-                <select
-                  id="priority"
-                  class="form-select"
+              <div class="col-md-6">
+                <app-integer-input
                   formControlName="priority"
-                  [class.is-invalid]="hasError('priority')">
-                  @for (priority of priorityOptions; track priority) {
-                    <option [value]="priority">
-                      {{ priority }}
-                    </option>
-                  }
-                </select>
-                @if (hasError('priority')) {
-                  <div class="invalid-feedback">
-                    {{ getErrorMessage('priority') }}
-                  </div>
-                }
+                  label="/5"
+                  [fieldLabel]="'projects.priority' | translate"
+                  controlName="priority"
+                  [parentForm]="form"
+                  [required]="true"
+                  [min]="1"
+                  [max]="5"
+                  visualizationType="input-group"
+                  inputGroupPosition="suffix">
+                </app-integer-input>
               </div>
             </div>
 
             <!-- Dates Row -->
             <div class="row">
-              <div class="col-md-6 mb-3">
-                <label for="startDate" class="form-label">
-                  {{ 'projects.startDate' | translate }}
-                </label>
-                <input
-                  type="date"
-                  id="startDate"
-                  class="form-control"
+              <div class="col-md-6">
+                <app-date-input
                   formControlName="startDate"
-                  [class.is-invalid]="hasError('startDate')">
-                @if (hasError('startDate')) {
-                  <div class="invalid-feedback">
-                    {{ getErrorMessage('startDate') }}
-                  </div>
-                }
+                  [label]="'projects.startDate' | translate"
+                  controlName="startDate"
+                  [parentForm]="form"
+                  visualizationType="standard">
+                </app-date-input>
               </div>
 
-              <div class="col-md-6 mb-3">
-                <label for="dueDate" class="form-label">
-                  {{ 'projects.dueDate' | translate }}
-                </label>
-                <input
-                  type="date"
-                  id="dueDate"
-                  class="form-control"
+              <div class="col-md-6">
+                <app-date-input
                   formControlName="dueDate"
-                  [class.is-invalid]="hasError('dueDate')">
-                @if (hasError('dueDate')) {
-                  <div class="invalid-feedback">
-                    {{ getErrorMessage('dueDate') }}
-                  </div>
-                }
+                  [label]="'projects.dueDate' | translate"
+                  controlName="dueDate"
+                  [parentForm]="form"
+                  visualizationType="standard">
+                </app-date-input>
               </div>
             </div>
 

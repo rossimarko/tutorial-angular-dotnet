@@ -1,0 +1,125 @@
+<!-- Standard Layout -->
+@if (visualizationType === 'standard') {
+  <div class="mb-3">
+    <label [for]="inputId" class="form-label">
+      {{ label }}
+      @if (required) {
+        <span class="text-danger">*</span>
+      }
+    </label>
+    <div class="row g-2">
+      <!-- Date Input -->
+      <div class="col-md-6">
+        <div class="input-group">
+          <input
+            [id]="inputId"
+            class="form-control"
+            [class.is-invalid]="hasError()"
+            [ngModel]="dateValue()"
+            (ngModelChange)="onDateSelect($event)"
+            [disabled]="disabled()"
+            placeholder="yyyy-mm-dd"
+            [minDate]="$any(minDateStruct() || undefined)"
+            [maxDate]="$any(maxDateStruct() || undefined)"
+            [attr.aria-label]="label + ' date'"
+            [attr.aria-required]="required"
+            [attr.aria-invalid]="hasError()"
+            (blur)="onBlur()"
+            ngbDatepicker
+            #d="ngbDatepicker">
+          <button
+            class="btn btn-outline-secondary"
+            [class.btn-outline-danger]="hasError()"
+            (click)="d.toggle()"
+            type="button"
+            [disabled]="disabled()">
+            <i class="fas fa-calendar"></i>
+          </button>
+        </div>
+      </div>
+      <!-- Time Input -->
+      <div class="col-md-6">
+        <ngb-timepicker
+          [ngModel]="timeValue()"
+          (ngModelChange)="onTimeChange($event)"
+          [disabled]="disabled()"
+          [seconds]="true"
+          [hourStep]="1"
+          [minuteStep]="1"
+          [secondStep]="1">
+        </ngb-timepicker>
+      </div>
+    </div>
+    @if (hasError()) {
+      <div [id]="inputId + '-error'" class="invalid-feedback d-block">
+        {{ errorMessage() }}
+      </div>
+    }
+    @if (helpText && !hasError()) {
+      <div [id]="inputId + '-help'" class="form-text">
+        {{ helpText }}
+      </div>
+    }
+  </div>
+}
+
+<!-- Floating Labels Layout -->
+@if (visualizationType === 'floating') {
+  <div class="mb-3">
+    <label class="form-label">
+      {{ label }}
+      @if (required) {
+        <span class="text-danger">*</span>
+      }
+    </label>
+    <div class="row g-2">
+      <!-- Date Input -->
+      <div class="col-md-6">
+        <div class="form-floating">
+          <input
+            [id]="inputId + '-date'"
+            class="form-control"
+            [class.is-invalid]="hasError()"
+            [ngModel]="dateValue()"
+            (ngModelChange)="onDateSelect($event)"
+            [disabled]="disabled()"
+            [placeholder]="placeholder || 'Date'"
+            [minDate]="$any(minDateStruct() || undefined)"
+            [maxDate]="$any(maxDateStruct() || undefined)"
+            [attr.aria-label]="label + ' date'"
+            [attr.aria-required]="required"
+            [attr.aria-invalid]="hasError()"
+            (blur)="onBlur()"
+            ngbDatepicker
+            #df="ngbDatepicker"
+            (click)="df.toggle()">
+          <label [for]="inputId + '-date'">Date</label>
+        </div>
+      </div>
+      <!-- Time Input -->
+      <div class="col-md-6">
+        <div class="border rounded p-2">
+          <ngb-timepicker
+            [ngModel]="timeValue()"
+            (ngModelChange)="onTimeChange($event)"
+            [disabled]="disabled()"
+            [seconds]="true"
+            [hourStep]="1"
+            [minuteStep]="1"
+            [secondStep]="1">
+          </ngb-timepicker>
+        </div>
+      </div>
+    </div>
+    @if (hasError()) {
+      <div [id]="inputId + '-error'" class="invalid-feedback d-block">
+        {{ errorMessage() }}
+      </div>
+    }
+    @if (helpText && !hasError()) {
+      <div [id]="inputId + '-help'" class="form-text">
+        {{ helpText }}
+      </div>
+    }
+  </div>
+}

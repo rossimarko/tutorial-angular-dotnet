@@ -1,0 +1,83 @@
+<!-- Standard Layout -->
+@if (visualizationType === 'standard') {
+  <div class="mb-3">
+    <label [for]="inputId" class="form-label">
+      {{ label }}
+      @if (required) {
+        <span class="text-danger">*</span>
+      }
+    </label>
+    <textarea
+      [id]="inputId"
+      class="form-control"
+      [class.is-invalid]="hasError()"
+      [value]="value()"
+      [disabled]="disabled()"
+      [placeholder]="placeholder || ''"
+      [rows]="rows"
+      [attr.minlength]="minLength"
+      [attr.maxlength]="maxLength"
+      [attr.aria-label]="label"
+      [attr.aria-required]="required"
+      [attr.aria-invalid]="hasError()"
+      [attr.aria-describedby]="hasError() ? inputId + '-error' : helpText ? inputId + '-help' : null"
+      (input)="onInput($event)"
+      (blur)="onBlur()"></textarea>
+    @if (hasError()) {
+      <div [id]="inputId + '-error'" class="invalid-feedback">
+        {{ errorMessage() }}
+      </div>
+    }
+    @if (showCharacterCount && maxLength) {
+      <div class="form-text">
+        {{ characterCount() }} / {{ maxLength }}
+      </div>
+    } @else if (helpText && !hasError()) {
+      <div [id]="inputId + '-help'" class="form-text">
+        {{ helpText }}
+      </div>
+    }
+  </div>
+}
+
+<!-- Floating Labels Layout -->
+@if (visualizationType === 'floating') {
+  <div class="form-floating mb-3">
+    <textarea
+      [id]="inputId"
+      class="form-control"
+      [class.is-invalid]="hasError()"
+      [value]="value()"
+      [disabled]="disabled()"
+      [placeholder]="placeholder || label"
+      [rows]="rows"
+      [attr.minlength]="minLength"
+      [attr.maxlength]="maxLength"
+      [attr.aria-label]="label"
+      [attr.aria-required]="required"
+      [attr.aria-invalid]="hasError()"
+      [attr.aria-describedby]="hasError() ? inputId + '-error' : helpText ? inputId + '-help' : null"
+      (input)="onInput($event)"
+      (blur)="onBlur()"></textarea>
+    <label [for]="inputId">
+      {{ label }}
+      @if (required) {
+        <span class="text-danger">*</span>
+      }
+    </label>
+    @if (hasError()) {
+      <div [id]="inputId + '-error'" class="invalid-feedback">
+        {{ errorMessage() }}
+      </div>
+    }
+    @if (showCharacterCount && maxLength) {
+      <div class="form-text">
+        {{ characterCount() }} / {{ maxLength }}
+      </div>
+    } @else if (helpText && !hasError()) {
+      <div [id]="inputId + '-help'" class="form-text">
+        {{ helpText }}
+      </div>
+    }
+  </div>
+}

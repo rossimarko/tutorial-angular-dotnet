@@ -1,0 +1,138 @@
+<!-- Standard Layout -->
+@if (visualizationType === 'standard') {
+  <div class="mb-3">
+    <label [for]="inputId" class="form-label">
+      {{ label }}
+      @if (required) {
+        <span class="text-danger">*</span>
+      }
+    </label>
+    <input
+      [type]="type"
+      [id]="inputId"
+      class="form-control"
+      [class.is-invalid]="hasError()"
+      [value]="value()"
+      [disabled]="disabled()"
+      [placeholder]="placeholder || ''"
+      [attr.minlength]="minLength"
+      [attr.maxlength]="maxLength"
+      [attr.pattern]="pattern"
+      [attr.aria-label]="label"
+      [attr.aria-required]="required"
+      [attr.aria-invalid]="hasError()"
+      [attr.aria-describedby]="hasError() ? inputId + '-error' : helpText ? inputId + '-help' : null"
+      (input)="onInput($event)"
+      (blur)="onBlur()">
+    @if (hasError()) {
+      <div [id]="inputId + '-error'" class="invalid-feedback">
+        {{ errorMessage() }}
+      </div>
+    }
+    @if (helpText && !hasError()) {
+      <div [id]="inputId + '-help'" class="form-text">
+        {{ helpText }}
+      </div>
+    }
+  </div>
+}
+
+<!-- Floating Labels Layout -->
+@if (visualizationType === 'floating') {
+  <div class="form-floating mb-3">
+    <input
+      [type]="type"
+      [id]="inputId"
+      class="form-control"
+      [class.is-invalid]="hasError()"
+      [value]="value()"
+      [disabled]="disabled()"
+      [placeholder]="placeholder || label"
+      [attr.minlength]="minLength"
+      [attr.maxlength]="maxLength"
+      [attr.pattern]="pattern"
+      [attr.aria-label]="label"
+      [attr.aria-required]="required"
+      [attr.aria-invalid]="hasError()"
+      [attr.aria-describedby]="hasError() ? inputId + '-error' : helpText ? inputId + '-help' : null"
+      (input)="onInput($event)"
+      (blur)="onBlur()">
+    <label [for]="inputId">
+      {{ label }}
+      @if (required) {
+        <span class="text-danger">*</span>
+      }
+    </label>
+    @if (hasError()) {
+      <div [id]="inputId + '-error'" class="invalid-feedback">
+        {{ errorMessage() }}
+      </div>
+    }
+    @if (helpText && !hasError()) {
+      <div [id]="inputId + '-help'" class="form-text">
+        {{ helpText }}
+      </div>
+    }
+  </div>
+}
+
+<!-- Input Group Layout -->
+@if (visualizationType === 'input-group') {
+  <div class="mb-3">
+    @if (fieldLabel) {
+      <label [for]="inputId" class="form-label">
+        {{ fieldLabel }}
+        @if (required) {
+          <span class="text-danger">*</span>
+        }
+      </label>
+    }
+    <div class="input-group" [class.has-validation]="hasError()">
+      @if (inputGroupPosition === 'prefix') {
+        <span class="input-group-text">
+          @if (isLabelIcon()) {
+            <i [class]="label"></i>
+          } @else {
+            {{ label }}
+          }
+        </span>
+      }
+      <input
+        [type]="type"
+        [id]="inputId"
+        class="form-control"
+        [class.is-invalid]="hasError()"
+        [value]="value()"
+        [disabled]="disabled()"
+        [placeholder]="placeholder || ''"
+        [attr.minlength]="minLength"
+        [attr.maxlength]="maxLength"
+        [attr.pattern]="pattern"
+        [attr.aria-label]="fieldLabel || label"
+        [attr.aria-required]="required"
+        [attr.aria-invalid]="hasError()"
+        [attr.aria-describedby]="hasError() ? inputId + '-error' : helpText ? inputId + '-help' : null"
+        (input)="onInput($event)"
+        (blur)="onBlur()">
+      @if (inputGroupPosition === 'suffix') {
+        <span class="input-group-text">
+          @if (isLabelIcon()) {
+            <i [class]="label"></i>
+          } @else {
+            {{ label }}
+          }
+        </span>
+      }
+      @if (hasError()) {
+        <div [id]="inputId + '-error'" class="invalid-feedback">
+          {{ errorMessage() }}
+        </div>
+      }
+    </div>
+    @if (helpText && !hasError()) {
+      <div [id]="inputId + '-help'" class="form-text">
+        {{ helpText }}
+      </div>
+    }
+  </div>
+}
