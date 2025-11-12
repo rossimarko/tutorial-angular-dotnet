@@ -1,14 +1,14 @@
 <!-- Standard Layout -->
 @if (visualizationType === 'standard') {
   <div class="mb-3">
-    <label [for]="inputId()" class="form-label">
+    <label [for]="inputId" class="form-label">
       {{ label }}
       @if (required) {
         <span class="text-danger">*</span>
       }
     </label>
     <select
-      [id]="inputId()"
+      [id]="inputId"
       class="form-select"
       [class.is-invalid]="hasError()"
       [value]="value()"
@@ -17,7 +17,7 @@
       [attr.aria-label]="fieldLabel || label"
       [attr.aria-required]="required"
       [attr.aria-invalid]="hasError()"
-      [attr.aria-describedby]="hasError() ? inputId() + '-error' : helpText ? inputId() + '-help' : null"
+      [attr.aria-describedby]="hasError() ? inputId + '-error' : helpText ? inputId + '-help' : null"
       (change)="onInput($event)"
       (blur)="onBlur()">
       @if (placeholder && !multiple) {
@@ -28,12 +28,12 @@
       }
     </select>
     @if (hasError()) {
-      <div [id]="inputId() + '-error'" class="invalid-feedback">
+      <div [id]="inputId + '-error'" class="invalid-feedback">
         {{ errorMessage() }}
       </div>
     }
     @if (helpText && !hasError()) {
-      <div [id]="inputId() + '-help'" class="form-text">
+      <div [id]="inputId + '-help'" class="form-text">
         {{ helpText }}
       </div>
     }
@@ -44,7 +44,7 @@
 @if (visualizationType === 'floating') {
   <div class="form-floating mb-3">
     <select
-      [id]="inputId()"
+      [id]="inputId"
       class="form-select"
       [class.is-invalid]="hasError()"
       [value]="value()"
@@ -53,7 +53,7 @@
       [attr.aria-label]="fieldLabel || label"
       [attr.aria-required]="required"
       [attr.aria-invalid]="hasError()"
-      [attr.aria-describedby]="hasError() ? inputId() + '-error' : helpText ? inputId() + '-help' : null"
+      [attr.aria-describedby]="hasError() ? inputId + '-error' : helpText ? inputId + '-help' : null"
       (change)="onInput($event)"
       (blur)="onBlur()">
       @if (placeholder && !multiple) {
@@ -63,19 +63,19 @@
         <option [value]="option.value">{{ option.label }}</option>
       }
     </select>
-    <label [for]="inputId()">
+    <label [for]="inputId">
       {{ label }}
       @if (required) {
         <span class="text-danger">*</span>
       }
     </label>
     @if (hasError()) {
-      <div [id]="inputId() + '-error'" class="invalid-feedback">
+      <div [id]="inputId + '-error'" class="invalid-feedback">
         {{ errorMessage() }}
       </div>
     }
     @if (helpText && !hasError()) {
-      <div [id]="inputId() + '-help'" class="form-text">
+      <div [id]="inputId + '-help'" class="form-text">
         {{ helpText }}
       </div>
     }
@@ -86,7 +86,7 @@
 @if (visualizationType === 'input-group') {
   <div class="mb-3">
     @if (fieldLabel) {
-      <label [for]="inputId()" class="form-label">
+      <label [for]="inputId" class="form-label">
         {{ fieldLabel }}
         @if (required) {
           <span class="text-danger">*</span>
@@ -104,7 +104,7 @@
         </span>
       }
       <select
-        [id]="inputId()"
+        [id]="inputId"
         class="form-select"
         [class.is-invalid]="hasError()"
         [value]="value()"
@@ -113,7 +113,7 @@
         [attr.aria-label]="fieldLabel || label"
         [attr.aria-required]="required"
         [attr.aria-invalid]="hasError()"
-        [attr.aria-describedby]="hasError() ? inputId() + '-error' : helpText ? inputId() + '-help' : null"
+        [attr.aria-describedby]="hasError() ? inputId + '-error' : helpText ? inputId + '-help' : null"
         (change)="onInput($event)"
         (blur)="onBlur()">
         @if (placeholder && !multiple) {
@@ -133,13 +133,13 @@
         </span>
       }
       @if (hasError()) {
-        <div [id]="inputId() + '-error'" class="invalid-feedback">
+        <div [id]="inputId + '-error'" class="invalid-feedback">
           {{ errorMessage() }}
         </div>
       }
     </div>
     @if (helpText && !hasError()) {
-      <div [id]="inputId() + '-help'" class="form-text">
+      <div [id]="inputId + '-help'" class="form-text">
         {{ helpText }}
       </div>
     }

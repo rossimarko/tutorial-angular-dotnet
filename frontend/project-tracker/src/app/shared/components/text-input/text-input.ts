@@ -25,6 +25,9 @@ export class TextInput implements ControlValueAccessor {
   private readonly cdr = inject(ChangeDetectorRef);
 
   constructor() {
+    // Generate a stable, unique input ID once per component instance
+    this.inputId = `${this.controlName}-${Math.random().toString(36).substr(2, 9)}`;
+
     // Watch for control status changes and trigger change detection
     effect((onCleanup) => {
       const ctrl = this.control();
@@ -117,10 +120,6 @@ export class TextInput implements ControlValueAccessor {
 
   protected readonly inputId: string;
 
-  constructor() {
-    // Generate a stable, unique input ID once per component instance
-    this.inputId = `${this.controlName}-${Math.random().toString(36).substr(2, 9)}`;
-  }
   protected readonly isLabelIcon = computed(() => {
     return this.label.startsWith('fas ') || this.label.startsWith('fa ') ||
            this.label.startsWith('fab ') || this.label.startsWith('far ');

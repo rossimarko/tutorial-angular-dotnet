@@ -1,7 +1,7 @@
 <!-- Standard Layout -->
 @if (visualizationType === 'standard') {
   <div class="mb-3">
-    <label [for]="inputId()" class="form-label">
+    <label [for]="inputId" class="form-label">
       {{ label }}
       @if (required) {
         <span class="text-danger">*</span>
@@ -9,7 +9,7 @@
     </label>
     <div class="input-group">
       <input
-        [id]="inputId()"
+        [id]="inputId"
         class="form-control"
         [class.is-invalid]="hasError()"
         [ngModel]="value()"
@@ -21,7 +21,7 @@
         [attr.aria-label]="label"
         [attr.aria-required]="required"
         [attr.aria-invalid]="hasError()"
-        [attr.aria-describedby]="hasError() ? inputId() + '-error' : helpText ? inputId() + '-help' : null"
+        [attr.aria-describedby]="hasError() ? inputId + '-error' : helpText ? inputId + '-help' : null"
         (blur)="onBlur()"
         ngbDatepicker
         #d="ngbDatepicker">
@@ -35,12 +35,12 @@
       </button>
     </div>
     @if (hasError()) {
-      <div [id]="inputId() + '-error'" class="invalid-feedback d-block">
+      <div [id]="inputId + '-error'" class="invalid-feedback d-block">
         {{ errorMessage() }}
       </div>
     }
     @if (helpText && !hasError()) {
-      <div [id]="inputId() + '-help'" class="form-text">
+      <div [id]="inputId + '-help'" class="form-text">
         {{ helpText }}
       </div>
     }
@@ -52,7 +52,7 @@
   <div class="mb-3">
     <div class="form-floating">
       <input
-        [id]="inputId()"
+        [id]="inputId"
         class="form-control"
         [class.is-invalid]="hasError()"
         [ngModel]="value()"
@@ -64,12 +64,12 @@
         [attr.aria-label]="label"
         [attr.aria-required]="required"
         [attr.aria-invalid]="hasError()"
-        [attr.aria-describedby]="hasError() ? inputId() + '-error' : helpText ? inputId() + '-help' : null"
+        [attr.aria-describedby]="hasError() ? inputId + '-error' : helpText ? inputId + '-help' : null"
         (blur)="onBlur()"
         ngbDatepicker
         #df="ngbDatepicker"
         (click)="df.toggle()">
-      <label [for]="inputId()">
+      <label [for]="inputId">
         {{ label }}
         @if (required) {
           <span class="text-danger">*</span>
@@ -77,12 +77,12 @@
       </label>
     </div>
     @if (hasError()) {
-      <div [id]="inputId() + '-error'" class="invalid-feedback d-block">
+      <div [id]="inputId + '-error'" class="invalid-feedback d-block">
         {{ errorMessage() }}
       </div>
     }
     @if (helpText && !hasError()) {
-      <div [id]="inputId() + '-help'" class="form-text">
+      <div [id]="inputId + '-help'" class="form-text">
         {{ helpText }}
       </div>
     }
