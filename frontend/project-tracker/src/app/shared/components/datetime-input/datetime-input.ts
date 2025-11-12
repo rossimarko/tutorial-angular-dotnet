@@ -1,4 +1,4 @@
-import { Component, Input, forwardRef, signal, computed, ChangeDetectionStrategy, inject, effect, ChangeDetectorRef } from '@angular/core';
+import { Component, Input, forwardRef, signal, computed, ChangeDetectionStrategy, inject, effect, ChangeDetectorRef, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormGroup, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { NgbInputDatepicker, NgbTimepicker, NgbDateStruct, NgbTimeStruct } from '@ng-bootstrap/ng-bootstrap';
@@ -21,14 +21,11 @@ import { TranslationService } from '../../services/translation.service';
     multi: true
   }]
 })
-export class DatetimeInput implements ControlValueAccessor {
+export class DatetimeInput implements ControlValueAccessor, OnInit {
   private readonly translationService = inject(TranslationService);
   private readonly cdr = inject(ChangeDetectorRef);
 
   constructor() {
-    // Generate a stable, unique input ID once per component instance
-    this.inputId = `${this.controlName}-${Math.random().toString(36).substr(2, 9)}`;
-
     // Watch for control status changes and trigger change detection
     effect((onCleanup) => {
       const ctrl = this.control();
@@ -48,6 +45,12 @@ export class DatetimeInput implements ControlValueAccessor {
         });
       }
     });
+  }
+
+  ngOnInit(): void {
+    // Generate a stable, unique input ID once per component instance
+    // Must be in ngOnInit because @Input() properties are not available in constructor
+    this.inputId = `${this.controlName}-${Math.random().toString(36).substr(2, 9)}`;
   }
 
   // Common inputs
@@ -102,7 +105,7 @@ export class DatetimeInput implements ControlValueAccessor {
     return this.translationService.translate('validation.invalidValue');
   });
 
-  protected readonly inputId: string;
+  protected inputId!: string;
 
   // ControlValueAccessor implementation
   private onChange: (value: string) => void = () => {};

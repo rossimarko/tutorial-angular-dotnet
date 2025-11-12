@@ -1,4 +1,4 @@
-import { Component, Input, forwardRef, signal, computed, ChangeDetectionStrategy, inject, effect, ChangeDetectorRef } from '@angular/core';
+import { Component, Input, forwardRef, signal, computed, ChangeDetectionStrategy, inject, effect, ChangeDetectorRef, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { TranslationService } from '../../services/translation.service';
@@ -20,13 +20,12 @@ import { TranslationService } from '../../services/translation.service';
     multi: true
   }]
 })
-export class TextInput implements ControlValueAccessor {
+export class TextInput implements ControlValueAccessor, OnInit {
   private readonly translationService = inject(TranslationService);
   private readonly cdr = inject(ChangeDetectorRef);
 
   constructor() {
-    // Generate a stable, unique input ID once per component instance
-    this.inputId = `${this.controlName}-${Math.random().toString(36).substr(2, 9)}`;
+
 
     // Watch for control status changes and trigger change detection
     effect((onCleanup) => {
@@ -51,6 +50,12 @@ export class TextInput implements ControlValueAccessor {
         });
       }
     });
+  }
+
+  ngOnInit(): void {
+    // Generate a stable, unique input ID once per component instance
+    // Must be in ngOnInit because @Input() properties are not available in constructor
+    this.inputId = `${this.controlName}-${Math.random().toString(36).substr(2, 9)}`;
   }
 
   private updateErrorState(): void {
@@ -118,7 +123,7 @@ export class TextInput implements ControlValueAccessor {
     return this.translationService.translate('validation.invalidValue');
   });
 
-  protected readonly inputId: string;
+  protected inputId!: string;
 
   protected readonly isLabelIcon = computed(() => {
     return this.label.startsWith('fas ') || this.label.startsWith('fa ') ||
