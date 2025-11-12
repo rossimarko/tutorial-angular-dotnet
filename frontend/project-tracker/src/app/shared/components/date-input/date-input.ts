@@ -75,6 +75,9 @@ export class DateInput implements ControlValueAccessor {
   });
 
   constructor() {
+    // Generate a stable, unique input ID once per component instance
+    this.inputId = `${this.controlName}-${Math.random().toString(36).substr(2, 9)}`;
+
     // Watch for control status changes and trigger change detection
     effect((onCleanup) => {
       const ctrl = this.control();
@@ -153,7 +156,7 @@ export class DateInput implements ControlValueAccessor {
     return this.translationService.translate('validation.invalidValue');
   });
 
-  protected readonly inputId = computed(() => `${this.controlName}-${Math.random().toString(36).substr(2, 9)}`);
+  protected readonly inputId: string;
 
   protected readonly localizedPlaceholder = computed(() => {
     const locale = this.currentLocale();

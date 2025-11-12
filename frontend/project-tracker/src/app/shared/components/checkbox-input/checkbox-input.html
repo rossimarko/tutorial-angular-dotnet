@@ -12,7 +12,7 @@
     <div class="form-check">
       <input
         type="checkbox"
-        [id]="inputId()"
+        [id]="inputId"
         class="form-check-input"
         [class.is-invalid]="hasError()"
         [checked]="value()"
@@ -20,20 +20,20 @@
         [attr.aria-label]="checkboxLabel || label"
         [attr.aria-required]="required"
         [attr.aria-invalid]="hasError()"
-        [attr.aria-describedby]="hasError() ? inputId() + '-error' : helpText ? inputId() + '-help' : null"
+        [attr.aria-describedby]="hasError() ? inputId + '-error' : helpText ? inputId + '-help' : null"
         (change)="onChange_internal($event)"
         (blur)="onBlur()">
-      <label [for]="inputId()" class="form-check-label">
+      <label [for]="inputId" class="form-check-label">
         {{ checkboxLabel }}
       </label>
     </div>
     @if (hasError()) {
-      <div [id]="inputId() + '-error'" class="invalid-feedback d-block">
+      <div [id]="inputId + '-error'" class="invalid-feedback d-block">
         {{ errorMessage() }}
       </div>
     }
     @if (helpText && !hasError()) {
-      <div [id]="inputId() + '-help'" class="form-text">
+      <div [id]="inputId + '-help'" class="form-text">
         {{ helpText }}
       </div>
     }
@@ -54,7 +54,7 @@
     <div class="form-check form-switch">
       <input
         type="checkbox"
-        [id]="inputId()"
+        [id]="inputId"
         class="form-check-input"
         [class.is-invalid]="hasError()"
         [checked]="value()"
@@ -62,20 +62,20 @@
         [attr.aria-label]="checkboxLabel || label"
         [attr.aria-required]="required"
         [attr.aria-invalid]="hasError()"
-        [attr.aria-describedby]="hasError() ? inputId() + '-error' : helpText ? inputId() + '-help' : null"
+        [attr.aria-describedby]="hasError() ? inputId + '-error' : helpText ? inputId + '-help' : null"
         (change)="onChange_internal($event)"
         (blur)="onBlur()">
-      <label [for]="inputId()" class="form-check-label">
+      <label [for]="inputId" class="form-check-label">
         {{ checkboxLabel }}
       </label>
     </div>
     @if (hasError()) {
-      <div [id]="inputId() + '-error'" class="invalid-feedback d-block">
+      <div [id]="inputId + '-error'" class="invalid-feedback d-block">
         {{ errorMessage() }}
       </div>
     }
     @if (helpText && !hasError()) {
-      <div [id]="inputId() + '-help'" class="form-text">
+      <div [id]="inputId + '-help'" class="form-text">
         {{ helpText }}
       </div>
     }

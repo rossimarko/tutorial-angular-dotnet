@@ -1,7 +1,7 @@
 <!-- Standard Layout -->
 @if (visualizationType === 'standard') {
   <div class="mb-3">
-    <label [for]="inputId()" class="form-label">
+    <label [for]="inputId" class="form-label">
       {{ label }}
       @if (required) {
         <span class="text-danger">*</span>
@@ -12,7 +12,7 @@
       <div class="col-md-6">
         <div class="input-group">
           <input
-            [id]="inputId()"
+            [id]="inputId"
             class="form-control"
             [class.is-invalid]="hasError()"
             [ngModel]="dateValue()"
@@ -51,12 +51,12 @@
       </div>
     </div>
     @if (hasError()) {
-      <div [id]="inputId() + '-error'" class="invalid-feedback d-block">
+      <div [id]="inputId + '-error'" class="invalid-feedback d-block">
         {{ errorMessage() }}
       </div>
     }
     @if (helpText && !hasError()) {
-      <div [id]="inputId() + '-help'" class="form-text">
+      <div [id]="inputId + '-help'" class="form-text">
         {{ helpText }}
       </div>
     }
@@ -77,7 +77,7 @@
       <div class="col-md-6">
         <div class="form-floating">
           <input
-            [id]="inputId() + '-date'"
+            [id]="inputId + '-date'"
             class="form-control"
             [class.is-invalid]="hasError()"
             [ngModel]="dateValue()"
@@ -93,7 +93,7 @@
             ngbDatepicker
             #df="ngbDatepicker"
             (click)="df.toggle()">
-          <label [for]="inputId() + '-date'">Date</label>
+          <label [for]="inputId + '-date'">Date</label>
         </div>
       </div>
       <!-- Time Input -->
@@ -112,12 +112,12 @@
       </div>
     </div>
     @if (hasError()) {
-      <div [id]="inputId() + '-error'" class="invalid-feedback d-block">
+      <div [id]="inputId + '-error'" class="invalid-feedback d-block">
         {{ errorMessage() }}
       </div>
     }
     @if (helpText && !hasError()) {
-      <div [id]="inputId() + '-help'" class="form-text">
+      <div [id]="inputId + '-help'" class="form-text">
         {{ helpText }}
       </div>
     }
