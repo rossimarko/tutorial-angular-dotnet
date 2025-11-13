@@ -1,4 +1,4 @@
-import { Component, Input, forwardRef, signal, computed, ChangeDetectionStrategy, inject, effect, ChangeDetectorRef, OnInit } from '@angular/core';
+import { Component, input, forwardRef, signal, computed, ChangeDetectionStrategy, inject, effect, ChangeDetectorRef, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormGroup, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { NgbInputDatepicker, NgbTimepicker, NgbDateStruct, NgbTimeStruct } from '@ng-bootstrap/ng-bootstrap';
@@ -49,22 +49,22 @@ export class DatetimeInput implements ControlValueAccessor, OnInit {
 
   ngOnInit(): void {
     // Generate a stable, unique input ID once per component instance
-    // Must be in ngOnInit because @Input() properties are not available in constructor
-    this.inputId = `${this.controlName}-${Math.random().toString(36).substr(2, 9)}`;
+    // Must be in ngOnInit because input() properties are not available in constructor
+    this.inputId = `${this.controlName()}-${Math.random().toString(36).substr(2, 9)}`;
   }
 
   // Common inputs
-  @Input() label: string = '';
-  @Input() controlName!: string;
-  @Input() visualizationType: 'floating' | 'standard' = 'standard';
-  @Input() required: boolean = false;
-  @Input() parentForm!: FormGroup;
-  @Input() placeholder?: string;
-  @Input() helpText?: string;
+  readonly label = input<string>('');
+  readonly controlName = input.required<string>();
+  readonly visualizationType = input<'floating' | 'standard'>('standard');
+  readonly required = input<boolean>(false);
+  readonly parentForm = input.required<FormGroup>();
+  readonly placeholder = input<string | undefined>(undefined);
+  readonly helpText = input<string | undefined>(undefined);
 
   // Specific inputs
-  @Input() minDateTime?: string; // ISO format
-  @Input() maxDateTime?: string; // ISO format
+  readonly minDateTime = input<string | undefined>(undefined); // ISO format
+  readonly maxDateTime = input<string | undefined>(undefined); // ISO format
 
   // Internal state
   protected readonly dateValue = signal<NgbDateStruct | null>(null);
@@ -75,15 +75,15 @@ export class DatetimeInput implements ControlValueAccessor, OnInit {
 
   // Computed properties
   protected readonly control = computed(() => {
-    return this.parentForm?.get(this.controlName);
+    return this.parentForm()?.get(this.controlName());
   });
 
   protected readonly minDateStruct = computed(() => {
-    return this.minDateTime ? this.stringToDateStruct(this.minDateTime) : null;
+    return this.minDateTime() ? this.stringToDateStruct(this.minDateTime()!) : null;
   });
 
   protected readonly maxDateStruct = computed(() => {
-    return this.maxDateTime ? this.stringToDateStruct(this.maxDateTime) : null;
+    return this.maxDateTime() ? this.stringToDateStruct(this.maxDateTime()!) : null;
   });
 
   protected readonly errorMessage = computed(() => {

@@ -10,8 +10,7 @@ import { CommonModule } from '@angular/common';
   imports: [CommonModule],
   templateUrl: './confirm-dialog.component.html',
   styleUrl: './confirm-dialog.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: true
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ConfirmDialogComponent {
   // Inputs

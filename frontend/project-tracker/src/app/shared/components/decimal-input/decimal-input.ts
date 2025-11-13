@@ -1,4 +1,4 @@
-import { Component, Input, forwardRef, signal, computed, ChangeDetectionStrategy, inject, effect, ChangeDetectorRef, OnInit } from '@angular/core';
+import { Component, input, forwardRef, signal, computed, ChangeDetectionStrategy, inject, effect, ChangeDetectorRef, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { TranslationService } from '../../services/translation.service';
@@ -50,28 +50,28 @@ export class DecimalInput implements ControlValueAccessor, OnInit {
 
   ngOnInit(): void {
     // Generate a stable, unique input ID once per component instance
-    // Must be in ngOnInit because @Input() properties are not available in constructor
-    this.inputId = `${this.controlName}-${Math.random().toString(36).substr(2, 9)}`;
+    // Must be in ngOnInit because input() properties are not available in constructor
+    this.inputId = `${this.controlName()}-${Math.random().toString(36).substr(2, 9)}`;
   }
 
   // Common inputs
-  @Input() label: string = '';  // For input-group: the addon text/icon; For standard/floating: field label
-  @Input() controlName!: string;
-  @Input() visualizationType: 'floating' | 'input-group' | 'standard' = 'standard';
-  @Input() required: boolean = false;
-  @Input() parentForm!: FormGroup;
-  @Input() placeholder?: string;
-  @Input() helpText?: string;
+  readonly label = input<string>('');  // For input-group: the addon text/icon; For standard/floating: field label
+  readonly controlName = input.required<string>();
+  readonly visualizationType = input<'floating' | 'input-group' | 'standard'>('standard');
+  readonly required = input<boolean>(false);
+  readonly parentForm = input.required<FormGroup>();
+  readonly placeholder = input<string | undefined>(undefined);
+  readonly helpText = input<string | undefined>(undefined);
 
   // Input-group specific
-  @Input() inputGroupPosition: 'prefix' | 'suffix' = 'prefix';  // Position of label in input-group
-  @Input() fieldLabel?: string;  // Optional label above input-group
+  readonly inputGroupPosition = input<'prefix' | 'suffix'>('prefix');  // Position of label in input-group
+  readonly fieldLabel = input<string | undefined>(undefined);  // Optional label above input-group
 
   // Specific inputs
-  @Input() min?: number;
-  @Input() max?: number;
-  @Input() step: number = 0.01;
-  @Input() decimalPlaces?: number; // For validation
+  readonly min = input<number | undefined>(undefined);
+  readonly max = input<number | undefined>(undefined);
+  readonly step = input<number>(0.01);
+  readonly decimalPlaces = input<number | undefined>(undefined); // For validation
 
   // Internal state
   protected readonly value = signal<number | null>(null);
@@ -81,7 +81,7 @@ export class DecimalInput implements ControlValueAccessor, OnInit {
 
   // Computed properties
   protected readonly control = computed(() => {
-    return this.parentForm?.get(this.controlName);
+    return this.parentForm()?.get(this.controlName());
   });
 
   protected readonly errorMessage = computed(() => {
@@ -95,12 +95,12 @@ export class DecimalInput implements ControlValueAccessor, OnInit {
     }
     if (errors['min']) {
       return this.translationService.translate('validation.min', {
-        min: this.min ?? 0
+        min: this.min() ?? 0
       });
     }
     if (errors['max']) {
       return this.translationService.translate('validation.max', {
-        max: this.max ?? 0
+        max: this.max() ?? 0
       });
     }
 
@@ -110,8 +110,8 @@ export class DecimalInput implements ControlValueAccessor, OnInit {
   protected inputId!: string;
 
   protected readonly isLabelIcon = computed(() => {
-    return this.label.startsWith('fas ') || this.label.startsWith('fa ') ||
-           this.label.startsWith('fab ') || this.label.startsWith('far ');
+    return this.label().startsWith('fas ') || this.label().startsWith('fa ') ||
+           this.label().startsWith('fab ') || this.label().startsWith('far ');
   });
 
   // ControlValueAccessor implementation

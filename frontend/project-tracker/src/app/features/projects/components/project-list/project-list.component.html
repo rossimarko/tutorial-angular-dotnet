@@ -131,12 +131,11 @@
               <tr>
                 <td class="fw-medium">{{ project.title }}</td>
                 <td>
-                  <span class="badge" [ngClass]="{
-                    'bg-success': project.status === 'Active',
-                    'bg-secondary': project.status === 'OnHold',
-                    'bg-info': project.status === 'Completed',
-                    'bg-danger': project.status === 'Cancelled'
-                  }">
+                  <span class="badge"
+                    [class.bg-success]="project.status === 'Active'"
+                    [class.bg-secondary]="project.status === 'OnHold'"
+                    [class.bg-info]="project.status === 'Completed'"
+                    [class.bg-danger]="project.status === 'Cancelled'">
                     {{ project.status }}
                   </span>
                 </td>
