@@ -1,7 +1,7 @@
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.SwaggerGen;
 using ProjectTracker.API.Authentication;
 using ProjectTracker.API.Data;
 using ProjectTracker.API.Data.Repositories;
@@ -31,46 +31,22 @@ public static class ConfigurationExtensions
     }
 
     /// <summary>
-    /// Configure Swagger/OpenAPI documentation with JWT Bearer security scheme.
+    /// Configure Swagger/OpenAPI documentation.
+    /// Swagger provides an interactive UI for testing API endpoints.
     /// </summary>
     public static IServiceCollection AddApiDocumentation(this IServiceCollection services)
     {
         services.AddEndpointsApiExplorer();
-        services.AddSwaggerGen(config =>
+        services.AddSwaggerGen(options =>
         {
-            config.SwaggerDoc("v1", new OpenApiInfo
+            options.SwaggerDoc("v1", new()
             {
                 Title = "Project Tracker API",
                 Version = "v1",
                 Description = "REST API for Project Tracker application with Angular frontend"
             });
 
-            // Add JWT authentication to Swagger
-            config.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-            {
-                Type = SecuritySchemeType.ApiKey,
-                Scheme = "Bearer",
-                BearerFormat = "JWT",
-                In = ParameterLocation.Header,
-                Name = "Authorization",
-                Description = "Enter 'Bearer' followed by your token"
-            });
 
-            // Add security requirement to Swagger operations
-            config.AddSecurityRequirement(new OpenApiSecurityRequirement
-            {
-                {
-                    new OpenApiSecurityScheme
-                    {
-                        Reference = new OpenApiReference
-                        {
-                            Type = ReferenceType.SecurityScheme,
-                            Id = "Bearer"
-                        }
-                    },
-                    []
-                }
-            });
         });
 
         return services;
