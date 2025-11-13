@@ -1,6 +1,6 @@
 using System.Security.Claims;
 using ProjectTracker.API.Models.Entities;
-using ProjectTracker.API.Models.Responses;
+using ProjectTracker.API.Models.Dtos.Auth;
 
 namespace ProjectTracker.API.Authentication;
 

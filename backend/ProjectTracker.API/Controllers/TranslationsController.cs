@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ProjectTracker.API.Data.Repositories;
-using ProjectTracker.API.Models.Responses;
+using ProjectTracker.API.Models.Dtos.Translations;
 
 namespace ProjectTracker.API.Controllers;
 

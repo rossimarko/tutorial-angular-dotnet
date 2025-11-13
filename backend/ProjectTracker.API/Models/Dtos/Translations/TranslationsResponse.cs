@@ -1,12 +1,23 @@
-namespace ProjectTracker.API.Models.Responses;
+namespace ProjectTracker.API.Models.Dtos.Translations;
 
 /// <summary>
 /// Response model for culture information
 /// </summary>
 public class CultureResponse
 {
+    /// <summary>
+    /// Culture code (e.g., 'en-US')
+    /// </summary>
     public required string Code { get; set; }
+
+    /// <summary>
+    /// Culture display name
+    /// </summary>
     public required string Name { get; set; }
+
+    /// <summary>
+    /// Indicates if this is the default culture
+    /// </summary>
     public bool IsDefault { get; set; }
 }
 

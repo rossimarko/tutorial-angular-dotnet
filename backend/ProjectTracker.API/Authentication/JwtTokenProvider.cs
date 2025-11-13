@@ -5,7 +5,7 @@ using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using ProjectTracker.API.Configuration;
 using ProjectTracker.API.Models.Entities;
-using ProjectTracker.API.Models.Responses;
+using ProjectTracker.API.Models.Dtos.Auth;
 
 namespace ProjectTracker.API.Authentication;
 

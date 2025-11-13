@@ -3,8 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using ProjectTracker.API.Data.Repositories;
 using ProjectTracker.API.Models.Common;
 using ProjectTracker.API.Models.Entities;
-using ProjectTracker.API.Models.Requests;
-using ProjectTracker.API.Models.Responses;
+using ProjectTracker.API.Models.Dtos.Projects;
 using System.Security.Claims;
 
 namespace ProjectTracker.API.Controllers;
@@ -101,7 +100,7 @@ public class ProjectsController : ControllerBase
 
         var project = await _projectRepository.GetByIdAsync(id);
 
-        if (project == null || project.UserId != userId)
+        if (project is null || project.UserId != userId)
         {
             return NotFound(new { message = "Project not found" });
         }
@@ -217,7 +216,7 @@ public class ProjectsController : ControllerBase
         _logger.LogInformation("Updating project {ProjectId} for user {UserId}", id, userId);
 
         var existing = await _projectRepository.GetByIdAsync(id);
-        if (existing == null || existing.UserId != userId)
+        if (existing is null || existing.UserId != userId)
         {
             return NotFound(new { message = "Project not found" });
         }
@@ -249,7 +248,7 @@ public class ProjectsController : ControllerBase
         _logger.LogInformation("Deleting project {ProjectId} for user {UserId}", id, userId);
 
         var existing = await _projectRepository.GetByIdAsync(id);
-        if (existing == null || existing.UserId != userId)
+        if (existing is null || existing.UserId != userId)
         {
             return NotFound(new { message = "Project not found" });
         }

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using ProjectTracker.API.Data.Repositories;
+using ProjectTracker.API.Models.Dtos.Health;
 
 namespace ProjectTracker.API.Controllers;
 
@@ -27,15 +28,15 @@ public class HealthController : ControllerBase
     /// </summary>
     /// <returns>Health status with timestamp</returns>
     [HttpGet]
-    [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
-    public ActionResult<object> GetHealth()
+    [ProducesResponseType(typeof(HealthStatusResponse), StatusCodes.Status200OK)]
+    public ActionResult<HealthStatusResponse> GetHealth()
     {
         _logger.LogInformation("Health check endpoint called");
-        return Ok(new 
+        return Ok(new HealthStatusResponse
         { 
-            status = "Healthy", 
-            timestamp = DateTime.UtcNow,
-            environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production"
+            Status = "Healthy", 
+            Timestamp = DateTime.UtcNow,
+            Environment = System.Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production"
         });
     }
 
@@ -45,33 +46,33 @@ public class HealthController : ControllerBase
     /// </summary>
     /// <returns>Database health status</returns>
     [HttpGet("database")]
-    [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(object), StatusCodes.Status503ServiceUnavailable)]
-    public async Task<ActionResult<object>> GetDatabaseHealth()
+    [ProducesResponseType(typeof(DatabaseHealthResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(DatabaseHealthResponse), StatusCodes.Status503ServiceUnavailable)]
+    public async Task<ActionResult<DatabaseHealthResponse>> GetDatabaseHealth()
     {
         try
         {
             // Try to query the database
             var users = await _userRepository.GetAllAsync();
             
-            return Ok(new 
+            return Ok(new DatabaseHealthResponse
             { 
-                status = "Healthy",
-                database = "Connected",
-                userCount = users.Count(),
-                timestamp = DateTime.UtcNow
+                Status = "Healthy",
+                Database = "Connected",
+                UserCount = users.Count(),
+                Timestamp = DateTime.UtcNow
             });
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Database health check failed");
             
-            return StatusCode(StatusCodes.Status503ServiceUnavailable, new 
+            return StatusCode(StatusCodes.Status503ServiceUnavailable, new DatabaseHealthResponse
             { 
-                status = "Unhealthy",
-                database = "Disconnected",
-                error = ex.Message,
-                timestamp = DateTime.UtcNow
+                Status = "Unhealthy",
+                Database = "Disconnected",
+                Error = ex.Message,
+                Timestamp = DateTime.UtcNow
             });
         }
     }

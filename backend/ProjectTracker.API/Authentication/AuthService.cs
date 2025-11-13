@@ -1,11 +1,14 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Identity.Data;
 using ProjectTracker.API.Configuration;
 using ProjectTracker.API.Data.Repositories;
 using ProjectTracker.API.Models.Common;
 using ProjectTracker.API.Models.Entities;
-using ProjectTracker.API.Models.Requests;
-using ProjectTracker.API.Models.Responses;
-using System.Security.Claims;
+using ProjectTracker.API.Models.Dtos.Auth;
+
+// Alias to avoid ambiguity with Microsoft.AspNetCore.Identity.Data.LoginRequest
+using DtoLoginRequest = ProjectTracker.API.Models.Dtos.Auth.LoginRequest;
+using DtoRegisterRequest = ProjectTracker.API.Models.Dtos.Auth.RegisterRequest;
 
 namespace ProjectTracker.API.Authentication;
 
@@ -31,7 +34,7 @@ public class AuthService : IAuthService
         _logger = logger;
     }
 
-    public async Task<AuthResult<UserResponse>> RegisterAsync(ProjectTracker.API.Models.Requests.RegisterRequest request)
+    public async Task<AuthResult<UserResponse>> RegisterAsync(DtoRegisterRequest request)
     {
         try
         {
@@ -84,7 +87,7 @@ public class AuthService : IAuthService
         }
     }
 
-    public async Task<AuthResult<TokenResponse>> LoginAsync(Microsoft.AspNetCore.Identity.Data.LoginRequest request)
+    public async Task<AuthResult<TokenResponse>> LoginAsync(DtoLoginRequest request)
     {
         try
         {

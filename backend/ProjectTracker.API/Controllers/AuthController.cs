@@ -2,8 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ProjectTracker.API.Authentication;
 using ProjectTracker.API.Models.Common;
-using ProjectTracker.API.Models.Requests;
-using ProjectTracker.API.Models.Responses;
+using ProjectTracker.API.Models.Dtos.Auth;
 
 namespace ProjectTracker.API.Controllers;
 
@@ -77,14 +76,7 @@ public class AuthController : ControllerBase
     {
         _logger.LogInformation("Login attempt for email: {Email}", request.Email);
         
-        // Handle the conversion if needed
-        var identityLoginRequest = new Microsoft.AspNetCore.Identity.Data.LoginRequest
-        {
-            Email = request.Email,
-            Password = request.Password
-        };
-        
-        var result = await _authService.LoginAsync(identityLoginRequest);
+        var result = await _authService.LoginAsync(request);
 
         if (!result.IsSuccess)
         {
