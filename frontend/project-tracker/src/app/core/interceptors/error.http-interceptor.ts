@@ -47,15 +47,56 @@ export const errorHttpInterceptor: HttpInterceptorFn = (req, next) => {
  * Extract error message from server response
  */
 function getServerErrorMessage(error: HttpErrorResponse): string {
-  // Check for API error response format
+  // Check for ASP.NET ValidationProblemDetails format (errors is an object/dictionary)
+  if (error.error?.errors && typeof error.error.errors === 'object' && !Array.isArray(error.error.errors)) {
+    const errorMessages: string[] = [];
+    
+    // Iterate through the errors object
+    for (const [field, messages] of Object.entries(error.error.errors)) {
+      if (Array.isArray(messages)) {
+        // Each field can have multiple error messages
+        messages.forEach((msg: any) => {
+          errorMessages.push(`${field}: ${msg}`);
+        });
+      } else {
+        errorMessages.push(`${field}: ${messages}`);
+      }
+    }
+    
+    if (errorMessages.length > 0) {
+      // Use title if available, otherwise use a default message
+      const title = error.error.title || error.error.message || 'Validation failed';
+      return `${title}\n${errorMessages.join('\n')}`;
+    }
+  }
+
+  // Check for custom API error response format with errors array
+  if (error.error?.errors && Array.isArray(error.error.errors) && error.error.errors.length > 0) {
+    // Map error details to messages, including field names if present
+    const errorMessages = error.error.errors.map((e: any) => {
+      if (e.field && e.message) {
+        return `${e.field}: ${e.message}`;
+      }
+      return e.message || e;
+    });
+    
+    // If there's a main message, combine it with the detailed errors
+    if (error.error.message) {
+      return `${error.error.message}\n${errorMessages.join('\n')}`;
+    }
+    
+    // Otherwise just return the error messages
+    return errorMessages.join('\n');
+  }
+
+  // Check for API error response with just a message
   if (error.error?.message) {
     return error.error.message;
   }
 
-  // Check for validation errors
-  if (error.error?.errors && Array.isArray(error.error.errors)) {
-    const messages = error.error.errors.map((e: any) => e.message || e).join(', ');
-    return messages || 'Validation failed';
+  // Check for title (from ProblemDetails)
+  if (error.error?.title) {
+    return error.error.title;
   }
 
   // Fallback to status text
