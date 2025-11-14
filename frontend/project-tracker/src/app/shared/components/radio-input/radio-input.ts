@@ -1,4 +1,4 @@
-import { Component, Input, forwardRef, signal, computed, ChangeDetectionStrategy, inject, effect, ChangeDetectorRef } from '@angular/core';
+import { Component, input, forwardRef, signal, computed, ChangeDetectionStrategy, inject, effect, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { TranslationService } from '../../services/translation.service';
@@ -56,15 +56,15 @@ export class RadioInput implements ControlValueAccessor {
   }
 
   // Common inputs
-  @Input() label: string = '';
-  @Input() controlName!: string;
-  @Input() required: boolean = false;
-  @Input() parentForm!: FormGroup;
-  @Input() helpText?: string;
+  readonly label = input<string>('');
+  readonly controlName = input.required<string>();
+  readonly required = input<boolean>(false);
+  readonly parentForm = input.required<FormGroup>();
+  readonly helpText = input<string | undefined>(undefined);
 
   // Specific inputs
-  @Input() options: RadioOption[] = [];
-  @Input() inline: boolean = false; // Horizontal vs vertical layout
+  readonly options = input<RadioOption[]>([]);
+  readonly inline = input<boolean>(false); // Horizontal vs vertical layout
 
   // Internal state
   protected readonly value = signal<any>(null);
@@ -74,7 +74,7 @@ export class RadioInput implements ControlValueAccessor {
 
   // Computed properties
   protected readonly control = computed(() => {
-    return this.parentForm?.get(this.controlName);
+    return this.parentForm()?.get(this.controlName());
   });
 
   protected readonly errorMessage = computed(() => {
@@ -90,7 +90,7 @@ export class RadioInput implements ControlValueAccessor {
     return this.translationService.translate('validation.invalidValue');
   });
 
-  protected readonly groupId = computed(() => `${this.controlName}-${Math.random().toString(36).substr(2, 9)}`);
+  protected readonly groupId = computed(() => `${this.controlName()}-${Math.random().toString(36).substr(2, 9)}`);
 
   // Generate unique ID for each option
   protected getOptionId(index: number): string {

@@ -5,8 +5,7 @@ import { Directive, ElementRef, OnInit, OnDestroy, inject } from '@angular/core'
 /// Implements WCAG 2.1 keyboard navigation guidelines
 /// </summary>
 @Directive({
-  selector: '[appFocusTrap]',
-  standalone: true
+  selector: '[appFocusTrap]'
 })
 export class FocusTrapDirective implements OnInit, OnDestroy {
   private readonly el = inject(ElementRef);
