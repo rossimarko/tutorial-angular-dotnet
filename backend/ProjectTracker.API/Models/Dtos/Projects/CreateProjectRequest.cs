@@ -10,14 +10,14 @@ public class CreateProjectRequest
     /// <summary>
     /// Project title (maximum 200 characters)
     /// </summary>
-    [Required(ErrorMessage = "Title is required")]
-    [StringLength(200, ErrorMessage = "Title cannot exceed 200 characters")]
+    [Required]
+    [StringLength(200)]
     public required string Title { get; set; }
 
     /// <summary>
     /// Project description (maximum 1000 characters)
     /// </summary>
-    [StringLength(1000, ErrorMessage = "Description cannot exceed 1000 characters")]
+    [StringLength(1000)]
     public string? Description { get; set; }
 
     /// <summary>
@@ -29,7 +29,7 @@ public class CreateProjectRequest
     /// <summary>
     /// Project priority from 1 to 5
     /// </summary>
-    [Range(1, 5, ErrorMessage = "Priority must be between 1 and 5")]
+    [Range(1, 5)]
     public int Priority { get; set; } = 1;
 
     /// <summary>

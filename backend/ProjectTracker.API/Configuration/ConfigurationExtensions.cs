@@ -1,4 +1,6 @@
 using System.Text;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -16,6 +18,7 @@ public static class ConfigurationExtensions
 {
     /// <summary>
     /// Configure controllers and JSON serialization options for camelCase property naming.
+    /// Also registers FluentValidation for automatic model validation on API requests.
     /// </summary>
     public static IServiceCollection AddApiControllers(this IServiceCollection services)
     {
@@ -25,6 +28,14 @@ public static class ConfigurationExtensions
                 options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
                 options.JsonSerializerOptions.WriteIndented = true;
                 options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.Never;
+            })
+            .AddFluentValidation(config =>
+            {
+                // Register all validators from the assembly containing the Program class
+                config.RegisterValidatorsFromAssembly(typeof(Program).Assembly);
+                
+                // Automatically validate request models and return validation errors
+                config.AutomaticValidationEnabled = true;
             });
 
         return services;
