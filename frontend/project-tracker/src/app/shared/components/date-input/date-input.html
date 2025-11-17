@@ -14,6 +14,7 @@
         [class.is-invalid]="hasError()"
         [ngModel]="value()"
         (ngModelChange)="onDateSelect($event)"
+        (input)="onInput($event)"
         [disabled]="disabled()"
         [placeholder]="placeholder || localizedPlaceholder()"
         [minDate]="$any(minDateStruct() || undefined)"
@@ -24,6 +25,8 @@
         [attr.aria-describedby]="hasError() ? inputId + '-error' : helpText ? inputId + '-help' : null"
         (blur)="onBlur()"
         ngbDatepicker
+        navigation="select"
+        [showWeekNumbers]="true"
         #d="ngbDatepicker">
       <button
         class="btn btn-outline-secondary"
@@ -50,31 +53,43 @@
 <!-- Floating Labels Layout -->
 @if (visualizationType === 'floating') {
   <div class="mb-3">
-    <div class="form-floating">
-      <input
-        [id]="inputId"
-        class="form-control"
-        [class.is-invalid]="hasError()"
-        [ngModel]="value()"
-        (ngModelChange)="onDateSelect($event)"
-        [disabled]="disabled()"
-        [placeholder]="placeholder || localizedPlaceholder()"
-        [minDate]="$any(minDateStruct() || undefined)"
-        [maxDate]="$any(maxDateStruct() || undefined)"
-        [attr.aria-label]="label"
-        [attr.aria-required]="required"
-        [attr.aria-invalid]="hasError()"
-        [attr.aria-describedby]="hasError() ? inputId + '-error' : helpText ? inputId + '-help' : null"
-        (blur)="onBlur()"
-        ngbDatepicker
-        #df="ngbDatepicker"
-        (click)="df.toggle()">
-      <label [for]="inputId">
-        {{ label }}
-        @if (required) {
-          <span class="text-danger">*</span>
-        }
-      </label>
+    <div class="input-group">
+      <div class="form-floating flex-grow-1">
+        <input
+          [id]="inputId"
+          class="form-control"
+          [class.is-invalid]="hasError()"
+          [ngModel]="value()"
+          (ngModelChange)="onDateSelect($event)"
+          (input)="onInput($event)"
+          [disabled]="disabled()"
+          [placeholder]="placeholder || localizedPlaceholder()"
+          [minDate]="$any(minDateStruct() || undefined)"
+          [maxDate]="$any(maxDateStruct() || undefined)"
+          [attr.aria-label]="label"
+          [attr.aria-required]="required"
+          [attr.aria-invalid]="hasError()"
+          [attr.aria-describedby]="hasError() ? inputId + '-error' : helpText ? inputId + '-help' : null"
+          (blur)="onBlur()"
+          ngbDatepicker
+          navigation="select"
+          [showWeekNumbers]="true"
+          #df="ngbDatepicker">
+        <label [for]="inputId">
+          {{ label }}
+          @if (required) {
+            <span class="text-danger">*</span>
+          }
+        </label>
+      </div>
+      <button
+        class="btn btn-outline-secondary"
+        [class.btn-outline-danger]="hasError()"
+        (click)="df.toggle()"
+        type="button"
+        [disabled]="disabled()">
+        <i class="fas fa-calendar"></i>
+      </button>
     </div>
     @if (hasError()) {
       <div [id]="inputId + '-error'" class="invalid-feedback d-block">

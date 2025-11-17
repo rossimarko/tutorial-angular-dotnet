@@ -12,13 +12,13 @@ import {
   TextareaInput,
   DropdownInput,
   IntegerInput,
-  DateInput
+  DateInputComponent
 } from '../../../../shared/components';
 
-/// <summary>
-/// Form component for creating and editing projects
-/// Uses same component for both create and edit modes
-/// </summary>
+/**
+ * Form component for creating and editing projects
+ * Uses same component for both create and edit modes
+ */
 @Component({
   selector: 'app-project-form',
   imports: [
@@ -29,7 +29,7 @@ import {
     TextareaInput,
     DropdownInput,
     IntegerInput,
-    DateInput
+    DateInputComponent
   ],
   templateUrl: './project-form.component.html',
   styleUrl: './project-form.component.css',
@@ -83,9 +83,9 @@ export class ProjectFormComponent implements OnInit {
     }
   }
 
-  /// <summary>
-  /// Load project data for editing
-  /// </summary>
+  /**
+   * Load project data for editing
+   */
   private loadProject(id: number): void {
     this.loading.set(true);
     this.projectService.getProject(id).subscribe({
@@ -102,10 +102,7 @@ export class ProjectFormComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error loading project:', error);
-        this.notificationService.error(
-          this.translationService.translate('common.error'),
-          this.translationService.translate('projects.loadError')
-        );
+        // Error notification is handled by HTTP interceptor
         this.loading.set(false);
         this.router.navigate(['/projects']);
       }
@@ -113,31 +110,35 @@ export class ProjectFormComponent implements OnInit {
   }
 
 
-  /// <summary>
-  /// Submit form
-  /// </summary>
+  /**
+   * Submit form
+   */
   onSubmit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
-      this.notificationService.warning(
-        this.translationService.translate('validation.error'),
-        this.translationService.translate('validation.fixErrors')
-      );
+      // Don't show toast notification - inline validation messages are sufficient
       return;
     }
 
     this.loading.set(true);
     const formValue = this.form.value;
 
+    console.log('Form values:', formValue);
+    console.log('Start date value:', formValue.startDate, 'Type:', typeof formValue.startDate);
+    console.log('Due date value:', formValue.dueDate, 'Type:', typeof formValue.dueDate);
+
     // Convert date strings to Date objects if needed
+    // Empty strings should be treated as null
     const projectData = {
       title: formValue.title,
       description: formValue.description || null,
       status: formValue.status,
       priority: formValue.priority,
-      startDate: formValue.startDate ? new Date(formValue.startDate) : null,
-      dueDate: formValue.dueDate ? new Date(formValue.dueDate) : null
-    };
+      startDate: formValue.startDate && formValue.startDate !== '' ? new Date(formValue.startDate) : null,
+      dueDate: formValue.dueDate && formValue.dueDate !== '' ? new Date(formValue.dueDate) : null
+    } as const;
+
+    console.log('Project data:', projectData);
 
     if (this.isEditMode()) {
       this.projectService.updateProject(this.projectId()!, projectData as UpdateProjectRequest).subscribe({
@@ -151,10 +152,7 @@ export class ProjectFormComponent implements OnInit {
         },
         error: (error: any) => {
           console.error('Error updating project:', error);
-          this.notificationService.error(
-            this.translationService.translate('common.error'),
-            this.translationService.translate('projects.updateError')
-          );
+          // Error notification is handled by HTTP interceptor
           this.loading.set(false);
         }
       });
@@ -170,19 +168,16 @@ export class ProjectFormComponent implements OnInit {
         },
         error: (error: any) => {
           console.error('Error creating project:', error);
-          this.notificationService.error(
-            this.translationService.translate('common.error'),
-            this.translationService.translate('projects.createError')
-          );
+          // Error notification is handled by HTTP interceptor
           this.loading.set(false);
         }
       });
     }
   }
 
-  /// <summary>
-  /// Cancel and go back
-  /// </summary>
+  /**
+   * Cancel and go back
+   */
   cancel(): void {
     if (this.form.dirty) {
       if (confirm(this.translationService.translate('projects.unsavedChanges'))) {
@@ -193,9 +188,9 @@ export class ProjectFormComponent implements OnInit {
     }
   }
 
-  /// <summary>
-  /// Check if field has error
-  /// </summary>
+  /**
+   * Check if field has error
+   */
   hasError(fieldName: string, errorType?: string): boolean {
     const field = this.form.get(fieldName);
     if (!field) return false;
@@ -206,9 +201,9 @@ export class ProjectFormComponent implements OnInit {
     return field.invalid && (field.dirty || field.touched);
   }
 
-  /// <summary>
-  /// Get error message for field
-  /// </summary>
+  /**
+   * Get error message for field
+   */
   getErrorMessage(fieldName: string): string {
     const field = this.form.get(fieldName);
     if (!field || !field.errors) return '';

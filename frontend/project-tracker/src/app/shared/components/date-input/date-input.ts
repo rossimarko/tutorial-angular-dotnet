@@ -1,13 +1,14 @@
 import { Component, Input, forwardRef, signal, computed, ChangeDetectionStrategy, inject, effect, ChangeDetectorRef, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormGroup, ReactiveFormsModule, FormsModule } from '@angular/forms';
-import { NgbInputDatepicker, NgbDateStruct, NgbDateParserFormatter } from '@ng-bootstrap/ng-bootstrap';
+import { NgbInputDatepicker, NgbDateStruct, NgbDateParserFormatter, NgbDatepickerI18n } from '@ng-bootstrap/ng-bootstrap';
 import { TranslationService } from '../../services/translation.service';
+import { CustomDatepickerI18n } from '../../services/datepicker-i18n.service';
 
-/// <summary>
-/// Custom date formatter for ng-bootstrap datepicker
-/// Formats dates according to the current locale
-/// </summary>
+/**
+ * Custom date formatter for ng-bootstrap datepicker
+ * Formats dates according to the current locale
+ */
 class LocaleDateFormatter extends NgbDateParserFormatter {
   constructor(private translationService: TranslationService) {
     super();
@@ -31,8 +32,8 @@ class LocaleDateFormatter extends NgbDateParserFormatter {
   format(date: NgbDateStruct | null): string {
     if (!date) return '';
     try {
-      const isoString = `${date.year}-${String(date.month).padStart(2, '0')}-${String(date.day).padStart(2, '0')}`;
-      const dateObj = new Date(isoString);
+      // Create date at noon local time to avoid timezone issues
+      const dateObj = new Date(date.year, date.month - 1, date.day, 12, 0, 0);
       const culture = this.translationService.currentCultureInfo();
       const locale = culture?.code || 'en-US';
       return dateObj.toLocaleDateString(locale);
@@ -42,11 +43,11 @@ class LocaleDateFormatter extends NgbDateParserFormatter {
   }
 }
 
-/// <summary>
-/// Reusable date input component with ng-bootstrap datepicker
-/// Supports min and max date validation
-/// Implements ControlValueAccessor for reactive forms integration
-/// </summary>
+/**
+ * Reusable date input component with ng-bootstrap datepicker
+ * Supports min and max date validation
+ * Implements ControlValueAccessor for reactive forms integration
+ */
 @Component({
   selector: 'app-date-input',
   templateUrl: './date-input.html',
@@ -56,17 +57,21 @@ class LocaleDateFormatter extends NgbDateParserFormatter {
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => DateInput),
+      useExisting: forwardRef(() => DateInputComponent),
       multi: true
     },
     {
       provide: NgbDateParserFormatter,
       useClass: LocaleDateFormatter,
       deps: [TranslationService]
+    },
+    {
+      provide: NgbDatepickerI18n,
+      useClass: CustomDatepickerI18n
     }
   ]
 })
-export class DateInput implements ControlValueAccessor, OnInit {
+export class DateInputComponent implements ControlValueAccessor, OnInit {
   private readonly translationService = inject(TranslationService);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly currentLocale = computed(() => {
@@ -81,25 +86,31 @@ export class DateInput implements ControlValueAccessor, OnInit {
       if (ctrl) {
         this.updateErrorState();
 
+        // Only subscribe to statusChanges as it captures validation state changes
         const statusSub = ctrl.statusChanges.subscribe(() => {
           this.updateErrorState();
-        });
-        const valueSub = ctrl.valueChanges.subscribe(() => {
-          this.updateErrorState();
+          this.cdr.markForCheck();
         });
 
         onCleanup(() => {
           statusSub.unsubscribe();
-          valueSub.unsubscribe();
         });
       }
+    });
+
+    // Watch for language changes and trigger change detection
+    effect(() => {
+      // Read the current locale to track changes
+      this.currentLocale();
+      // Mark for check to re-render with new locale
+      this.cdr.markForCheck();
     });
   }
 
   ngOnInit(): void {
     // Generate a stable, unique input ID once per component instance
     // Must be in ngOnInit because @Input() properties are not available in constructor
-    this.inputId = `${this.controlName}-${Math.random().toString(36).substr(2, 9)}`;
+    this.inputId = `${this.controlName}-${Math.random().toString(36).substring(2, 11)}`;
   }
 
   // Common inputs
@@ -220,10 +231,36 @@ export class DateInput implements ControlValueAccessor, OnInit {
   }
 
   // Event handlers
-  onDateSelect(date: NgbDateStruct | null): void {
-    this.value.set(date);
-    const isoString = date ? this.dateStructToString(date) : '';
-    this.onChange(isoString);
+  onDateSelect(date: NgbDateStruct | null | undefined): void {
+    const validDate = date ?? null;
+    this.value.set(validDate);
+    
+    // Only convert if we have a complete date struct
+    if (validDate && validDate.year && validDate.month && validDate.day) {
+      const isoString = this.dateStructToString(validDate);
+      this.onChange(isoString);
+    } else {
+      this.onChange('');
+    }
+  }
+
+  onInput(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    const inputValue = target.value;
+    
+    if (!inputValue) {
+      this.value.set(null);
+      this.onChange('');
+      return;
+    }
+    
+    // Try to parse the input as a date struct
+    const parsed = this.parseInputValue(inputValue);
+    if (parsed) {
+      this.value.set(parsed);
+      const isoString = this.dateStructToString(parsed);
+      this.onChange(isoString);
+    }
   }
 
   onBlur(): void {
@@ -232,22 +269,48 @@ export class DateInput implements ControlValueAccessor, OnInit {
   }
 
   // Conversion methods
+  private parseInputValue(value: string): NgbDateStruct | null {
+    if (!value) return null;
+    
+    // Try to parse using the browser's date parsing
+    try {
+      const date = new Date(value);
+      if (!isNaN(date.getTime())) {
+        return {
+          year: date.getFullYear(),
+          month: date.getMonth() + 1,
+          day: date.getDate()
+        };
+      }
+    } catch {
+      // Ignore parsing errors
+    }
+    
+    return null;
+  }
+
   private stringToDateStruct(dateString: string): NgbDateStruct | null {
     if (!dateString) return null;
     try {
-      const date = new Date(dateString);
-      return {
-        year: date.getFullYear(),
-        month: date.getMonth() + 1,
-        day: date.getDate()
-      };
+      // Parse ISO date string (YYYY-MM-DD) directly to avoid timezone issues
+      const parts = dateString.split('-');
+      if (parts.length === 3) {
+        const year = parseInt(parts[0], 10);
+        const month = parseInt(parts[1], 10);
+        const day = parseInt(parts[2], 10);
+        
+        if (!isNaN(year) && !isNaN(month) && !isNaN(day)) {
+          return { year, month, day };
+        }
+      }
+      return null;
     } catch {
       return null;
     }
   }
 
-  private dateStructToString(date: NgbDateStruct): string {
-    if (!date) return '';
+  private dateStructToString(date: NgbDateStruct | null | undefined): string {
+    if (!date || !date.year || !date.month || !date.day) return '';
     const year = date.year.toString().padStart(4, '0');
     const month = date.month.toString().padStart(2, '0');
     const day = date.day.toString().padStart(2, '0');
@@ -256,12 +319,12 @@ export class DateInput implements ControlValueAccessor, OnInit {
 
   private formatDateStruct(date: NgbDateStruct): string {
     if (!date) return '';
-    const isoString = this.dateStructToString(date);
     try {
-      const dateObj = new Date(isoString);
+      // Create date at noon local time to avoid timezone issues
+      const dateObj = new Date(date.year, date.month - 1, date.day, 12, 0, 0);
       return dateObj.toLocaleDateString(this.currentLocale());
     } catch {
-      return isoString;
+      return this.dateStructToString(date);
     }
   }
 

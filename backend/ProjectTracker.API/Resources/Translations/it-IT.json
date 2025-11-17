@@ -43,7 +43,8 @@
     "confirmDelete": "Conferma Eliminazione",
     "success": "Successo",
     "error": "Errore",
-    "warning": "Attenzione"
+    "warning": "Attenzione",
+    "skipToContent": "Vai al contenuto principale"
   },
   "auth": {
     "login": "Accedi",

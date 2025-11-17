@@ -1,5 +1,5 @@
 {
-  "common": {    
+  "common": {
     "save": "Save",
     "cancel": "Cancel",
     "delete": "Delete",
@@ -43,7 +43,8 @@
     "confirmDelete": "Confirm Delete",
     "success": "Success",
     "error": "Error",
-    "warning": "Warning"
+    "warning": "Warning",
+    "skipToContent": "Skip to main content"
   },
   "auth": {
     "login": "Login",
