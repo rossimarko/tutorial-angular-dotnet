@@ -14,7 +14,6 @@
         [class.is-invalid]="hasError()"
         [ngModel]="value()"
         (ngModelChange)="onDateSelect($event)"
-        (input)="onInput($event)"
         [disabled]="disabled()"
         [placeholder]="placeholder || localizedPlaceholder()"
         [minDate]="$any(minDateStruct() || undefined)"
@@ -26,7 +25,7 @@
         (blur)="onBlur()"
         ngbDatepicker
         navigation="select"
-        [showWeekNumbers]="true"
+        [showWeekNumbers]="false"
         #d="ngbDatepicker">
       <button
         class="btn btn-outline-secondary"
@@ -61,7 +60,6 @@
           [class.is-invalid]="hasError()"
           [ngModel]="value()"
           (ngModelChange)="onDateSelect($event)"
-          (input)="onInput($event)"
           [disabled]="disabled()"
           [placeholder]="placeholder || localizedPlaceholder()"
           [minDate]="$any(minDateStruct() || undefined)"

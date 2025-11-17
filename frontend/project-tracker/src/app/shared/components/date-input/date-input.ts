@@ -244,51 +244,12 @@ export class DateInputComponent implements ControlValueAccessor, OnInit {
     }
   }
 
-  onInput(event: Event): void {
-    const target = event.target as HTMLInputElement;
-    const inputValue = target.value;
-    
-    if (!inputValue) {
-      this.value.set(null);
-      this.onChange('');
-      return;
-    }
-    
-    // Try to parse the input as a date struct
-    const parsed = this.parseInputValue(inputValue);
-    if (parsed) {
-      this.value.set(parsed);
-      const isoString = this.dateStructToString(parsed);
-      this.onChange(isoString);
-    }
-  }
-
   onBlur(): void {
     this.touched.set(true);
     this.onTouched();
   }
 
   // Conversion methods
-  private parseInputValue(value: string): NgbDateStruct | null {
-    if (!value) return null;
-    
-    // Try to parse using the browser's date parsing
-    try {
-      const date = new Date(value);
-      if (!isNaN(date.getTime())) {
-        return {
-          year: date.getFullYear(),
-          month: date.getMonth() + 1,
-          day: date.getDate()
-        };
-      }
-    } catch {
-      // Ignore parsing errors
-    }
-    
-    return null;
-  }
-
   private stringToDateStruct(dateString: string): NgbDateStruct | null {
     if (!dateString) return null;
     try {
