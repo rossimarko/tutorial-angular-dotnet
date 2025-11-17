@@ -10,7 +10,7 @@ Content-Type: application/json
 }
 
 ### After login, copy the accessToken from the response and paste it below
-@auth_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyIiwiZW1haWwiOiJqb2huLmRvZUBleGFtcGxlLmNvbSIsImdpdmVuX25hbWUiOiJKb2huIiwiZmFtaWx5X25hbWUiOiJEb2UiLCJqdGkiOiI1MDZjNDdiOC0yZjg2LTRkNGItYWFlNi0yZWVhODRkODZhYWYiLCJpYXQiOjE3NjMxMjA3MzksInVzZXJJZCI6IjIiLCJpc0FjdGl2ZSI6IlRydWUiLCJleHAiOjE3NjMxMjE2MzksImlzcyI6IlByb2plY3RUcmFja2VyQVBJIiwiYXVkIjoiUHJvamVjdFRyYWNrZXJDbGllbnQifQ.nNlytRR63l-wTc6AsdgcYxB8P-m4VUy_UmGYarcGER8
+@auth_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyIiwiZW1haWwiOiJqb2huLmRvZUBleGFtcGxlLmNvbSIsImdpdmVuX25hbWUiOiJKb2huIiwiZmFtaWx5X25hbWUiOiJEb2UiLCJqdGkiOiJjZGYyZTE3OS1hOWM0LTRhOWUtYWUyNC1hZmUwOGNmZTNhNjIiLCJpYXQiOjE3NjMzNzI2NTIsInVzZXJJZCI6IjIiLCJpc0FjdGl2ZSI6IlRydWUiLCJleHAiOjE3NjMzNzM1NTIsImlzcyI6IlByb2plY3RUcmFja2VyQVBJIiwiYXVkIjoiUHJvamVjdFRyYWNrZXJDbGllbnQifQ.guEi3HqHpfnIT2qSAmKlb0VSAOmI9HinVl-Xyb-pBBg
 
 ### Get all projects
 GET {{ProjectTracker.API_HostAddress}}/api/projects
@@ -50,7 +50,7 @@ Content-Type: application/json
 {
   "title": "Updated Project Title",
   "description": "Updated description",
-  "status": "In Progress",
+  "status": "Active",
   "priority": 3,
   "startDate": "2026-01-01",
   "dueDate": "2025-12-31"
