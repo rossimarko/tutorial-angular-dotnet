@@ -1,0 +1,109 @@
+/* Calendar picker popup styles */
+.calendar-picker-popup {
+  min-width: 320px;
+  max-width: 350px;
+  border: 1px solid var(--bs-border-color);
+}
+
+/* Calendar grid layout */
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+/* Weekday headers */
+.calendar-weekday {
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--bs-secondary);
+  padding: 0.5rem 0.25rem;
+  text-transform: uppercase;
+}
+
+/* Calendar day buttons */
+.calendar-day {
+  aspect-ratio: 1;
+  border: 1px solid transparent;
+  background: transparent;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  padding: 0.5rem;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+  position: relative;
+}
+
+.calendar-day:hover:not(:disabled) {
+  background-color: var(--bs-primary-bg-subtle);
+  border-color: var(--bs-primary);
+}
+
+.calendar-day:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Days from other months */
+.calendar-day.other-month {
+  color: var(--bs-secondary);
+  opacity: 0.5;
+}
+
+/* Today's date */
+.calendar-day.today {
+  font-weight: 700;
+  color: var(--bs-primary);
+  border-color: var(--bs-primary);
+}
+
+/* Selected date */
+.calendar-day.selected {
+  background-color: var(--bs-primary);
+  color: white;
+  font-weight: 700;
+}
+
+.calendar-day.selected:hover {
+  background-color: var(--bs-primary);
+  opacity: 0.9;
+}
+
+/* Ensure the popup appears above other content */
+.position-relative {
+  position: relative;
+}
+
+/* Animation for popup */
+.calendar-picker-popup {
+  animation: fadeIn 0.15s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Style for input when picker is open */
+input:focus {
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+/* Navigation button improvements */
+.btn-group-sm .btn {
+  padding: 0.25rem 0.5rem;
+}
+
+/* Month/year header */
+.calendar-picker-popup h6 {
+  min-width: 150px;
+  text-align: center;
+}
+

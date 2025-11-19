@@ -83,7 +83,17 @@ export class AuthService {
    * Get current access token
    */
   getToken(): string | null {
-    const token = this.accessToken();
+    // Always check localStorage as a fallback (in case signal wasn't initialized properly)
+    let token = this.accessToken();
+    if (!token) {
+      token = this.getStoredToken();
+      if (token) {
+        console.warn('AuthService.getToken(): Token found in localStorage but not in signal, re-initializing');
+        this.accessToken.set(token);
+        this.tokenSubject.next(token);
+        this.decodeAndSetUser(token);
+      }
+    }
     console.log('AuthService.getToken(): Called', { 
       hasToken: !!token, 
       tokenLength: token ? token.length : 0 
