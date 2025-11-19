@@ -9,32 +9,24 @@
     </label>
     <div class="input-group">
       <input
+        type="date"
         [id]="inputId"
         class="form-control"
         [class.is-invalid]="hasError()"
-        [ngModel]="value()"
-        (ngModelChange)="onDateSelect($event)"
+        [value]="value()"
         [disabled]="disabled()"
         [placeholder]="placeholder || localizedPlaceholder()"
-        [minDate]="$any(minDateStruct() || undefined)"
-        [maxDate]="$any(maxDateStruct() || undefined)"
+        [attr.min]="minDate"
+        [attr.max]="maxDate"
         [attr.aria-label]="label"
         [attr.aria-required]="required"
         [attr.aria-invalid]="hasError()"
         [attr.aria-describedby]="hasError() ? inputId + '-error' : helpText ? inputId + '-help' : null"
-        (blur)="onBlur()"
-        ngbDatepicker
-        navigation="select"
-        [showWeekNumbers]="false"
-        #d="ngbDatepicker">
-      <button
-        class="btn btn-outline-secondary"
-        [class.btn-outline-danger]="hasError()"
-        (click)="d.toggle()"
-        type="button"
-        [disabled]="disabled()">
+        (input)="onInput($event)"
+        (blur)="onBlur()">
+      <span class="input-group-text" [class.border-danger]="hasError()">
         <i class="fas fa-calendar"></i>
-      </button>
+      </span>
     </div>
     @if (hasError()) {
       <div [id]="inputId + '-error'" class="invalid-feedback d-block">
@@ -55,24 +47,21 @@
     <div class="input-group">
       <div class="form-floating flex-grow-1">
         <input
+          type="date"
           [id]="inputId"
           class="form-control"
           [class.is-invalid]="hasError()"
-          [ngModel]="value()"
-          (ngModelChange)="onDateSelect($event)"
+          [value]="value()"
           [disabled]="disabled()"
           [placeholder]="placeholder || localizedPlaceholder()"
-          [minDate]="$any(minDateStruct() || undefined)"
-          [maxDate]="$any(maxDateStruct() || undefined)"
+          [attr.min]="minDate"
+          [attr.max]="maxDate"
           [attr.aria-label]="label"
           [attr.aria-required]="required"
           [attr.aria-invalid]="hasError()"
           [attr.aria-describedby]="hasError() ? inputId + '-error' : helpText ? inputId + '-help' : null"
-          (blur)="onBlur()"
-          ngbDatepicker
-          navigation="select"
-          [showWeekNumbers]="true"
-          #df="ngbDatepicker">
+          (input)="onInput($event)"
+          (blur)="onBlur()">
         <label [for]="inputId">
           {{ label }}
           @if (required) {
@@ -80,14 +69,9 @@
           }
         </label>
       </div>
-      <button
-        class="btn btn-outline-secondary"
-        [class.btn-outline-danger]="hasError()"
-        (click)="df.toggle()"
-        type="button"
-        [disabled]="disabled()">
+      <span class="input-group-text" [class.border-danger]="hasError()">
         <i class="fas fa-calendar"></i>
-      </button>
+      </span>
     </div>
     @if (hasError()) {
       <div [id]="inputId + '-error'" class="invalid-feedback d-block">

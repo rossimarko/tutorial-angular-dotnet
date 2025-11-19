@@ -20,8 +20,8 @@ Before making changes, explain me briefly what you plan to do and avoid creating
 
 ## Repository Overview
 
-**backend** folder: .NET 9 Web API project (C# /.NET 9)
+**backend** folder: .NET 10 Web API project (C# /.NET 10)
 **frontend** folder: Angular 20 SPA (TypeScript)
 **tutorial-docs** folder: Documentation and tutorials
-**Languages/Frameworks**: C# (.NET 9), TypeScript (Angular 20), SQL Server
+**Languages/Frameworks**: C# (.NET 10), TypeScript (Angular 20), SQL Server
 

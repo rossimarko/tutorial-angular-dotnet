@@ -1,11 +1,10 @@
 import { Component, Input, forwardRef, signal, computed, ChangeDetectionStrategy, inject, effect, ChangeDetectorRef, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormGroup, ReactiveFormsModule, FormsModule } from '@angular/forms';
-import { NgbInputDatepicker, NgbTimepicker, NgbDateStruct, NgbTimeStruct } from '@ng-bootstrap/ng-bootstrap';
 import { TranslationService } from '../../services/translation.service';
 
 /// <summary>
-/// Reusable datetime input component with ng-bootstrap datepicker and timepicker
+/// Reusable datetime input component with HTML5 datetime-local input
 /// Combines date and time selection with ISO datetime string output
 /// Implements ControlValueAccessor for reactive forms integration
 /// </summary>
@@ -14,7 +13,7 @@ import { TranslationService } from '../../services/translation.service';
   templateUrl: './datetime-input.html',
   styleUrl: './datetime-input.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, NgbInputDatepicker, NgbTimepicker],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule],
   providers: [{
     provide: NG_VALUE_ACCESSOR,
     useExisting: forwardRef(() => DatetimeInput),
@@ -32,16 +31,14 @@ export class DatetimeInput implements ControlValueAccessor, OnInit {
       if (ctrl) {
         this.updateErrorState();
 
+        // Only subscribe to statusChanges as it captures validation state changes
         const statusSub = ctrl.statusChanges.subscribe(() => {
           this.updateErrorState();
-        });
-        const valueSub = ctrl.valueChanges.subscribe(() => {
-          this.updateErrorState();
+          this.cdr.markForCheck();
         });
 
         onCleanup(() => {
           statusSub.unsubscribe();
-          valueSub.unsubscribe();
         });
       }
     });
@@ -50,7 +47,7 @@ export class DatetimeInput implements ControlValueAccessor, OnInit {
   ngOnInit(): void {
     // Generate a stable, unique input ID once per component instance
     // Must be in ngOnInit because @Input() properties are not available in constructor
-    this.inputId = `${this.controlName}-${Math.random().toString(36).substr(2, 9)}`;
+    this.inputId = `${this.controlName}-${Math.random().toString(36).substring(2, 11)}`;
   }
 
   // Common inputs
@@ -67,8 +64,7 @@ export class DatetimeInput implements ControlValueAccessor, OnInit {
   @Input() maxDateTime?: string; // ISO format
 
   // Internal state
-  protected readonly dateValue = signal<NgbDateStruct | null>(null);
-  protected readonly timeValue = signal<NgbTimeStruct | null>(null);
+  protected readonly value = signal<string>('');
   protected readonly disabled = signal<boolean>(false);
   protected readonly touched = signal<boolean>(false);
   protected readonly hasError = signal<boolean>(false);
@@ -76,14 +72,6 @@ export class DatetimeInput implements ControlValueAccessor, OnInit {
   // Computed properties
   protected readonly control = computed(() => {
     return this.parentForm?.get(this.controlName);
-  });
-
-  protected readonly minDateStruct = computed(() => {
-    return this.minDateTime ? this.stringToDateStruct(this.minDateTime) : null;
-  });
-
-  protected readonly maxDateStruct = computed(() => {
-    return this.maxDateTime ? this.stringToDateStruct(this.maxDateTime) : null;
   });
 
   protected readonly errorMessage = computed(() => {
@@ -107,19 +95,33 @@ export class DatetimeInput implements ControlValueAccessor, OnInit {
 
   protected inputId!: string;
 
+  // Convert ISO datetime to datetime-local format (YYYY-MM-DDTHH:mm)
+  protected readonly datetimeLocalValue = computed(() => {
+    const val = this.value();
+    if (!val || val.length < 16) return '';
+    // Convert from ISO format (with seconds) to datetime-local format (without seconds)
+    return val.substring(0, 16);
+  });
+
+  protected readonly minDateTimeLocal = computed(() => {
+    const min = this.minDateTime;
+    if (!min || min.length < 16) return undefined;
+    return min.substring(0, 16);
+  });
+
+  protected readonly maxDateTimeLocal = computed(() => {
+    const max = this.maxDateTime;
+    if (!max || max.length < 16) return undefined;
+    return max.substring(0, 16);
+  });
+
   // ControlValueAccessor implementation
   private onChange: (value: string) => void = () => {};
   private onTouched: () => void = () => {};
 
   writeValue(value: string): void {
-    if (value) {
-      const dateTime = this.stringToDateTime(value);
-      this.dateValue.set(dateTime.date);
-      this.timeValue.set(dateTime.time);
-    } else {
-      this.dateValue.set(null);
-      this.timeValue.set(null);
-    }
+    this.value.set(value || '');
+    this.cdr.markForCheck();
   }
 
   registerOnChange(fn: (value: string) => void): void {
@@ -135,86 +137,17 @@ export class DatetimeInput implements ControlValueAccessor, OnInit {
   }
 
   // Event handlers
-  onDateSelect(date: NgbDateStruct | null): void {
-    this.dateValue.set(date);
-    this.emitDateTime();
-  }
-
-  onTimeChange(time: NgbTimeStruct | null): void {
-    this.timeValue.set(time);
-    this.emitDateTime();
+  onInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    // Convert from datetime-local format to ISO format with seconds
+    const isoValue = input.value ? input.value + ':00' : '';
+    this.value.set(isoValue);
+    this.onChange(isoValue);
   }
 
   onBlur(): void {
     this.touched.set(true);
     this.onTouched();
-  }
-
-  private emitDateTime(): void {
-    const date = this.dateValue();
-    const time = this.timeValue();
-
-    if (date && time) {
-      const isoString = this.dateTimeToString(date, time);
-      this.onChange(isoString);
-    } else if (date) {
-      // If only date is set, use midnight
-      const isoString = this.dateTimeToString(date, { hour: 0, minute: 0, second: 0 });
-      this.onChange(isoString);
-    } else {
-      this.onChange('');
-    }
-  }
-
-  // Conversion methods
-  private stringToDateTime(dateTimeString: string): { date: NgbDateStruct | null, time: NgbTimeStruct | null } {
-    if (!dateTimeString) return { date: null, time: null };
-
-    try {
-      const date = new Date(dateTimeString);
-      return {
-        date: {
-          year: date.getFullYear(),
-          month: date.getMonth() + 1,
-          day: date.getDate()
-        },
-        time: {
-          hour: date.getHours(),
-          minute: date.getMinutes(),
-          second: date.getSeconds()
-        }
-      };
-    } catch {
-      return { date: null, time: null };
-    }
-  }
-
-  private stringToDateStruct(dateTimeString: string): NgbDateStruct | null {
-    if (!dateTimeString) return null;
-    try {
-      const date = new Date(dateTimeString);
-      return {
-        year: date.getFullYear(),
-        month: date.getMonth() + 1,
-        day: date.getDate()
-      };
-    } catch {
-      return null;
-    }
-  }
-
-  private dateTimeToString(date: NgbDateStruct, time: NgbTimeStruct): string {
-    if (!date) return '';
-
-    const year = date.year.toString().padStart(4, '0');
-    const month = date.month.toString().padStart(2, '0');
-    const day = date.day.toString().padStart(2, '0');
-
-    const hour = (time?.hour || 0).toString().padStart(2, '0');
-    const minute = (time?.minute || 0).toString().padStart(2, '0');
-    const second = (time?.second || 0).toString().padStart(2, '0');
-
-    return `${year}-${month}-${day}T${hour}:${minute}:${second}`;
   }
 
   private updateErrorState(): void {
