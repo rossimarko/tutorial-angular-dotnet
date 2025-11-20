@@ -1,5 +1,5 @@
 import { Component, inject, signal, ChangeDetectionStrategy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { RouterModule } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { ThemeToggleComponent } from '../../shared/components/theme-toggle/theme-toggle.component';
@@ -12,7 +12,7 @@ import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 /// </summary>
 @Component({
   selector: 'app-navbar',
-  imports: [CommonModule, RouterModule, ThemeToggleComponent, LanguageSelectorComponent, TranslatePipe],
+  imports: [RouterModule, ThemeToggleComponent, LanguageSelectorComponent, TranslatePipe],
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush

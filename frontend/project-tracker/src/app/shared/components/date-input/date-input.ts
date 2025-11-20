@@ -1,5 +1,5 @@
 import { Component, Input, forwardRef, signal, computed, ChangeDetectionStrategy, inject, effect, ChangeDetectorRef, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormGroup, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { TranslationService } from '../../services/translation.service';
 import { TranslatePipe } from '../../pipes/translate.pipe';
@@ -16,7 +16,7 @@ import { TranslatePipe } from '../../pipes/translate.pipe';
   templateUrl: './date-input.html',
   styleUrl: './date-input.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, TranslatePipe],
+  imports: [ReactiveFormsModule, FormsModule, TranslatePipe],
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,

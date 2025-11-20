@@ -1,5 +1,5 @@
 import { Component, input, output, computed, ChangeDetectionStrategy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { TranslatePipe } from '../../pipes/translate.pipe';
 
 /// <summary>
@@ -8,7 +8,7 @@ import { TranslatePipe } from '../../pipes/translate.pipe';
 /// </summary>
 @Component({
   selector: 'app-pagination',
-  imports: [CommonModule, TranslatePipe],
+  imports: [TranslatePipe],
   templateUrl: 'pagination.component.html',
   styleUrl: 'pagination.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush

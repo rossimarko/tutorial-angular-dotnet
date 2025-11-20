@@ -1,7 +1,7 @@
 # Tutorial-Angular-DotNet - Copilot Instructions
 
-This repository contains a full-stack tutorial project demonstrating how to build a web application using Angular for the frontend and .NET 9 for the backend API. The project includes step-by-step documentation to guide users through the development process.
-It's designed to help .net 4.8 webforms developers transition to modern web development practices using Angular and .NET 9.
+This repository contains a full-stack tutorial project demonstrating how to build a web application using Angular 21 for the frontend and .NET 10 for the backend API. The project includes step-by-step documentation to guide users through the development process.
+It's designed to help .net 4.8 webforms developers transition to modern web development practices using Angular 21 and .NET 10.
 
 Fot dataaccess we use SQL Server with Dapper ORM.
 
@@ -21,7 +21,6 @@ Before making changes, explain me briefly what you plan to do and avoid creating
 ## Repository Overview
 
 **backend** folder: .NET 10 Web API project (C# /.NET 10)
-**frontend** folder: Angular 20 SPA (TypeScript)
+**frontend** folder: Angular 21 SPA (TypeScript)
 **tutorial-docs** folder: Documentation and tutorials
-**Languages/Frameworks**: C# (.NET 10), TypeScript (Angular 20), SQL Server
-
+**Languages/Frameworks**: C# (.NET 10), TypeScript (Angular 21), SQL Server

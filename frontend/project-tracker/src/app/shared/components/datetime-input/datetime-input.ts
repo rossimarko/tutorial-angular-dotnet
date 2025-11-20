@@ -1,5 +1,5 @@
 import { Component, Input, forwardRef, signal, computed, ChangeDetectionStrategy, inject, effect, ChangeDetectorRef, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormGroup, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { TranslationService } from '../../services/translation.service';
 
@@ -13,7 +13,7 @@ import { TranslationService } from '../../services/translation.service';
   templateUrl: './datetime-input.html',
   styleUrl: './datetime-input.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule],
+  imports: [ReactiveFormsModule, FormsModule],
   providers: [{
     provide: NG_VALUE_ACCESSOR,
     useExisting: forwardRef(() => DatetimeInput),

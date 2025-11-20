@@ -1,5 +1,5 @@
 import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { TranslationService } from '../../services/translation.service';
 
 /// <summary>
@@ -8,7 +8,7 @@ import { TranslationService } from '../../services/translation.service';
 /// </summary>
 @Component({
   selector: 'app-language-selector',
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './language-selector.component.html',
   styleUrl: './language-selector.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush

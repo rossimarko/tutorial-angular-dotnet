@@ -1,5 +1,5 @@
 import { Component, input, ChangeDetectionStrategy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 
 /// <summary>
 /// Reusable card component wrapper
@@ -7,7 +7,7 @@ import { CommonModule } from '@angular/common';
 /// </summary>
 @Component({
   selector: 'app-card',
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './card.component.html',
   styleUrl: './card.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush

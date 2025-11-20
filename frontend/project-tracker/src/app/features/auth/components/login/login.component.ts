@@ -1,7 +1,7 @@
 import { Component, inject, signal, ChangeDetectionStrategy, computed } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { CommonModule } from '@angular/common';
+
 import { AuthService, TokenResponse } from '../../../../core/services/auth.service';
 import { ApiResponse } from '../../../../core/services/auth.service';
 import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
@@ -11,7 +11,7 @@ import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
   templateUrl: './login.component.html',
   styleUrl: './login.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule, TranslatePipe]
+  imports: [ReactiveFormsModule, TranslatePipe]
 })
 export class LoginComponent {
   private readonly authService = inject(AuthService);

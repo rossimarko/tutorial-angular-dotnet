@@ -1,5 +1,5 @@
 import { Component, inject, signal, OnInit, ChangeDetectionStrategy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { ProjectService } from '../../services/project.service';
@@ -22,7 +22,6 @@ import {
 @Component({
   selector: 'app-project-form',
   imports: [
-    CommonModule,
     ReactiveFormsModule,
     TranslatePipe,
     TextInput,
@@ -30,7 +29,7 @@ import {
     DropdownInput,
     IntegerInput,
     DateInputComponent
-  ],
+],
   templateUrl: './project-form.component.html',
   styleUrl: './project-form.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

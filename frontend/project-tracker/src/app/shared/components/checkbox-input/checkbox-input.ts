@@ -1,5 +1,5 @@
 import { Component, Input, forwardRef, signal, computed, ChangeDetectionStrategy, inject, effect, ChangeDetectorRef, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { TranslationService } from '../../services/translation.service';
 
@@ -11,7 +11,7 @@ import { TranslationService } from '../../services/translation.service';
 /// </summary>
 @Component({
   selector: 'app-checkbox-input',
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [ReactiveFormsModule],
   templateUrl: './checkbox-input.html',
   styleUrl: './checkbox-input.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

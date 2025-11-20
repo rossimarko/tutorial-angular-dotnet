@@ -1,5 +1,5 @@
 import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { ThemeService, Theme } from '../../services/theme.service';
 import { TranslatePipe } from '../../pipes/translate.pipe';
 
@@ -9,7 +9,7 @@ import { TranslatePipe } from '../../pipes/translate.pipe';
 /// </summary>
 @Component({
   selector: 'app-theme-toggle',
-  imports: [CommonModule, TranslatePipe],
+  imports: [TranslatePipe],
   templateUrl: './theme-toggle.component.html',
   styleUrl: './theme-toggle.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush

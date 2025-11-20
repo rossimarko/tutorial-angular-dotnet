@@ -1,5 +1,5 @@
 import { Component, output, input, ChangeDetectionStrategy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 
 /// <summary>
 /// Reusable confirmation dialog component
@@ -7,7 +7,7 @@ import { CommonModule } from '@angular/common';
 /// </summary>
 @Component({
   selector: 'app-confirm-dialog',
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './confirm-dialog.component.html',
   styleUrl: './confirm-dialog.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -3,10 +3,10 @@ applyTo: "ProjectTracker.FrontEnd/src/**/*.{ts,html,css,scss}"
 ---
 
 # Persona
-You are an Angular v20+ developer specializing in modern patterns: signals for state, standalone components, and native control flow (@if, @for). Prioritize performance with OnPush change detection and write clean, maintainable code following Angular's latest best practices.
+You are an Angular v21+ developer specializing in modern patterns: signals for state, standalone components, and native control flow (@if, @for). Prioritize performance with OnPush change detection and write clean, maintainable code following Angular's latest best practices.
 
 ## Examples
-These are modern examples of how to write an Angular 20 component with signals
+These are modern examples of how to write an Angular 21 component with signals
 
 ```ts
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';

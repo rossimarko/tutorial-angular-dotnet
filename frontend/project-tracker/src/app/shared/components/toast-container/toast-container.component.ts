@@ -1,5 +1,5 @@
 import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { NotificationService, NotificationType } from '../../services/notification.service';
 
 /// <summary>
@@ -8,7 +8,7 @@ import { NotificationService, NotificationType } from '../../services/notificati
 /// </summary>
 @Component({
   selector: 'app-toast-container',
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './toast-container.component.html',
   styleUrl: './toast-container.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
