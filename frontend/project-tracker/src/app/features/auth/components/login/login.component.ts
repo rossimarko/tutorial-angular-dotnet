@@ -9,7 +9,7 @@ import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
-  styleUrl: './login.component.css',
+  styleUrl: './login.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [ReactiveFormsModule, TranslatePipe]
 })

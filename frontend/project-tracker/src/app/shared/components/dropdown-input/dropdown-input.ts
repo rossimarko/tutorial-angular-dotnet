@@ -12,7 +12,7 @@ import { TranslationService } from '../../services/translation.service';
   selector: 'app-dropdown-input',
   imports: [ReactiveFormsModule],
   templateUrl: './dropdown-input.html',
-  styleUrl: './dropdown-input.css',
+  styleUrl: './dropdown-input.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [{
     provide: NG_VALUE_ACCESSOR,

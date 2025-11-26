@@ -12,7 +12,7 @@ import { TranslationService } from '../../services/translation.service';
   selector: 'app-text-input',
   imports: [ReactiveFormsModule],
   templateUrl: './text-input.html',
-  styleUrl: './text-input.css',
+  styleUrl: './text-input.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [{
     provide: NG_VALUE_ACCESSOR,

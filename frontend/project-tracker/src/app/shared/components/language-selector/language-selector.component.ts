@@ -11,7 +11,7 @@ import { LoggerService } from '../../services/logger.service';
   selector: 'app-language-selector',
   imports: [],
   templateUrl: './language-selector.component.html',
-  styleUrl: './language-selector.component.css',
+  styleUrl: './language-selector.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class LanguageSelectorComponent {

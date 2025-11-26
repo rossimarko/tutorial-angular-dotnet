@@ -9,7 +9,7 @@ import { Component, output, input, ChangeDetectionStrategy } from '@angular/core
   selector: 'app-confirm-dialog',
   imports: [],
   templateUrl: './confirm-dialog.component.html',
-  styleUrl: './confirm-dialog.component.css',
+  styleUrl: './confirm-dialog.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ConfirmDialogComponent {

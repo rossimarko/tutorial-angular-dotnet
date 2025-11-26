@@ -26,7 +26,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
     LocalizedDatePipe
   ],
   templateUrl: 'project-list.component.html',
-  styleUrl: 'project-list.component.css',
+  styleUrl: 'project-list.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ProjectListComponent implements OnInit {

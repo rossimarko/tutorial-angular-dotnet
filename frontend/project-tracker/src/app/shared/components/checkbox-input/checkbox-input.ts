@@ -13,7 +13,7 @@ import { TranslationService } from '../../services/translation.service';
   selector: 'app-checkbox-input',
   imports: [ReactiveFormsModule],
   templateUrl: './checkbox-input.html',
-  styleUrl: './checkbox-input.css',
+  styleUrl: './checkbox-input.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [{
     provide: NG_VALUE_ACCESSOR,
