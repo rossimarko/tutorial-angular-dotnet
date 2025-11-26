@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { ProjectService } from '../../services/project.service';
 import { NotificationService } from '../../../../shared/services/notification.service';
 import { ExportService } from '../../../../shared/services/export.service';
+import { LoggerService } from '../../../../shared/services/logger.service';
 import { Project, PaginationParams } from '../../../../shared/models/project.model';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
@@ -34,6 +35,7 @@ export class ProjectListComponent implements OnInit {
   private readonly exportService = inject(ExportService);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly logger = inject(LoggerService);
 
   // Read-only signals from service
   protected readonly projects = this.projectService.getProjectsSignal();
@@ -101,7 +103,7 @@ export class ProjectListComponent implements OnInit {
         // Data loaded, signals updated by service
       },
       error: (error: any) => {
-        console.error('Failed to load projects:', error);
+        this.logger.error('Failed to load projects', error);
         this.notificationService.error('Error', 'Failed to load projects');
       }
     });
@@ -281,7 +283,7 @@ export class ProjectListComponent implements OnInit {
         this.loadProjects();
       },
       error: (error: any) => {
-        console.error('Delete failed:', error);
+        this.logger.error('Delete failed', error);
         this.notificationService.error(
           'Error',
           'Failed to delete project'

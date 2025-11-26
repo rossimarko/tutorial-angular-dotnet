@@ -2,6 +2,7 @@ import { Component, inject, signal, ChangeDetectionStrategy, isDevMode } from '@
 
 import { RouterModule } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
+import { LoggerService } from '../../shared/services/logger.service';
 import { ThemeToggleComponent } from '../../shared/components/theme-toggle/theme-toggle.component';
 import { LanguageSelectorComponent } from '../../shared/components/language-selector/language-selector.component';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
@@ -20,6 +21,7 @@ import { environment } from '../../../environments/environment';
 })
 export class NavbarComponent {
   private readonly authService = inject(AuthService);
+  private readonly logger = inject(LoggerService);
 
   protected readonly isAuthenticated = this.authService.isAuthenticated$();
   protected readonly currentUser = this.authService.currentUser;
@@ -46,7 +48,7 @@ export class NavbarComponent {
     else if (isDevMode())
     {
       // Warn in development if the API URL does not match the expected pattern
-      console.warn(`[NavbarComponent] environment.apiUrl does not end with '/api' or '/api/':`, environment.apiUrl);
+      this.logger.warning('[NavbarComponent] environment.apiUrl does not end with /api or /api/', environment.apiUrl);
     }
     // Ensure no trailing slash before appending
     if (apiUrl.endsWith('/'))

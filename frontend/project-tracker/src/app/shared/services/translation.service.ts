@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { catchError, of, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Culture, TranslationsResponse, TranslationParams } from '../models/translation.model';
+import { LoggerService } from './logger.service';
 
 /// <summary>
 /// Translation service using Angular signals for reactive state management
@@ -13,6 +14,7 @@ import { Culture, TranslationsResponse, TranslationParams } from '../models/tran
 })
 export class TranslationService {
   private readonly http = inject(HttpClient);
+  private readonly logger = inject(LoggerService);
   private readonly apiUrl = `${environment.apiUrl}/translations`;
   
   // Storage keys
@@ -80,7 +82,7 @@ export class TranslationService {
           resolve();
         }),
         catchError(err => {
-          console.error('Failed to load cultures:', err);
+          this.logger.error('Failed to load cultures', err);
           this.error.set('Failed to load available languages');
           reject(err);
           return of([]);
@@ -108,7 +110,7 @@ export class TranslationService {
           resolve();
         }),
         catchError(err => {
-          console.error('Failed to load translations:', err);
+          this.logger.error('Failed to load translations', err);
           this.error.set('Failed to load translations');
           this.isLoading.set(false);
           reject(err);
@@ -148,7 +150,7 @@ export class TranslationService {
         this.loadedCategories.set(loaded);
       }),
       catchError(err => {
-        console.error(`Failed to load ${category} translations:`, err);
+        this.logger.error(`Failed to load ${category} translations`, err);
         return of({});
       })
     ).subscribe();
@@ -177,7 +179,7 @@ export class TranslationService {
     const value = this.getNestedValue(this.translations(), keyPath);
     
     if (value === null) {
-      console.warn(`Translation key not found: ${keyPath}`);
+      this.logger.warning(`Translation key not found: ${keyPath}`);
       return keyPath; // Return key as fallback
     }
 

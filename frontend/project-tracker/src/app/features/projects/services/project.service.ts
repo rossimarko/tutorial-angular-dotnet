@@ -3,6 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, tap, catchError, of } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { PerformanceService } from '../../../shared/services/performance.service';
+import { LoggerService } from '../../../shared/services/logger.service';
 import { 
   Project, 
   ProjectPaginatedResponse,
@@ -22,6 +23,7 @@ import {
 export class ProjectService {
   private readonly http = inject(HttpClient);
   private readonly performanceService = inject(PerformanceService);
+  private readonly logger = inject(LoggerService);
   private readonly apiUrl = `${environment.apiUrl}/projects`;
 
   // Default page size - must match component default
@@ -75,7 +77,7 @@ export class ProjectService {
       catchError(error => {
         this.error.set('Failed to load projects');
         this.loading.set(false);
-        console.error('Error loading projects:', error);
+        this.logger.error('Error loading projects', error);
         
         // Return empty response on error
         return of({
@@ -112,7 +114,7 @@ export class ProjectService {
       }),
       catchError(error => {
         this.error.set('Failed to create project');
-        console.error('Error creating project:', error);
+        this.logger.error('Error creating project', error);
         throw error;
       })
     );
@@ -135,7 +137,7 @@ export class ProjectService {
       }),
       catchError(error => {
         this.error.set('Failed to update project');
-        console.error('Error updating project:', error);
+        this.logger.error('Error updating project', error);
         throw error;
       })
     );
@@ -151,7 +153,7 @@ export class ProjectService {
       }),
       catchError(error => {
         this.error.set('Failed to delete project');
-        console.error('Error deleting project:', error);
+        this.logger.error('Error deleting project', error);
         throw error;
       })
     );
