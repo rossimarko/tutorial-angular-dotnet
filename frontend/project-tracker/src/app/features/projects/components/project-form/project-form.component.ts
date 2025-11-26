@@ -5,6 +5,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { ProjectService } from '../../services/project.service';
 import { NotificationService } from '../../../../shared/services/notification.service';
 import { TranslationService } from '../../../../shared/services/translation.service';
+import { LoggerService } from '../../../../shared/services/logger.service';
 import { CreateProjectRequest, UpdateProjectRequest } from '../../../../shared/models/project.model';
 import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
 import {
@@ -32,14 +33,14 @@ import {
 ],
   templateUrl: './project-form.component.html',
   styleUrl: './project-form.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: true
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ProjectFormComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly projectService = inject(ProjectService);
   private readonly notificationService = inject(NotificationService);
   private readonly translationService = inject(TranslationService);
+  private readonly logger = inject(LoggerService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
 
@@ -100,7 +101,7 @@ export class ProjectFormComponent implements OnInit {
         this.loading.set(false);
       },
       error: (error) => {
-        console.error('Error loading project:', error);
+        this.logger.error('Error loading project:', error);
         // Error notification is handled by HTTP interceptor
         this.loading.set(false);
         this.router.navigate(['/projects']);
@@ -122,9 +123,9 @@ export class ProjectFormComponent implements OnInit {
     this.loading.set(true);
     const formValue = this.form.value;
 
-    console.log('Form values:', formValue);
-    console.log('Start date value:', formValue.startDate, 'Type:', typeof formValue.startDate);
-    console.log('Due date value:', formValue.dueDate, 'Type:', typeof formValue.dueDate);
+    this.logger.debug('Form values:', formValue);
+    this.logger.debug('Start date value:', { value: formValue.startDate, type: typeof formValue.startDate });
+    this.logger.debug('Due date value:', { value: formValue.dueDate, type: typeof formValue.dueDate });
 
     // Convert date strings to Date objects if needed
     // Empty strings should be treated as null
@@ -137,7 +138,7 @@ export class ProjectFormComponent implements OnInit {
       dueDate: formValue.dueDate && formValue.dueDate !== '' ? new Date(formValue.dueDate) : null
     } as const;
 
-    console.log('Project data:', projectData);
+    this.logger.debug('Project data:', projectData);
 
     if (this.isEditMode()) {
       this.projectService.updateProject(this.projectId()!, projectData as UpdateProjectRequest).subscribe({
@@ -150,7 +151,7 @@ export class ProjectFormComponent implements OnInit {
           this.router.navigate(['/projects']);
         },
         error: (error: any) => {
-          console.error('Error updating project:', error);
+          this.logger.error('Error updating project:', error);
           // Error notification is handled by HTTP interceptor
           this.loading.set(false);
         }
@@ -166,7 +167,7 @@ export class ProjectFormComponent implements OnInit {
           this.router.navigate(['/projects']);
         },
         error: (error: any) => {
-          console.error('Error creating project:', error);
+          this.logger.error('Error creating project:', error);
           // Error notification is handled by HTTP interceptor
           this.loading.set(false);
         }

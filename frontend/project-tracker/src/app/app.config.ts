@@ -6,8 +6,6 @@ import { authHttpInterceptor } from './core/interceptors/auth.http-interceptor';
 import { errorHttpInterceptor } from './core/interceptors/error.http-interceptor';
 import { profilerInterceptor } from './core/interceptors/profiler.interceptor';
 
-console.debug('App Config: Initializing application config...');
-
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
@@ -16,5 +14,3 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(withInterceptors([authHttpInterceptor, errorHttpInterceptor, profilerInterceptor]))
   ]
 };
-
-console.debug('App Config: HTTP interceptors configured (auth, error, profiler)');

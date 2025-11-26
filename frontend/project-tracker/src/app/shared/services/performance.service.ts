@@ -1,4 +1,4 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { LoggerService } from './logger.service';
 
 /**
@@ -19,11 +19,12 @@ export interface PerformanceMetric {
   providedIn: 'root'
 })
 export class PerformanceService {
+  private readonly logger = inject(LoggerService);
   private readonly metrics = signal<PerformanceMetric[]>([]);
   private readonly timers = new Map<string, number>();
   private readonly maxMetrics = 100;
 
-  constructor(private readonly logger: LoggerService) {
+  constructor() {
     this.captureNavigationTiming();
   }
 

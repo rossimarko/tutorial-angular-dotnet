@@ -1,5 +1,5 @@
-import { Component, inject, signal, OnInit, ChangeDetectionStrategy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, inject, signal, OnInit, ChangeDetectionStrategy, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ReactiveFormsModule, FormControl } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ProjectService } from '../../services/project.service';
@@ -18,7 +18,6 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 @Component({
   selector: 'app-project-list',
   imports: [
-    CommonModule,
     ReactiveFormsModule,
     PaginationComponent,
     ConfirmDialogComponent,
@@ -34,6 +33,7 @@ export class ProjectListComponent implements OnInit {
   private readonly notificationService = inject(NotificationService);
   private readonly exportService = inject(ExportService);
   private readonly router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
 
   // Read-only signals from service
   protected readonly projects = this.projectService.getProjectsSignal();
@@ -76,16 +76,19 @@ export class ProjectListComponent implements OnInit {
     this.searchControl.valueChanges
       .pipe(
         debounceTime(300),
-        distinctUntilChanged()
+        distinctUntilChanged(),
+        takeUntilDestroyed(this.destroyRef)
       )
       .subscribe(() => {
         this.resetPageAndLoad();
       });
 
     // Subscribe to status filter changes
-    this.statusFilter.valueChanges.subscribe(() => {
-      this.resetPageAndLoad();
-    });
+    this.statusFilter.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        this.resetPageAndLoad();
+      });
   }
 
   /// <summary>

@@ -1,6 +1,7 @@
 import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 
 import { TranslationService } from '../../services/translation.service';
+import { LoggerService } from '../../services/logger.service';
 
 /// <summary>
 /// Component for selecting application language
@@ -15,6 +16,7 @@ import { TranslationService } from '../../services/translation.service';
 })
 export class LanguageSelectorComponent {
   protected readonly translationService = inject(TranslationService);
+  private readonly logger = inject(LoggerService);
   
   // Expose signals for template
   protected readonly cultures = this.translationService.cultures;
@@ -25,10 +27,10 @@ export class LanguageSelectorComponent {
   /// Change the application language
   /// </summary>
   protected async onLanguageChange(cultureCode: string): Promise<void> {
-    console.log('onLanguageChange called with:', cultureCode);
+    this.logger.debug('onLanguageChange called with:', cultureCode);
     try {
       await this.translationService.setLanguage(cultureCode);
-      console.log('Language changed successfully to:', cultureCode);
+      this.logger.debug('Language changed successfully to:', cultureCode);
       
       // Close the dropdown
       const dropdownButton = document.getElementById('languageDropdown');
@@ -39,7 +41,7 @@ export class LanguageSelectorComponent {
         }
       }
     } catch (error) {
-      console.error('Error changing language:', error);
+      this.logger.error('Error changing language:', error);
     }
   }
 }

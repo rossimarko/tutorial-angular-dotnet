@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { BehaviorSubject } from 'rxjs';
 import { jwtDecode } from 'jwt-decode';
+import { LoggerService } from '../../shared/services/logger.service';
 
 export interface User {
   name: string;
@@ -33,6 +34,7 @@ export interface ApiResponse<T> {
 })
 export class AuthService {
   private readonly http = inject(HttpClient);
+  private readonly logger = inject(LoggerService);
   private readonly apiUrl = `${environment.apiUrl}/auth`;
 
   // State management - initialize with null, will be set in constructor
@@ -44,7 +46,7 @@ export class AuthService {
   constructor() {
     // Initialize from localStorage
     const storedToken = this.getStoredToken();
-    console.log('AuthService: Constructor called, initializing from localStorage:', { hasToken: !!storedToken });
+    this.logger.debug('AuthService: Constructor called, initializing from localStorage', { hasToken: !!storedToken });
     this.accessToken.set(storedToken);
     this.tokenSubject.next(storedToken);
     if (storedToken) {
@@ -70,13 +72,13 @@ export class AuthService {
    * Store token after successful login
    */
   setToken(token: string, refreshToken: string) {
-    console.debug('AuthService: Setting tokens', { token: token.substring(0, 20) + '...', refreshToken: refreshToken.substring(0, 20) + '...' });
+    this.logger.debug('AuthService: Setting tokens', { token: token.substring(0, 20) + '...', refreshToken: refreshToken.substring(0, 20) + '...' });
     localStorage.setItem('accessToken', token);
     localStorage.setItem('refreshToken', refreshToken);
     this.accessToken.set(token);
     this.tokenSubject.next(token);
     this.decodeAndSetUser(token);
-    console.debug('AuthService: Tokens stored, isAuthenticated:', this.isAuthenticated());
+    this.logger.debug('AuthService: Tokens stored, isAuthenticated:', { isAuthenticated: this.isAuthenticated() });
   }
 
   /**
@@ -88,13 +90,13 @@ export class AuthService {
     if (!token) {
       token = this.getStoredToken();
       if (token) {
-        console.warn('AuthService.getToken(): Token found in localStorage but not in signal, re-initializing');
+        this.logger.warning('AuthService.getToken(): Token found in localStorage but not in signal, re-initializing');
         this.accessToken.set(token);
         this.tokenSubject.next(token);
         this.decodeAndSetUser(token);
       }
     }
-    console.log('AuthService.getToken(): Called', { 
+    this.logger.debug('AuthService.getToken(): Called', { 
       hasToken: !!token, 
       tokenLength: token ? token.length : 0 
     });
@@ -152,9 +154,9 @@ export class AuthService {
         email: decodedToken.email,
         role: decodedToken.role || 'User'
       });
-      console.log('AuthService: User decoded and set', this.currentUser());
+      this.logger.debug('AuthService: User decoded and set', this.currentUser());
     } catch (error) {
-      console.error('AuthService: Failed to decode token', error);
+      this.logger.error('AuthService: Failed to decode token', error);
       this.currentUser.set(null);
     }
   }

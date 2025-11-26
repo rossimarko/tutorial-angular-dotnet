@@ -1,4 +1,4 @@
-import { Directive, HostListener, ElementRef, inject } from '@angular/core';
+import { Directive, ElementRef, inject } from '@angular/core';
 
 /// <summary>
 /// Directive for skip-to-content links (accessibility)
@@ -6,12 +6,13 @@ import { Directive, HostListener, ElementRef, inject } from '@angular/core';
 /// </summary>
 @Directive({
   selector: '[appSkipLink]',
-  standalone: true
+  host: {
+    '(click)': 'onClick($event)'
+  }
 })
 export class SkipLinkDirective {
   private readonly el = inject(ElementRef);
 
-  @HostListener('click', ['$event'])
   onClick(event: Event): void {
     event.preventDefault();
     const targetId = this.el.nativeElement.getAttribute('href')?.substring(1);

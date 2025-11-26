@@ -11,8 +11,7 @@ import { NotificationService, NotificationType } from '../../services/notificati
   imports: [],
   templateUrl: './toast-container.component.html',
   styleUrl: './toast-container.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: true
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ToastContainerComponent {
   private readonly notificationService = inject(NotificationService);
