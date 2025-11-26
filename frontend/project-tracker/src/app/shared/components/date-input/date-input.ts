@@ -1,4 +1,4 @@
-import { Component, Input, forwardRef, signal, computed, ChangeDetectionStrategy, inject, effect, ChangeDetectorRef, OnInit } from '@angular/core';
+import { Component, input, forwardRef, signal, computed, ChangeDetectionStrategy, inject, effect, ChangeDetectorRef, OnInit } from '@angular/core';
 
 import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormGroup, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { TranslationService } from '../../services/translation.service';
@@ -33,6 +33,19 @@ export class DateInputComponent implements ControlValueAccessor, OnInit {
     return culture?.code || 'en-US';
   });
 
+  // Common inputs
+  readonly label = input<string>('');
+  readonly controlName = input.required<string>();
+  readonly visualizationType = input<'floating' | 'standard'>('standard');
+  readonly required = input<boolean>(false);
+  readonly parentForm = input.required<FormGroup>();
+  readonly placeholder = input<string>();
+  readonly helpText = input<string>();
+
+  // Specific inputs
+  readonly minDate = input<string>(); // ISO format YYYY-MM-DD
+  readonly maxDate = input<string>(); // ISO format YYYY-MM-DD
+
   constructor() {
     // Watch for control status changes and trigger change detection
     effect((onCleanup) => {
@@ -63,22 +76,8 @@ export class DateInputComponent implements ControlValueAccessor, OnInit {
 
   ngOnInit(): void {
     // Generate a stable, unique input ID once per component instance
-    // Must be in ngOnInit because @Input() properties are not available in constructor
-    this.inputId = `${this.controlName}-${Math.random().toString(36).substring(2, 11)}`;
+    this.inputId = `${this.controlName()}-${Math.random().toString(36).substring(2, 11)}`;
   }
-
-  // Common inputs
-  @Input() label: string = '';
-  @Input() controlName!: string;
-  @Input() visualizationType: 'floating' | 'standard' = 'standard';
-  @Input() required: boolean = false;
-  @Input() parentForm!: FormGroup;
-  @Input() placeholder?: string;
-  @Input() helpText?: string;
-
-  // Specific inputs
-  @Input() minDate?: string; // ISO format YYYY-MM-DD
-  @Input() maxDate?: string; // ISO format YYYY-MM-DD
 
   // Internal state
   protected readonly internalValue = signal<string>(''); // ISO date string YYYY-MM-DD
@@ -182,7 +181,7 @@ export class DateInputComponent implements ControlValueAccessor, OnInit {
 
   // Computed properties
   protected readonly control = computed(() => {
-    return this.parentForm?.get(this.controlName);
+    return this.parentForm()?.get(this.controlName());
   });
 
   protected readonly errorMessage = computed(() => {
@@ -201,12 +200,12 @@ export class DateInputComponent implements ControlValueAccessor, OnInit {
     }
     if (errors['min']) {
       return this.translationService.translate('validation.minDate', {
-        min: this.formatDate(this.minDate || '')
+        min: this.formatDate(this.minDate() || '')
       });
     }
     if (errors['max']) {
       return this.translationService.translate('validation.maxDate', {
-        max: this.formatDate(this.maxDate || '')
+        max: this.formatDate(this.maxDate() || '')
       });
     }
 
@@ -253,14 +252,16 @@ export class DateInputComponent implements ControlValueAccessor, OnInit {
   private isDateDisabled(dateStr: string): boolean {
     if (!dateStr) return true;
     
-    if (this.minDate) {
-      const minDateObj = new Date(this.minDate);
+    const minDateVal = this.minDate();
+    if (minDateVal) {
+      const minDateObj = new Date(minDateVal);
       const dateObj = new Date(dateStr);
       if (dateObj < minDateObj) return true;
     }
     
-    if (this.maxDate) {
-      const maxDateObj = new Date(this.maxDate);
+    const maxDateVal = this.maxDate();
+    if (maxDateVal) {
+      const maxDateObj = new Date(maxDateVal);
       const dateObj = new Date(dateStr);
       if (dateObj > maxDateObj) return true;
     }

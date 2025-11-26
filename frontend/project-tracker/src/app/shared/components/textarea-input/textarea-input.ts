@@ -1,4 +1,4 @@
-import { Component, Input, forwardRef, signal, computed, ChangeDetectionStrategy, inject, effect, ChangeDetectorRef, OnInit } from '@angular/core';
+import { Component, input, forwardRef, signal, computed, ChangeDetectionStrategy, inject, effect, ChangeDetectorRef, OnInit } from '@angular/core';
 
 import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { TranslationService } from '../../services/translation.service';
@@ -24,9 +24,22 @@ export class TextareaInput implements ControlValueAccessor, OnInit {
   private readonly translationService = inject(TranslationService);
   private readonly cdr = inject(ChangeDetectorRef);
 
+  // Common inputs
+  readonly label = input<string>('');
+  readonly controlName = input.required<string>();
+  readonly visualizationType = input<'floating' | 'standard'>('standard');
+  readonly required = input<boolean>(false);
+  readonly parentForm = input.required<FormGroup>();
+  readonly placeholder = input<string>();
+  readonly helpText = input<string>();
+
+  // Specific inputs
+  readonly rows = input<number>(3);
+  readonly minLength = input<number>();
+  readonly maxLength = input<number>();
+  readonly showCharacterCount = input<boolean>(false);
+
   constructor() {
-
-
     // Watch for control status changes and trigger change detection
     effect((onCleanup) => {
       const ctrl = this.control();
@@ -50,8 +63,7 @@ export class TextareaInput implements ControlValueAccessor, OnInit {
 
   ngOnInit(): void {
     // Generate a stable, unique input ID once per component instance
-    // Must be in ngOnInit because @Input() properties are not available in constructor
-    this.inputId = `${this.controlName}-${Math.random().toString(36).substr(2, 9)}`;
+    this.inputId = `${this.controlName()}-${Math.random().toString(36).substr(2, 9)}`;
   }
 
   private updateErrorState(): void {
@@ -59,21 +71,6 @@ export class TextareaInput implements ControlValueAccessor, OnInit {
     const hasErr = !!(ctrl && ctrl.invalid && (ctrl.dirty || ctrl.touched || this.touched()));
     this.hasError.set(hasErr);
   }
-
-  // Common inputs
-  @Input() label: string = '';
-  @Input() controlName!: string;
-  @Input() visualizationType: 'floating' | 'standard' = 'standard';
-  @Input() required: boolean = false;
-  @Input() parentForm!: FormGroup;
-  @Input() placeholder?: string;
-  @Input() helpText?: string;
-
-  // Specific inputs
-  @Input() rows: number = 3;
-  @Input() minLength?: number;
-  @Input() maxLength?: number;
-  @Input() showCharacterCount: boolean = false;
 
   // Internal state
   protected readonly value = signal<string>('');
@@ -83,7 +80,7 @@ export class TextareaInput implements ControlValueAccessor, OnInit {
 
   // Computed properties
   protected readonly control = computed(() => {
-    return this.parentForm?.get(this.controlName);
+    return this.parentForm()?.get(this.controlName());
   });
 
   protected readonly errorMessage = computed(() => {

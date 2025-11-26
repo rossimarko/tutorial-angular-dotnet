@@ -1,17 +1,17 @@
 <!-- Radio Button Group -->
 <div class="mb-3">
-  @if (label) {
+  @if (label()) {
     <label class="form-label">
-      {{ label }}
-      @if (required) {
+      {{ label() }}
+      @if (required()) {
         <span class="text-danger">*</span>
       }
     </label>
   }
 
   <!-- Radio Options -->
-  @for (option of options; track option.value; let i = $index) {
-    <div class="form-check" [class.form-check-inline]="inline">
+  @for (option of options(); track option.value; let i = $index) {
+    <div class="form-check" [class.form-check-inline]="inline()">
       <input
         type="radio"
         [id]="getOptionId(i)"
@@ -22,9 +22,9 @@
         [checked]="isChecked(option.value)"
         [disabled]="disabled()"
         [attr.aria-label]="option.label"
-        [attr.aria-required]="required"
+        [attr.aria-required]="required()"
         [attr.aria-invalid]="hasError()"
-        [attr.aria-describedby]="hasError() ? groupId() + '-error' : helpText ? groupId() + '-help' : null"
+        [attr.aria-describedby]="hasError() ? groupId() + '-error' : helpText() ? groupId() + '-help' : null"
         (change)="onChange_internal(option.value)"
         (blur)="onBlur()">
       <label [for]="getOptionId(i)" class="form-check-label">
@@ -38,9 +38,9 @@
       {{ errorMessage() }}
     </div>
   }
-  @if (helpText && !hasError()) {
+  @if (helpText() && !hasError()) {
     <div [id]="groupId() + '-help'" class="form-text">
-      {{ helpText }}
+      {{ helpText() }}
     </div>
   }
 </div>

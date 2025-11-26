@@ -1,9 +1,9 @@
 <!-- Standard Layout -->
-@if (visualizationType === 'standard') {
+@if (visualizationType() === 'standard') {
   <div class="mb-3">
     <label [for]="inputId" class="form-label">
-      {{ label }}
-      @if (required) {
+      {{ label() }}
+      @if (required()) {
         <span class="text-danger">*</span>
       }
     </label>
@@ -15,11 +15,11 @@
         [class.is-invalid]="hasError()"
         [value]="displayValue()"
         [disabled]="disabled()"
-        [placeholder]="placeholder || localizedPlaceholder()"
-        [attr.aria-label]="label"
-        [attr.aria-required]="required"
+        [placeholder]="placeholder() || localizedPlaceholder()"
+        [attr.aria-label]="label()"
+        [attr.aria-required]="required()"
         [attr.aria-invalid]="hasError()"
-        [attr.aria-describedby]="hasError() ? inputId + '-error' : helpText ? inputId + '-help' : null"
+        [attr.aria-describedby]="hasError() ? inputId + '-error' : helpText() ? inputId + '-help' : null"
         (input)="onInput($event)"
         (blur)="onBlur()"
         autocomplete="off">
@@ -38,9 +38,9 @@
         {{ errorMessage() }}
       </div>
     }
-    @if (helpText && !hasError()) {
+    @if (helpText() && !hasError()) {
       <div [id]="inputId + '-help'" class="form-text">
-        {{ helpText }}
+        {{ helpText() }}
       </div>
     }
     
@@ -114,7 +114,7 @@
 }
 
 <!-- Floating Labels Layout -->
-@if (visualizationType === 'floating') {
+@if (visualizationType() === 'floating') {
   <div class="mb-3">
     <div class="input-group">
       <div class="form-floating flex-grow-1">
@@ -125,17 +125,17 @@
           [class.is-invalid]="hasError()"
           [value]="displayValue()"
           [disabled]="disabled()"
-          [placeholder]="placeholder || localizedPlaceholder()"
-          [attr.aria-label]="label"
-          [attr.aria-required]="required"
+          [placeholder]="placeholder() || localizedPlaceholder()"
+          [attr.aria-label]="label()"
+          [attr.aria-required]="required()"
           [attr.aria-invalid]="hasError()"
-          [attr.aria-describedby]="hasError() ? inputId + '-error' : helpText ? inputId + '-help' : null"
+          [attr.aria-describedby]="hasError() ? inputId + '-error' : helpText() ? inputId + '-help' : null"
           (input)="onInput($event)"
           (blur)="onBlur()"
           autocomplete="off">
         <label [for]="inputId">
-          {{ label }}
-          @if (required) {
+          {{ label() }}
+          @if (required()) {
             <span class="text-danger">*</span>
           }
         </label>
@@ -155,9 +155,9 @@
         {{ errorMessage() }}
       </div>
     }
-    @if (helpText && !hasError()) {
+    @if (helpText() && !hasError()) {
       <div [id]="inputId + '-help'" class="form-text">
-        {{ helpText }}
+        {{ helpText() }}
       </div>
     }
     

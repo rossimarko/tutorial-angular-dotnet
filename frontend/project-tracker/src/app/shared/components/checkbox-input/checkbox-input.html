@@ -1,10 +1,10 @@
 <!-- Standard Checkbox Layout -->
-@if (visualizationType === 'standard') {
+@if (visualizationType() === 'standard') {
   <div class="mb-3">
-    @if (label) {
+    @if (label()) {
       <label class="form-label">
-        {{ label }}
-        @if (required) {
+        {{ label() }}
+        @if (required()) {
           <span class="text-danger">*</span>
         }
       </label>
@@ -17,14 +17,14 @@
         [class.is-invalid]="hasError()"
         [checked]="value()"
         [disabled]="disabled()"
-        [attr.aria-label]="checkboxLabel || label"
-        [attr.aria-required]="required"
+        [attr.aria-label]="checkboxLabel() || label()"
+        [attr.aria-required]="required()"
         [attr.aria-invalid]="hasError()"
-        [attr.aria-describedby]="hasError() ? inputId + '-error' : helpText ? inputId + '-help' : null"
+        [attr.aria-describedby]="hasError() ? inputId + '-error' : helpText() ? inputId + '-help' : null"
         (change)="onChange_internal($event)"
         (blur)="onBlur()">
       <label [for]="inputId" class="form-check-label">
-        {{ checkboxLabel }}
+        {{ checkboxLabel() }}
       </label>
     </div>
     @if (hasError()) {
@@ -32,21 +32,21 @@
         {{ errorMessage() }}
       </div>
     }
-    @if (helpText && !hasError()) {
+    @if (helpText() && !hasError()) {
       <div [id]="inputId + '-help'" class="form-text">
-        {{ helpText }}
+        {{ helpText() }}
       </div>
     }
   </div>
 }
 
 <!-- Switch Layout -->
-@if (visualizationType === 'switch') {
+@if (visualizationType() === 'switch') {
   <div class="mb-3">
-    @if (label) {
+    @if (label()) {
       <label class="form-label">
-        {{ label }}
-        @if (required) {
+        {{ label() }}
+        @if (required()) {
           <span class="text-danger">*</span>
         }
       </label>
@@ -59,14 +59,14 @@
         [class.is-invalid]="hasError()"
         [checked]="value()"
         [disabled]="disabled()"
-        [attr.aria-label]="checkboxLabel || label"
-        [attr.aria-required]="required"
+        [attr.aria-label]="checkboxLabel() || label()"
+        [attr.aria-required]="required()"
         [attr.aria-invalid]="hasError()"
-        [attr.aria-describedby]="hasError() ? inputId + '-error' : helpText ? inputId + '-help' : null"
+        [attr.aria-describedby]="hasError() ? inputId + '-error' : helpText() ? inputId + '-help' : null"
         (change)="onChange_internal($event)"
         (blur)="onBlur()">
       <label [for]="inputId" class="form-check-label">
-        {{ checkboxLabel }}
+        {{ checkboxLabel() }}
       </label>
     </div>
     @if (hasError()) {
@@ -74,9 +74,9 @@
         {{ errorMessage() }}
       </div>
     }
-    @if (helpText && !hasError()) {
+    @if (helpText() && !hasError()) {
       <div [id]="inputId + '-help'" class="form-text">
-        {{ helpText }}
+        {{ helpText() }}
       </div>
     }
   </div>

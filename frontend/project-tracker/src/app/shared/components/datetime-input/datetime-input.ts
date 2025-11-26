@@ -1,4 +1,4 @@
-import { Component, Input, forwardRef, signal, computed, ChangeDetectionStrategy, inject, effect, ChangeDetectorRef, OnInit } from '@angular/core';
+import { Component, input, forwardRef, signal, computed, ChangeDetectionStrategy, inject, effect, ChangeDetectorRef, OnInit } from '@angular/core';
 
 import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormGroup, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { TranslationService } from '../../services/translation.service';
@@ -24,6 +24,19 @@ export class DatetimeInput implements ControlValueAccessor, OnInit {
   private readonly translationService = inject(TranslationService);
   private readonly cdr = inject(ChangeDetectorRef);
 
+  // Common inputs
+  readonly label = input<string>('');
+  readonly controlName = input.required<string>();
+  readonly visualizationType = input<'floating' | 'standard'>('standard');
+  readonly required = input<boolean>(false);
+  readonly parentForm = input.required<FormGroup>();
+  readonly placeholder = input<string>();
+  readonly helpText = input<string>();
+
+  // Specific inputs
+  readonly minDateTime = input<string>(); // ISO format
+  readonly maxDateTime = input<string>(); // ISO format
+
   constructor() {
     // Watch for control status changes and trigger change detection
     effect((onCleanup) => {
@@ -46,22 +59,8 @@ export class DatetimeInput implements ControlValueAccessor, OnInit {
 
   ngOnInit(): void {
     // Generate a stable, unique input ID once per component instance
-    // Must be in ngOnInit because @Input() properties are not available in constructor
-    this.inputId = `${this.controlName}-${Math.random().toString(36).substring(2, 11)}`;
+    this.inputId = `${this.controlName()}-${Math.random().toString(36).substring(2, 11)}`;
   }
-
-  // Common inputs
-  @Input() label: string = '';
-  @Input() controlName!: string;
-  @Input() visualizationType: 'floating' | 'standard' = 'standard';
-  @Input() required: boolean = false;
-  @Input() parentForm!: FormGroup;
-  @Input() placeholder?: string;
-  @Input() helpText?: string;
-
-  // Specific inputs
-  @Input() minDateTime?: string; // ISO format
-  @Input() maxDateTime?: string; // ISO format
 
   // Internal state
   protected readonly value = signal<string>('');
@@ -71,7 +70,7 @@ export class DatetimeInput implements ControlValueAccessor, OnInit {
 
   // Computed properties
   protected readonly control = computed(() => {
-    return this.parentForm?.get(this.controlName);
+    return this.parentForm()?.get(this.controlName());
   });
 
   protected readonly errorMessage = computed(() => {
@@ -104,13 +103,13 @@ export class DatetimeInput implements ControlValueAccessor, OnInit {
   });
 
   protected readonly minDateTimeLocal = computed(() => {
-    const min = this.minDateTime;
+    const min = this.minDateTime();
     if (!min || min.length < 16) return undefined;
     return min.substring(0, 16);
   });
 
   protected readonly maxDateTimeLocal = computed(() => {
-    const max = this.maxDateTime;
+    const max = this.maxDateTime();
     if (!max || max.length < 16) return undefined;
     return max.substring(0, 16);
   });
