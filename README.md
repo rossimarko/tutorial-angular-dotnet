@@ -1,4 +1,4 @@
-# Full-Stack Tutorial: Angular 20 + .NET 9 CRUD Application
+# Full-Stack Tutorial: Angular 21 + .NET 10 CRUD Application
 
 Welcome to a comprehensive tutorial on building modern web applications! This course guides you through creating a production-ready CRUD application with **Angular 21** (frontend) and **.NET 10** (backend API), complete with authentication, multi-language support, and advanced data handling.
 
@@ -65,7 +65,7 @@ tutorial-angular-dotnet/
 cd d:\Formazione\tutorial-angular-dotnet
 
 # Create docker database
-docker run -e "ACCEPT_EULA=Y" -e "MSSQL_SA_PASSWORD=YourStrong@Passw0rd" -p 1433:1433 --name tutorial-angular -d microsoft/mssql-server:2025-latest
+docker run -e "ACCEPT_EULA=Y" -e "MSSQL_SA_PASSWORD=YourPassword123!@#" -p 1433:1433 --name tutorial-angular -d microsoft/mssql-server:2025-latest
 
 ```
 
