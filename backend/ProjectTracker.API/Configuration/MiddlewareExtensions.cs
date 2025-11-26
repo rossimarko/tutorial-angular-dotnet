@@ -1,5 +1,7 @@
 using DbUp;
 using ProjectTracker.API.Middleware;
+using StackExchange.Profiling;
+using StackExchange.Profiling.Storage;
 
 namespace ProjectTracker.API.Configuration;
 
@@ -18,6 +20,14 @@ public static class MiddlewareExtensions
         // Development-only middleware
         if (app.Environment.IsDevelopment())
         {
+            // Configure MiniProfiler storage with 30 minutes cache duration
+            var memoryCache = app.Services.GetRequiredService<Microsoft.Extensions.Caching.Memory.IMemoryCache>();
+            MiniProfiler.DefaultOptions.Storage = new MemoryCacheStorage(memoryCache, TimeSpan.FromMinutes(30));
+
+            // MiniProfiler for API and SQL query profiling
+            // Access profiling UI at /profiler/results-index
+            app.UseMiniProfiler();
+
             app.UseSwagger();
             app.UseSwaggerUI(config =>
             {
