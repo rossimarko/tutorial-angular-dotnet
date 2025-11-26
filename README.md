@@ -64,20 +64,25 @@ tutorial-angular-dotnet/
 # Navigate to the project directory
 cd d:\Formazione\tutorial-angular-dotnet
 
-# Start Docker containers
-docker-compose -f docker/docker-compose.yml up -d
+# Create docker database
+docker run -e "ACCEPT_EULA=Y" -e "MSSQL_SA_PASSWORD=YourStrong@Passw0rd" -p 1433:1433 --name tutorial-angular -d microsoft/mssql-server:2025-latest
+
 ```
+
+Create an empty database named ProjectTrackerDb
+
 
 ### 2. Backend Setup
 
 ```powershell
 cd backend/ProjectTracker.API
 dotnet restore
-dotnet ef database update
 dotnet run
 ```
 
 API will be available at: `https://localhost:5001`
+
+Database tables are created during the startup
 
 ### 3. Frontend Setup
 
@@ -191,13 +196,8 @@ This tutorial emphasizes security best practices:
 
 ## 🐳 Docker
 
-For dev purpose create docker image for sql server and then run the projects!
 
-```powershell
-docker run -e "ACCEPT_EULA=Y" -e "MSSQL_SA_PASSWORD=YourStrong@Passw0rd" -p 1433:1433 --name tutorial-angular -d microsoft/mssql-server:2025-latest
-```
-
-The project includes full Docker support from the beginning:
+The project includes full Docker support for creating a test environment on docker:
 
 ```powershell
 # Start all services (SQL Server, API, Frontend)

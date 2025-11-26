@@ -1,5 +1,16 @@
 @ProjectTracker.API_HostAddress = https://localhost:7026
 
+### Register a new user
+POST {{ProjectTracker.API_HostAddress}}/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "john.doe@example.com",
+  "password": "SecurePassword123!",
+  "firstName": "John",
+  "lastName": "Doe"
+}
+
 ### Login - Get Auth Token (Run this first)
 POST {{ProjectTracker.API_HostAddress}}/api/auth/login
 Content-Type: application/json

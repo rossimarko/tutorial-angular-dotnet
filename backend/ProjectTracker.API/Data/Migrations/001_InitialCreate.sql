@@ -50,6 +50,7 @@ BEGIN
         [Id] INT PRIMARY KEY IDENTITY(1,1),
         [UserId] INT NOT NULL,
         [Token] NVARCHAR(MAX) NOT NULL,
+        [IsRevoked] BIT DEFAULT 0,
         [ExpiresAt] DATETIME2 NOT NULL,
         [RevokedAt] DATETIME2,
         [CreatedAt] DATETIME2 DEFAULT GETUTCDATE(),
