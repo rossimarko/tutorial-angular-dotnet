@@ -52,8 +52,8 @@ tutorial-angular-dotnet/
 ## 🚀 Quick Start
 
 ### Prerequisites
-- **Visual Studio 2022** (Community, Professional, or Enterprise)
-- **.NET 9 SDK** installed
+- **Visual Studio 2026** (Community, Professional, or Enterprise)
+- **.NET 10 SDK** installed
 - **Node.js 20+** and **npm**
 - **Docker Desktop** running
 - **Git** for version control
@@ -95,13 +95,13 @@ Frontend will be available at: `http://localhost:4200`
 - **Module 1**: Environment Setup & Project Scaffolding
 - **Module 2**: Project Architecture Overview
 
-### Phase 2: Backend Foundation (.NET 9)
-- **Module 3**: ASP.NET Core 9 API Project Setup
+### Phase 2: Backend Foundation (.NET 10)
+- **Module 3**: ASP.NET Core 10 API Project Setup
 - **Module 4**: SQL Server with Dapper Data Access
 - **Module 5**: Authentication & Authorization - JWT Tokens
 
-### Phase 3: Frontend Foundation (Angular 20)
-- **Module 6**: Angular 20 Project Setup with Modern Patterns
+### Phase 3: Frontend Foundation (Angular 21)
+- **Module 6**: Angular 21 Project Setup with Modern Patterns
 - **Module 7**: Internationalization (i18n) - Italian & English
 - **Module 8**: Authentication UI & Guards
 
@@ -121,22 +121,22 @@ Frontend will be available at: `http://localhost:4200`
 
 | Layer | Technology | Version |
 |-------|-----------|---------|
-| **Frontend** | Angular | 20+ |
+| **Frontend** | Angular | 21+ |
 | **State Management** | Signals | Built-in |
 | **Styling** | Bootstrap | 5+ |
-| **Backend** | ASP.NET Core | 9 |
+| **Backend** | ASP.NET Core | 10 |
 | **API Pattern** | Minimal APIs | - |
 | **Data Access** | Dapper ORM | Latest |
-| **Database** | SQL Server | 2022+ |
+| **Database** | SQL Server | 2025+ |
 | **Container** | Docker Compose | Latest |
 | **Authentication** | JWT Bearer | RFC 7519 |
-| **Localization** | Angular i18n | 20+ |
+| **Localization** | Angular i18n | 21+ |
 
 ## 🎓 Key Learning Outcomes
 
 By completing this tutorial, you'll understand:
 
-### Backend (.NET 9)
+### Backend (.NET 10)
 - Modern ASP.NET Core architecture
 - Minimal APIs vs. traditional Controllers
 - Dapper ORM for data access
@@ -146,7 +146,7 @@ By completing this tutorial, you'll understand:
 - Database migrations and seeding
 - Structured logging and error handling
 
-### Frontend (Angular 20)
+### Frontend (Angular 21)
 - Standalone components (no NgModules)
 - Angular Signals for reactive state
 - Modern control flow syntax (@if, @for)
@@ -178,9 +178,9 @@ This tutorial emphasizes security best practices:
 ## 📚 Resources
 
 ### Official Documentation
-- [Angular 20 Essentials](https://angular.dev/essentials)
+- [Angular 21 Essentials](https://angular.dev/essentials)
 - [Angular Signals Guide](https://angular.dev/guide/signals)
-- [ASP.NET Core 9 Docs](https://learn.microsoft.com/en-us/aspnet/core/)
+- [ASP.NET Core 10 Docs](https://learn.microsoft.com/en-us/aspnet/core/)
 - [Dapper Documentation](https://github.com/DapperLib/Dapper)
 - [JWT.io](https://jwt.io/)
 
@@ -190,6 +190,12 @@ This tutorial emphasizes security best practices:
 - `/docs/aspnet-rest-apis.instructions.md` - REST API best practices
 
 ## 🐳 Docker
+
+For dev purpose create docker image for sql server and then run the projects!
+
+```powershell
+docker run -e "ACCEPT_EULA=Y" -e "MSSQL_SA_PASSWORD=YourStrong@Passw0rd" -p 1433:1433 --name tutorial-angular -d microsoft/mssql-server:2025-latest
+```
 
 The project includes full Docker support from the beginning:
 
@@ -205,7 +211,7 @@ docker-compose -f docker/docker-compose.yml down
 ```
 
 **Services**:
-- **SQL Server 2022**: Port 1433
+- **SQL Server 2025**: Port 1433
 - **API Backend**: Port 5001 (HTTPS)
 - **Frontend App**: Port 4200
 
