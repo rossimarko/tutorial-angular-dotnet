@@ -75,7 +75,8 @@ Here is a link to the most recent Angular style guide https://angular.dev/style-
 - Do NOT set `standalone: true` inside the `@Component`, `@Directive` and `@Pipe` decorators because is the default now
 - Use signals for state management
 - Implement lazy loading for feature routes
-- Use `NgOptimizedImage` for all static images.
+- Use `NgOptimizedImage` for all static images
+  - Note: `NgOptimizedImage` does not work for inline base64 images
 - Do NOT use the `@HostBinding` and `@HostListener` decorators. Put host bindings inside the `host` object of the `@Component` or `@Directive` decorator instead
 
 ### Components
