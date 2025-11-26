@@ -26,9 +26,35 @@ export class NavbarComponent {
   protected readonly isCollapsed = signal(true);
   protected readonly isDevelopment = isDevMode();
   
-  // Derive profiler URL from API base URL (remove /api suffix and add /profiler path)
-  protected readonly profilerUrl = environment.apiUrl.replace(/\/api$/, '') + '/profiler/results-index';
+  // Derive profiler URL from API base URL (remove /api or /api/ suffix and add /profiler path)
+  protected readonly profilerUrl = this.getProfilerUrl();
 
+  /**
+   * Constructs the profiler URL robustly, handling various API URL formats.
+   * Removes trailing '/api' or '/api/' if present, otherwise uses the base URL as-is.
+   * Logs a warning in development mode if the API URL does not end with '/api' or '/api/'.
+   */
+  private getProfilerUrl(): string
+  {
+    let apiUrl = environment.apiUrl;
+    // Remove trailing '/api' or '/api/' if present
+    const apiPattern = /(\/api\/?$)/;
+    if (apiPattern.test(apiUrl))
+    {
+      apiUrl = apiUrl.replace(apiPattern, '');
+    }
+    else if (isDevMode())
+    {
+      // Warn in development if the API URL does not match the expected pattern
+      console.warn(`[NavbarComponent] environment.apiUrl does not end with '/api' or '/api/':`, environment.apiUrl);
+    }
+    // Ensure no trailing slash before appending
+    if (apiUrl.endsWith('/'))
+    {
+      apiUrl = apiUrl.slice(0, -1);
+    }
+    return `${apiUrl}/profiler/results-index`;
+  }
   /// <summary>
   /// Toggle mobile menu
   /// </summary>
