@@ -1,6 +1,8 @@
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using StackExchange.Profiling;
+using StackExchange.Profiling.Storage;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using ProjectTracker.API.Authentication;
 using ProjectTracker.API.Data;
@@ -69,6 +71,7 @@ public static class ConfigurationExtensions
                 )
                 .AllowAnyMethod()
                 .AllowAnyHeader()
+                .WithExposedHeaders("Server-Timing") // Expose MiniProfiler timing header
                 .AllowCredentials();
             });
         });
@@ -171,6 +174,60 @@ public static class ConfigurationExtensions
 
         // Add memory cache for application-level caching
         services.AddMemoryCache();
+
+        return services;
+    }
+
+    /// <summary>
+    /// Configure MiniProfiler for API and SQL query profiling.
+    /// Profiles HTTP requests and Dapper SQL queries with timing information.
+    /// Results are stored in memory and accessible via /profiler/results-index.
+    /// Server-Timing header is enabled for client-side timing visibility.
+    /// </summary>
+    public static IServiceCollection AddMiniProfilerServices(this IServiceCollection services)
+    {
+        services.AddMiniProfiler(options =>
+        {
+            // Route base path for MiniProfiler UI
+            options.RouteBasePath = "/profiler";
+
+            // UI appearance
+            options.ColorScheme = ColorScheme.Dark;
+            options.PopupRenderPosition = RenderPosition.BottomLeft;
+            options.PopupShowTrivial = false;
+            options.PopupShowTimeWithChildren = true;
+
+            // Enable Server-Timing header for client visibility
+            options.EnableServerTimingHeader = true;
+
+            // Track connection open/close for better SQL profiling
+            options.TrackConnectionOpenClose = true;
+
+               // Filter out requests that should not be profiled to prevent infinite loops
+            // MiniProfiler UI polls for updates, which would create new profiler sessions
+            options.ShouldProfile = request =>
+            {
+                var path = request.Path.Value ?? string.Empty;
+
+                // Exclude MiniProfiler's own requests (prevents infinite loop)
+                if (path.StartsWith("/profiler", StringComparison.OrdinalIgnoreCase))
+                    return false;
+
+                // Exclude health checks
+                if (path.Equals("/health", StringComparison.OrdinalIgnoreCase))
+                    return false;
+
+                // Exclude Swagger/OpenAPI
+                if (path.StartsWith("/swagger", StringComparison.OrdinalIgnoreCase))
+                    return false;
+
+                // Exclude favicon and static files
+                if (path.Contains("favicon", StringComparison.OrdinalIgnoreCase))
+                    return false;
+
+                return true;
+            };
+        });
 
         return services;
     }

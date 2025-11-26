@@ -1,4 +1,4 @@
-import { Component, inject, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, inject, signal, ChangeDetectionStrategy, isDevMode } from '@angular/core';
 
 import { RouterModule } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
@@ -23,6 +23,8 @@ export class NavbarComponent {
   protected readonly isAuthenticated = this.authService.isAuthenticated$();
   protected readonly currentUser = this.authService.currentUser;
   protected readonly isCollapsed = signal(true);
+  protected readonly isDevelopment = isDevMode();
+  protected readonly profilerUrl = 'http://localhost:5001/profiler/results-index';
 
   /// <summary>
   /// Toggle mobile menu

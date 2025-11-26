@@ -46,6 +46,12 @@ builder.Services.ConfigureJwtAuthentication(builder.Configuration);
 builder.Services.AddAuthenticationServices();
 builder.Services.AddDataAccess();
 
+// Add MiniProfiler for API and SQL profiling (Development only)
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddMiniProfilerServices();
+}
+
 // ============================================
 // 3. BUILD THE APPLICATION
 // ============================================

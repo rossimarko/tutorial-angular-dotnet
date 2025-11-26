@@ -1,5 +1,6 @@
 using DbUp;
 using ProjectTracker.API.Middleware;
+using StackExchange.Profiling;
 
 namespace ProjectTracker.API.Configuration;
 
@@ -18,6 +19,10 @@ public static class MiddlewareExtensions
         // Development-only middleware
         if (app.Environment.IsDevelopment())
         {
+            // MiniProfiler for API and SQL query profiling
+            // Access profiling UI at /profiler/results-index
+            app.UseMiniProfiler();
+
             app.UseSwagger();
             app.UseSwaggerUI(config =>
             {
