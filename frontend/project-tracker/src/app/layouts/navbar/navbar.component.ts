@@ -5,6 +5,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { ThemeToggleComponent } from '../../shared/components/theme-toggle/theme-toggle.component';
 import { LanguageSelectorComponent } from '../../shared/components/language-selector/language-selector.component';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
+import { environment } from '../../../environments/environment';
 
 /// <summary>
 /// Main navigation bar component
@@ -24,7 +25,16 @@ export class NavbarComponent {
   protected readonly currentUser = this.authService.currentUser;
   protected readonly isCollapsed = signal(true);
   protected readonly isDevelopment = isDevMode();
-  protected readonly profilerUrl = 'http://localhost:5001/profiler/results-index';
+  protected readonly profilerUrl = this.getProfilerUrl();
+
+  /// <summary>
+  /// Derives the profiler URL from the API base URL configuration
+  /// </summary>
+  private getProfilerUrl(): string {
+    const apiUrl = environment.apiUrl;
+    const baseUrl = apiUrl.replace(/\/api\/?$/, '');
+    return `${baseUrl}/profiler/results-index`;
+  }
 
   /// <summary>
   /// Toggle mobile menu
