@@ -10,7 +10,7 @@ import { SkipLinkDirective } from './shared/directives/skip-link.directive';
   selector: 'app-root',
   imports: [RouterOutlet, TranslatePipe, ToastContainerComponent, NavbarComponent, SkipLinkDirective],
   templateUrl: './app.html',
-  styleUrl: './app.css',
+  styleUrl: './app.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class App {

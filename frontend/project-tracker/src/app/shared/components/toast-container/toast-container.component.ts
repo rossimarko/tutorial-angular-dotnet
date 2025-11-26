@@ -10,7 +10,7 @@ import { NotificationService, NotificationType } from '../../services/notificati
   selector: 'app-toast-container',
   imports: [],
   templateUrl: './toast-container.component.html',
-  styleUrl: './toast-container.component.css',
+  styleUrl: './toast-container.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ToastContainerComponent {

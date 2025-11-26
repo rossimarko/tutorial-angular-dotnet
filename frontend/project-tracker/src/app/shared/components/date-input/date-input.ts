@@ -14,7 +14,7 @@ import { TranslatePipe } from '../../pipes/translate.pipe';
 @Component({
   selector: 'app-date-input',
   templateUrl: './date-input.html',
-  styleUrl: './date-input.css',
+  styleUrl: './date-input.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [ReactiveFormsModule, FormsModule, TranslatePipe],
   providers: [

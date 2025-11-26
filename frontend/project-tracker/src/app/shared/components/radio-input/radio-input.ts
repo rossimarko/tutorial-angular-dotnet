@@ -21,7 +21,7 @@ export interface RadioOption {
   selector: 'app-radio-input',
   imports: [ReactiveFormsModule],
   templateUrl: './radio-input.html',
-  styleUrl: './radio-input.css',
+  styleUrl: './radio-input.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [{
     provide: NG_VALUE_ACCESSOR,

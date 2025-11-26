@@ -11,7 +11,7 @@ import { TranslationService } from '../../services/translation.service';
 @Component({
   selector: 'app-datetime-input',
   templateUrl: './datetime-input.html',
-  styleUrl: './datetime-input.css',
+  styleUrl: './datetime-input.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [ReactiveFormsModule, FormsModule],
   providers: [{

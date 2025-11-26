@@ -11,7 +11,7 @@ import { TranslatePipe } from '../../pipes/translate.pipe';
   selector: 'app-theme-toggle',
   imports: [TranslatePipe],
   templateUrl: './theme-toggle.component.html',
-  styleUrl: './theme-toggle.component.css',
+  styleUrl: './theme-toggle.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ThemeToggleComponent {

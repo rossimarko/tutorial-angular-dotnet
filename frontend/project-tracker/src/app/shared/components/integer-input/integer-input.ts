@@ -12,7 +12,7 @@ import { TranslationService } from '../../services/translation.service';
   selector: 'app-integer-input',
   imports: [ReactiveFormsModule],
   templateUrl: './integer-input.html',
-  styleUrl: './integer-input.css',
+  styleUrl: './integer-input.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [{
     provide: NG_VALUE_ACCESSOR,

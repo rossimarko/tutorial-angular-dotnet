@@ -10,7 +10,7 @@ import { TranslatePipe } from '../../pipes/translate.pipe';
   selector: 'app-pagination',
   imports: [TranslatePipe],
   templateUrl: 'pagination.component.html',
-  styleUrl: 'pagination.component.css',
+  styleUrl: 'pagination.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PaginationComponent {

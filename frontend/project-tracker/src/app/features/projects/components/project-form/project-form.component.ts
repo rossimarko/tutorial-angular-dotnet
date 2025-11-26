@@ -32,7 +32,7 @@ import {
     DateInputComponent
 ],
   templateUrl: './project-form.component.html',
-  styleUrl: './project-form.component.css',
+  styleUrl: './project-form.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ProjectFormComponent implements OnInit {

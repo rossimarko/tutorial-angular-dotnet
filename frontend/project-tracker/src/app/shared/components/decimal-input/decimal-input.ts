@@ -12,7 +12,7 @@ import { TranslationService } from '../../services/translation.service';
   selector: 'app-decimal-input',
   imports: [ReactiveFormsModule],
   templateUrl: './decimal-input.html',
-  styleUrl: './decimal-input.css',
+  styleUrl: './decimal-input.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [{
     provide: NG_VALUE_ACCESSOR,
