@@ -203,7 +203,7 @@ public static class ConfigurationExtensions
             // Track connection open/close for better SQL profiling
             options.TrackConnectionOpenClose = true;
 
-               // Filter out requests that should not be profiled to prevent infinite loops
+            // Filter out requests that should not be profiled to prevent infinite loops
             // MiniProfiler UI polls for updates, which would create new profiler sessions
             options.ShouldProfile = request =>
             {
