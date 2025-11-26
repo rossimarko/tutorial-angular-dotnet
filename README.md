@@ -194,7 +194,7 @@ This tutorial emphasizes security best practices:
 For dev purpose create docker image for sql server and then run the projects!
 
 ```powershell
-docker run -e "ACCEPT_EULA=Y" -e "MSSQL_SA_PASSWORD=YourStrong@Passw0rd" -p 1433:1433 --name tutorial-angular -d microsoft/mssql-server:2025-latest
+docker run -e "ACCEPT_EULA=Y" -e "MSSQL_SA_PASSWORD=YourStrong@Passw0rd" -p 1433:1433 --name tutorial-angular -d mcr.microsoft.com/mssql/server:2025-latest
 ```
 
 The project includes full Docker support from the beginning:
