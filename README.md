@@ -1,6 +1,6 @@
 # Full-Stack Tutorial: Angular 20 + .NET 9 CRUD Application
 
-Welcome to a comprehensive tutorial on building modern web applications! This course guides you through creating a production-ready CRUD application with **Angular 20** (frontend) and **.NET 9** (backend API), complete with authentication, multi-language support, and advanced data handling.
+Welcome to a comprehensive tutorial on building modern web applications! This course guides you through creating a production-ready CRUD application with **Angular 21** (frontend) and **.NET 10** (backend API), complete with authentication, multi-language support, and advanced data handling.
 
 ## 📚 Course Overview
 
@@ -24,14 +24,14 @@ A complete **Project Tracker** application with:
 ```
 tutorial-angular-dotnet/
 ├── backend/
-│   └── ProjectTracker.API/          # ASP.NET Core 9 Web API
+│   └── ProjectTracker.API/          # ASP.NET Core 10 Web API
 │       ├── Controllers/
 │       ├── Services/
 │       ├── Data/
 │       ├── Models/
 │       └── Program.cs
 ├── frontend/
-│   └── project-tracker/              # Angular 20 Application
+│   └── project-tracker/              # Angular 21 Application
 │       ├── src/
 │       │   ├── app/
 │       │   ├── assets/
